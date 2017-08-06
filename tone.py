@@ -1,3 +1,5 @@
+from rsclib import Rational
+
 class Halftone (object) :
     """ Model a halftone with abc notation
         We have a table of the first two octaves and extrapolate the
@@ -40,6 +42,12 @@ class Halftone (object) :
     # standard_pitch has halftone offset 0
     standard_pitch = 'A'
 
+    reg = {}
+
+    def register (self) :
+        self.reg [self.name] = self
+    # end def register
+
     def __init__ (self, name) :
         tr = 0
         ln = name
@@ -52,6 +60,59 @@ class Halftone (object) :
             tr = tr + 12
         self.offset = self.symbols [ln] + tr
         self.name   = name
+        self.register ()
     # end def __init__
 
+    @classmethod
+    def get (cls, name) :
+        """ Implement sort-of singleton
+        """
+        if name in cls.reg :
+            return cls.reg [name]
+        return cls (name)
+    # end def get
+
 # end class Halftone
+
+def halftone (name) :
+    """ Return singleton tone """
+    return Halftone.get (name)
+# end def halftone
+
+class Bar_Object (object) :
+
+    def __init__ (self, duration, unit = 8) :
+        self.__super.__init__ ()
+        self.duration = duration
+        self.unit     = unit
+    # end def __init__
+
+    def length (self, unit) :
+        l = Rational (self.duration, self.unit) * Rational (unit)
+        return l
+    # end def length
+
+# end class Bar_Object
+
+class Tone (Bar_Object) :
+
+    def __init__ (self, halftone, duration, unit = 8) :
+        self.halftone = halftone
+        self.__super.__init__ (duration, unit)
+        self.duration = duration
+        self.unit     = unit
+    # end def __init__
+
+    def as_abc (self, unit = None) :
+        return "%s%s" % (self.halftone.name, self.length (unit))
+    # end def as_abc
+
+# end class Tone
+
+class Pause (Bar_Object) :
+
+    def as_abc (self, unit = None) :
+        return "Z%s" % (self.length (unit))
+    # end def as_abc
+
+# end class Pause

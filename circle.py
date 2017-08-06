@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from contrapunctus.halftone import Halftone
+from contrapunctus.halftone import halftone
 
 class Circle_Of_Fifth (object) :
     fifth_up = dict \
@@ -57,13 +57,13 @@ class Circle_Of_Fifth (object) :
         ))
 
     @classmethod
-    def transpose_quint_up (cls.h) :
-        return Halftone (cls.fifth_up [h.name])
+    def transpose_quint_up (cls) :
+        return halftone (cls.fifth_up [h.name])
     # end def transpose_quint_up
 
     @classmethod
-    def transpose_quint_down (cls.h) :
-        return Halftone (cls.fifth_down [h.name])
+    def transpose_quint_down (cls) :
+        return halftone (cls.fifth_down [h.name])
     # end def transpose_quint_down
 
 # end class Circle_Of_Fifth
