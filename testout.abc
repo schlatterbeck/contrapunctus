@@ -1,0 +1,15 @@
+X: 1
+T: Zocharti Loch
+M: 4/4
+%%score (T1 T2) (B1)
+Q: 1/4=76
+C: Louis Lewandowski (1821-1894)
+M: 4/4
+L: 1/8
+V:T1 snm=T.I name="Tenore I" clef=treble-8
+V:T2 snm=T.II name="Tenore II" clef=treble-8
+V:B1 snm=B.I middle=d name="Basso I" clef=bass transpose=-24
+K: Gm
+[V:T1] B2 c2 d2 g2 |f6 e2 |d2 c2 d2 e2 |d4 c2 z2 |
+[V:T2] G2 A2 B2 e2 |d6 c2 |B2 A2 B2 c2 |B4 A2 z2 |
+[V:B1] z8 |z2 f2 g2 a2 |b2 z2 z2 e2 |f4 f2 z2 |
