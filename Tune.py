@@ -348,4 +348,16 @@ class Tune (autosuper) :
                             kw [k] = []
                         kw [k].append (line [2:].strip ())
     # end def from_file
+
+    def iter (self, voice_idx) :
+        for bar in self.voices [voice_idx].bars :
+            for bo in bar.objects :
+                yield bo
+    # end def iter
+
+    def __str__ (self) :
+        return self.as_abc ()
+    # end def __str__
+    __repr__ = __str__
+
 # end class Tune

@@ -21,6 +21,11 @@ class Gregorian (object) :
         return self.ambitus [0]
     # end def finalis
 
+    @property
+    def step2 (self) :
+        return self [1]
+    # end def step2
+
     def __getitem__ (self, idx) :
         return self.ambitus [idx]
     # end def __getitem__
