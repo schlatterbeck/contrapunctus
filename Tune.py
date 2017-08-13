@@ -1,4 +1,5 @@
-from rsclib import Rational
+from rsclib.Rational  import Rational
+from rsclib.autosuper import autosuper
 
 def sgn (i) :
     if i > 0 :
@@ -8,7 +9,7 @@ def sgn (i) :
     return 0
 # end def sgn
 
-class Halftone (object) :
+class Halftone (autosuper) :
     """ Model a halftone with abc notation
         We have a table of the first two octaves and extrapolate the
         rest.
@@ -150,7 +151,7 @@ def halftone (name) :
     return Halftone.get (name)
 # end def halftone
 
-class Bar_Object (object) :
+class Bar_Object (autosuper) :
 
     def __init__ (self, duration, unit = 8) :
         self.__super.__init__ ()
@@ -158,7 +159,8 @@ class Bar_Object (object) :
         self.unit     = unit
     # end def __init__
 
-    def length (self, unit) :
+    def length (self, unit = None) :
+        unit = unit or self.unit
         l = Rational (self.duration, self.unit) * Rational (unit)
         return l
     # end def length
@@ -183,7 +185,150 @@ class Tone (Bar_Object) :
 class Pause (Bar_Object) :
 
     def as_abc (self, unit = None) :
-        return "Z%s" % (self.length (unit))
+        return "z%s" % (self.length (unit))
     # end def as_abc
 
 # end class Pause
+
+class Meter (autosuper) :
+    """ Represent the meter of a tune, e.g. 4/4, 3/4 or similar
+    """
+
+    def __init__ (self, measure, beats) :
+        self.measure = measure
+        self.beats   = beats
+    # end def __init__
+
+    @property
+    def duration (self) :
+        return len (self)
+    # end def duration
+
+    def as_abc (self) :
+        return "M: %s/%s" % (self.measure, self.beats)
+    # end def as_abc
+
+    def length (self) :
+        return Rational (self.measure, self.beats)
+    # end def length
+
+    def __str__ (self) :
+        return '%s/%s' % (self.measure, self.beats)
+    # end def __str__
+
+# end class Meter
+
+class Bar (autosuper) :
+
+    def __init__ (self, duration, unit = 8, *bar_object) :
+        self.duration = Rational (duration)
+        self.dur_sum  = Rational (0)
+        self.objects  = []
+        for b in bar_object :
+            self.add (b)
+    # end def __init__
+
+    def add (self, bar_object) :
+        if self.dur_sum + bar_object.length () > self.duration :
+            raise ValueError \
+                ( "Overfull bar: %s + %s > %s"
+                % (self.dur_sum, bar_object.duration, self.duration)
+                )
+        self.objects.append (bar_object)
+    # end def add
+
+    def as_abc (self) :
+        r = []
+        for bo in self.objects :
+            r.append (bo.as_abc ())
+        r.append ('|')
+        return ' '.join (r)
+    # end def as_abc
+
+# end class Bar
+
+class Voice (autosuper) :
+    """ A single voice of a complex tune
+    """
+    def __init__ (self, id = None, *bars, **properties) :
+        self.bars = []
+        self.id   = id
+        for b in bars :
+            self.add (b)
+        self.properties = properties
+    # end def __init__
+
+    def add (self, bar) :
+        self.bars.append (bar)
+    # end def add
+
+    def as_abc (self) :
+        r = []
+        if id :
+            r.append ("[V:%s] " % self.id)
+        for bar in self.bars :
+            r.append (bar.as_abc ())
+        return ''.join (r)
+    # end def as_abc
+
+    def as_abc_header (self) :
+        if not self.id :
+            return ''
+        def tq (p) :
+            if ' ' in p :
+                return '"%s"' % p
+            return p
+        prp = ('%s=%s' % (k, tq (self.properties [k])) for k in self.properties)
+        return 'V:%s %s' % (self.id, ' '.join (prp))
+    # end def as_abc_header
+
+# end class Voice
+
+class Tune (autosuper) :
+
+    def __init__ \
+        ( self, meter, key
+        , title  = None
+        , number = 1
+        , unit   = None
+        , *voices, **kw
+        ) :
+        self.voices = []
+        self.meter  = meter
+        self.key    = key
+        self.title  = title
+        self.number = number
+        self.kw     = kw
+        self.unit   = unit or Rational (8)
+        for v in voices :
+            self.add (v)
+    # end def __init__
+
+    def add (self, voice) :
+        self.voices.append (voice)
+    # end def add
+
+    def as_abc (self) :
+        r = []
+        r.append ('X: %s' % self.number)
+        if self.title :
+            r.append ('T: %s' % self.title)
+        r.append (self.meter.as_abc ())
+        for k in self.kw :
+            if len (k) == 1 :
+                r.append ('%s: %s' % (k, self.kw [k]))
+            else :
+                r.append ('%%%%%s %s' % (k, self.kw [k]))
+        r.append ("M: %s" % self.meter)
+        r.append ("L: %s" % (Rational (1) // self.unit))
+        for v in self.voices :
+            h = v.as_abc_header ()
+            if h :
+                r.append (h)
+        r.append ("K: %s" % self.key)
+        for v in self.voices :
+            r.append (v.as_abc ())
+        return '\n'.join (r)
+    # end def as_abc
+
+# end class Tune
