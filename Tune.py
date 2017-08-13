@@ -331,4 +331,21 @@ class Tune (autosuper) :
         return '\n'.join (r)
     # end def as_abc
 
+    @classmethod
+    def from_file (cls, fn) :
+        """ Unfinished """
+        version   = None
+        in_header = True
+        kw        = {}
+        with open (fn, 'r') as f :
+            for n, line in enumerate (f) :
+                if n == 0 and line.startswith ('%abc') :
+                    version = line [4:].strip ()
+                if in_header :
+                    if line [1] == ':' :
+                        k = line [0]
+                        if k not in kw :
+                            kw [k] = []
+                        kw [k].append (line [2:].strip ())
+    # end def from_file
 # end class Tune

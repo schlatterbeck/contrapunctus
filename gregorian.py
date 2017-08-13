@@ -21,6 +21,10 @@ class Gregorian (object) :
         return self.ambitus [0]
     # end def finalis
 
+    def __getitem__ (self, idx) :
+        return self.ambitus [idx]
+    # end def __getitem__
+
 # end class Gregorian
 
 dorian = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'C', 'd'])
