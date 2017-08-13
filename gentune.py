@@ -1,55 +1,108 @@
 #!/usr/bin/python
 
-from   __future__    import print_function
+from   __future__ import print_function
+
 import pga
-from   Tune          import Tune, Voice, Bar, Meter, Tone, halftone, sgn
-from   gregorian     import dorian
-from   pga           import PGA, PGA_REPORT_STRING, PGA_REPORT_ONLINE
+from   Tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
+from   gregorian import dorian
+from   pga       import PGA, PGA_REPORT_STRING, PGA_REPORT_ONLINE
+from   pga       import PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR
+from   rsclib.iter_recipes import zip
 
 class Create_Contrapunctus (PGA) :
 
+    tunelength = 11
+    # Length of the automatically-generated part
+    v1length   = tunelength - 3
+    v2length   = tunelength - 2
+
     def evaluate (self, p, pop) :
-        jumpcount = 0.0
-        badness   = 1.0
-        tune      = self.gen (p, pop)
-        last      = None
-        jump      = False
-        uglyness  = 1.0
-        for tone in tune.iter (0) :
+        jumpcount  = 0.0
+        badness    = 1.0
+        tune       = self.gen (p, pop)
+        last       = ()
+        jump       = [False, False]
+        uglyness   = 1.0
+        prim_seen  = False
+        quint_seen = False
+        okt_seen   = False
+        dir        = (-1, 1)
+        for tone in zip (tune.iter (0), tune.iter (1)) :
+            dist = abs (tone [0].halftone.offset - tone [1].halftone.offset)
             if not last :
                 last = tone
+                if dist != 0 and dist != 7 and dist != 12 :
+                    badness *= 100.
                 continue
-            off_o = last.halftone.offset
-            off_n = tone.halftone.offset
-            diff  = abs (off_o - off_n)
+            off_o = tuple (last [n].halftone.offset for n in range (2))
+            off_n = tuple (tone [n].halftone.offset for n in range (2))
+            diff  = tuple (abs (off_o [n] - off_n [n]) for n in range (2))
             # Prim
-            if diff == 0 :
-                badness *= 1000.0
+            if diff [0] == 0 :
+                badness *= 10.0
+            if diff [1] == 0 :
+                if prim_seen :
+                    badness *= 10.0
+                prim_seen = True
             # Septime
-            if 10 <= diff <= 11 :
-                badness *= 1000.0
+            for i in range (2) :
+                if 10 <= diff [i] <= 11 :
+                    badness *= 10.0
             # Devils interval:
-            if diff == 6 :
-                badness *= 1000.0
+            for i in range (2) :
+                if diff [i] == 6 :
+                    badness *= 10.0
             # Good: step 1 <= diff <= 2
-            if diff > 2 :
+            if diff [0] > 2 :
                 # Jump
-                if jump :
+                if jump [0] :
                     # No two jumps in series
-                    badness *= 1000.0
-                jump = sgn (off_n - off_o)
-                if diff == 5 or diff == 7 :
-                    uglyness += 50
-                if 8 <= diff <= 9 :
-                    uglyness += 500
-                if diff == 12 :
-                    uglyness += 100
+                    badness *= 10.0
+                jump [0] = sgn (off_n [0] - off_o [0])
+                if diff [0] == 5 or diff [0] == 7 :
+                    uglyness += 1
+                if 8 <= diff [0] <= 9 :
+                    uglyness += 10
+                if diff [0] == 12 :
+                    uglyness += 2
             else :
                 # Step not jump
                 # After a jump movement should not be same direction
-                if jump == sgn (off_n - off_o) :
-                    badness *= 1000
-                jump = False
+                if jump [0] == sgn (off_n [0] - off_o [0]) :
+                    badness *= 10.0
+                jump [0] = False
+            if diff [1] > 2 :
+                # Jump
+                if jump [1] == sgn (off_n [1] - off_o [1]) :
+                    # No two jumps in same direction
+                    badness *= 10.0
+                jump [1] = sgn (off_n [1] - off_o [1])
+            else :
+                jump [1] = False
+            # Prim or Sekund between tones
+            if 0 <= dist <= 2 :
+                badness *= 10.0
+            if 5 <= dist <= 6 :
+                badness *= 10.0
+            if 10 <= dist <= 11 :
+                badness *= 10.0
+# should not be needed, see below code with dir (direction) == 0
+#            if dist == 7 :
+#                if quint_seen :
+#                    badness *= 10.0
+#                quint_seen = True
+#            else :
+#                quint_seen = False
+#            if dist == 12 :
+#                if okt_seen :
+#                    badness *= 10.0
+#                okt_seen = True
+#            else :
+#                okt_seen = False
+            if dist == 7 or dist == 12 :
+                if dir [0] == dir [1] :
+                    badness *= 9.0
+            dir  = tuple (sgn (off_n [n] - off_o [n]) for n in range (2))
             last = tone
         return uglyness * badness
     # end def evaluate
@@ -59,7 +112,7 @@ class Create_Contrapunctus (PGA) :
         b  = Bar (4, 4)
         b.add (Tone (dorian.finalis, 4, unit = 4))
         v1.add (b)
-        for i in range (len (self)) :
+        for i in range (self.v1length) :
             a = self.get_allele (p, pop, i)
             b = Bar (4, 4)
             b.add (Tone (dorian [a], 4, unit = 4))
@@ -71,8 +124,28 @@ class Create_Contrapunctus (PGA) :
         b.add (Tone (dorian.finalis, 4, unit = 4))
         v1.add (b)
         tune = Tune \
-            (number = 1, meter = Meter (4, 4), Q = '1/4=370', key='C', unit = 4)
+            ( number = 1
+            , meter  = Meter (4, 4)
+            , Q      = '1/4=370'
+            , key    = 'C'
+            , unit   = 4
+            , score  = '(V2) (V1)'
+            )
         tune.add (v1)
+        v2 = Voice (id = 'V2')
+        for i in range (self.v2length) :
+            a = self.get_allele (p, pop, i + self.v1length)
+            b = Bar (4, 4)
+            b.add (Tone (dorian [a], 4, unit = 4))
+            v2.add (b)
+        b  = Bar (4, 4)
+        # FIXME: Don't hard-code subsemitonium
+        b.add (Tone (halftone ('^c'), 4, unit = 4))
+        v2.add (b)
+        b  = Bar (4, 4)
+        b.add (Tone (dorian [7], 4, unit = 4))
+        v2.add (b)
+        tune.add (v2)
         return tune
     # end def gen
 
@@ -84,14 +157,24 @@ class Create_Contrapunctus (PGA) :
 # end class Create_Contrapunctus
 
 def main () :
+    srand = 23
+    tl = Create_Contrapunctus.tunelength
+    l1 = tl - 3
+    l2 = tl - 2
+    # FIXME: We want to use a different ambitus than 0-13 for the second voice
+    stop_on = [PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR]
     cp = Create_Contrapunctus \
-        ( type (2), 8
-        , maximize = False
-        , init     = [(0,7)] * 8
+        ( type (2), l1 + l2
+        , maximize      = False
+        , init          = [(0,7)] * l1 + [(0,13)] * l2
+        , random_seed   = srand
+        , pop_size      = 500
+        , num_replace   = 250
         , print_options = \
             [ PGA_REPORT_STRING
             , PGA_REPORT_ONLINE
             ]
+        , stopping_rule_types = stop_on
         )
     cp.run ()
 # end def main

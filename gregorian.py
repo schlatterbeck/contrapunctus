@@ -3,6 +3,15 @@
 from Tune import halftone
 
 class Gregorian (object) :
+    """
+    >>> d = dorian
+    >>> d [0]
+    D
+    >>> d [12]
+    b
+    >>> d [13]
+    c
+    """
 
     def __init__ (self, ambitus) :
         assert len (ambitus) > 7
@@ -27,7 +36,12 @@ class Gregorian (object) :
     # end def step2
 
     def __getitem__ (self, idx) :
-        return self.ambitus [idx]
+        """ FIXME: This works only for the next octave
+        """
+        if 0 <= idx < len (self.ambitus) :
+            return self.ambitus [idx]
+        assert idx < 2 * len (self.ambitus) - 2
+        return halftone (self.ambitus [idx % 7].name.lower ())
     # end def __getitem__
 
 # end class Gregorian
