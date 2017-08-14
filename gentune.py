@@ -113,6 +113,10 @@ class Create_Contrapunctus (PGA) :
             if dist == 7 or dist == 12 :
                 if dir [0] == dir [1] :
                     badness *= 9.0
+            # For sext (sixth) or terz (third) don't allow several in a row
+            if 3 <= dist <= 4 or 8 <= dist <= 9 :
+                if dir [0] == dir [1] == 0 :
+                    uglyness += 3
             dir  = tuple (sgn (off_n [n] - off_o [n]) for n in range (2))
             last = tone
         return uglyness * badness
