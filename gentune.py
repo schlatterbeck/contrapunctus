@@ -7,14 +7,30 @@ from   Tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
 from   gregorian import dorian
 from   pga       import PGA, PGA_REPORT_STRING, PGA_REPORT_ONLINE
 from   pga       import PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR
+from   argparse  import ArgumentParser
 from   rsclib.iter_recipes import zip
 
 class Create_Contrapunctus (PGA) :
 
-    tunelength = 11
-    # Length of the automatically-generated part
-    v1length   = tunelength - 3
-    v2length   = tunelength - 2
+    def __init__ (self, args) :
+        self.args = args
+        assert args.tune_length > 3
+        self.tunelength = args.tune_length
+        # Length of the automatically-generated voices
+        self.v1length   = self.tunelength - 3
+        self.v2length   = self.tunelength - 2
+        stop_on = [PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR]
+        PGA.__init__ \
+            ( self, type (2), self.v1length + self.v2length
+            , maximize      = False
+            , init          = [(0,7)] * self.v1length + [(0,16)] * self.v2length
+            , random_seed   = self.args.random_seed
+            , pop_size      = 500
+            , num_replace   = 250
+            , print_options = [PGA_REPORT_STRING, PGA_REPORT_ONLINE]
+            , stopping_rule_types = stop_on
+            )
+    # end def __init__
 
     def evaluate (self, p, pop) :
         jumpcount  = 0.0
@@ -152,21 +168,21 @@ class Create_Contrapunctus (PGA) :
 # end class Create_Contrapunctus
 
 def main () :
-    srand = 23
-    tl = Create_Contrapunctus.tunelength
-    l1 = tl - 3
-    l2 = tl - 2
-    stop_on = [PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR]
-    cp = Create_Contrapunctus \
-        ( type (2), l1 + l2
-        , maximize      = False
-        , init          = [(0,7)] * l1 + [(0,16)] * l2
-        , random_seed   = srand
-        , pop_size      = 500
-        , num_replace   = 250
-        , print_options = [PGA_REPORT_STRING, PGA_REPORT_ONLINE]
-        , stopping_rule_types = stop_on
+    cmd = ArgumentParser ()
+    cmd.add_argument \
+        ( "-r", "--random-seed"
+        , help    = "Random seed initialisation for reproduceable results"
+        , type    = int
+        , default = 23
         )
+    cmd.add_argument \
+        ( "-l", "--tune-length"
+        , help    = "Length of generated tune"
+        , type    = int
+        , default = 11
+        )
+    args = cmd.parse_args ()
+    cp = Create_Contrapunctus (args)
     cp.run ()
 # end def main
 
