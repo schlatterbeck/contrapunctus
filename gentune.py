@@ -28,7 +28,7 @@ class Create_Contrapunctus (PGA) :
         okt_seen   = False
         dir        = (-1, 1)
         for tone in zip (tune.iter (0), tune.iter (1)) :
-            dist = abs (tone [0].halftone.offset - tone [1].halftone.offset)
+            dist = tone [1].halftone.offset - tone [0].halftone.offset
             if not last :
                 last = tone
                 if dist != 0 and dist != 7 and dist != 12 :
@@ -52,7 +52,6 @@ class Create_Contrapunctus (PGA) :
             for i in range (2) :
                 if diff [i] == 6 :
                     badness *= 10.0
-            # Good: step 1 <= diff <= 2
             if diff [0] > 2 :
                 # Jump
                 if jump [0] :
@@ -79,26 +78,22 @@ class Create_Contrapunctus (PGA) :
                 jump [1] = sgn (off_n [1] - off_o [1])
             else :
                 jump [1] = False
-            # Prim or Sekund between tones
+            # Not both voices may jump
+            if jump [0] and jump [1] :
+                badness *= 10.0
+            # Prime or Sekund between tones
             if 0 <= dist <= 2 :
                 badness *= 10.0
             if 5 <= dist <= 6 :
                 badness *= 10.0
             if 10 <= dist <= 11 :
                 badness *= 10.0
-# should not be needed, see below code with dir (direction) == 0
-#            if dist == 7 :
-#                if quint_seen :
-#                    badness *= 10.0
-#                quint_seen = True
-#            else :
-#                quint_seen = False
-#            if dist == 12 :
-#                if okt_seen :
-#                    badness *= 10.0
-#                okt_seen = True
-#            else :
-#                okt_seen = False
+            # Don't get carried away :-)
+            if dist > 14 :
+                badness *= 10.0
+            # Upper voice must be *up*
+            if dist < 0 :
+                badness *= 10.0
             if dist == 7 or dist == 12 :
                 if dir [0] == dir [1] :
                     badness *= 9.0
@@ -161,19 +156,15 @@ def main () :
     tl = Create_Contrapunctus.tunelength
     l1 = tl - 3
     l2 = tl - 2
-    # FIXME: We want to use a different ambitus than 0-13 for the second voice
     stop_on = [PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR]
     cp = Create_Contrapunctus \
         ( type (2), l1 + l2
         , maximize      = False
-        , init          = [(0,7)] * l1 + [(0,13)] * l2
+        , init          = [(0,7)] * l1 + [(0,16)] * l2
         , random_seed   = srand
         , pop_size      = 500
         , num_replace   = 250
-        , print_options = \
-            [ PGA_REPORT_STRING
-            , PGA_REPORT_ONLINE
-            ]
+        , print_options = [PGA_REPORT_STRING, PGA_REPORT_ONLINE]
         , stopping_rule_types = stop_on
         )
     cp.run ()

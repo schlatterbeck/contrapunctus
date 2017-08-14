@@ -102,7 +102,6 @@ class Halftone (autosuper) :
         """
         (octaves, offs) = divmod (offset, 12)
         name = self.name
-        import pdb ; pdb.set_trace ()
         while (name.endswith (',')) :
             octaves -= 1
             name = name [:-1]
@@ -138,6 +137,45 @@ class Halftone (autosuper) :
                 octaves += 1
         return self.get (symbol)
     # end get_interval
+
+    def transpose_octaves (self, octaves=1) :
+        """ Transpose given tune by given number of octaves.
+            Positive means up, negative down.
+        >>> h = halftone ('^C')
+        >>> h.transpose_octaves ()
+        ^c
+        >>> h.transpose_octaves (1).transpose_octaves (-1)
+        ^C
+        >>> h.transpose_octaves (-1).transpose_octaves (1)
+        ^C
+        >>> h.transpose_octaves (2)
+        ^c'
+        >>> h.transpose_octaves (-2)
+        ^C,,
+        >>> h.transpose_octaves (-2).transpose_octaves (2)
+        ^C
+        >>> h.transpose_octaves (2).transpose_octaves (-2)
+        ^C
+        """
+        n = self.name
+        if octaves > 0 :
+            for i in range (octaves) :
+                if n.endswith (",") :
+                    n = n [:-1]
+                elif n.lower () != n :
+                    n = n.lower ()
+                else :
+                    n = n + "'"
+        elif octaves < 0:
+            for i in range (abs (octaves)) :
+                if n.endswith ("'") :
+                    n = n [:-1]
+                elif n.upper () != n :
+                    n = n.upper ()
+                else :
+                    n = n + ","
+        return self.get (n)
+    # end def transpose_octaves
 
     def __str__ (self) :
         return self.name

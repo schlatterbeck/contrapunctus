@@ -10,11 +10,17 @@ class Gregorian (object) :
     >>> d [12]
     b
     >>> d [13]
-    c
+    c'
+    >>> d [15]
+    e'
+    >>> d [22]
+    e''
+    >>> d [-1]
+    C
     """
 
     def __init__ (self, ambitus) :
-        assert len (ambitus) > 7
+        assert len (ambitus) == 7
         self.ambitus = [halftone (x) for x in ambitus]
     # end def __init__
 
@@ -36,14 +42,15 @@ class Gregorian (object) :
     # end def step2
 
     def __getitem__ (self, idx) :
-        """ FIXME: This works only for the next octave
+        """ Get halftone with index idx from our tones, note that we
+            synthesize tones outside the given ambitus dynamically.
         """
         if 0 <= idx < len (self.ambitus) :
             return self.ambitus [idx]
-        assert idx < 2 * len (self.ambitus) - 2
-        return halftone (self.ambitus [idx % 7].name.lower ())
+        d, m = divmod (idx, 7)
+        return self.ambitus [m].transpose_octaves (d)
     # end def __getitem__
 
 # end class Gregorian
 
-dorian = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'C', 'd'])
+dorian = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'c'])
