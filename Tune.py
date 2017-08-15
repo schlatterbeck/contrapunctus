@@ -1,3 +1,4 @@
+from __future__ import division
 from rsclib.Rational  import Rational
 from rsclib.autosuper import autosuper
 
@@ -241,61 +242,7 @@ class Halftone (autosuper) :
         return tr.enharmonic_equivalent ().transpose_octaves (oct)
     # end def enharmonic_equivalent
 
-    def get_interval (self, offset) :
-        """ Transpose the current Halftone by offset (in half-tones)
-        >>> Halftone ("C").get_interval (-1)
-        B,
-        >>> Halftone ("c").get_interval (-1)
-        B
-        >>> Halftone ("c").get_interval (-2)
-        ^A
-
-        x>>> Halftone ("C,,,").get_interval (-1)
-        B,,,,
-        x>>> Halftone ("c'''").get_interval (-1)
-        b''
-        x>>> Halftone ("c").get_interval (1)
-        ^c
-        """
-        (octaves, offs) = divmod (offset, 12)
-        name = self.name
-        while (name.endswith (',')) :
-            octaves -= 1
-            name = name [:-1]
-        while (name.endswith ("'")) :
-            octaves += 1
-            name = name [:-1]
-        if self.offset + offs > 15 :
-            assert name.upper () != name
-            name = name.upper ()
-            offs -= 12
-            octaves += 1
-        if self.offset + offs < -10 :
-            assert name.lower () != name
-            name = name.lower ()
-            offs += 12
-            octaves -= 1
-        idx = self.symlist.index (name)
-        while (self.symbols [self.symlist [idx]] != offs + self.offset) :
-            idx += sgn (offs)
-        symbol = self.symlist [idx]
-        while (octaves) :
-            if octaves > 0 :
-                if symbol.lower () != symbol :
-                    symbol = symbol.lower ()
-                else :
-                    symbol = symbol + "'"
-                octaves -= 1
-            if octaves < 0 :
-                if symbol.upper () != symbol :
-                    symbol = symbol.upper ()
-                else :
-                    symbol = symbol + ","
-                octaves += 1
-        return self.get (symbol)
-    # end get_interval
-
-    def transpose_fifth (self, key = 'C', fifth = 1) :
+    def transpose_fifth (self, fifth = 1, key = 'C') :
         """ Transpose by fifth (up or down).
             Positive means up, negative down.
             Note that the key is used internally for determining when we
@@ -304,13 +251,13 @@ class Halftone (autosuper) :
             using the enharmonic equivalent. For input we accept keys
             with a maximum of 7 flats or sharps.
         >>> h = halftone ('C')
-        >>> h.transpose_fifth ('C', 0)
+        >>> h.transpose_fifth (0)
         C
-        >>> h.transpose_fifth ('C')
+        >>> h.transpose_fifth ()
         G
 
         >>> for i in range (12) :
-        ...     h.transpose_fifth ('C', i)
+        ...     h.transpose_fifth (i, 'C')
         C
         G
         d
@@ -325,7 +272,7 @@ class Halftone (autosuper) :
         f'''''
 
         >>> for i in range (12) :
-        ...     h.transpose_fifth ('C', -i)
+        ...     h.transpose_fifth (-i , 'C')
         C
         F,
         _B,,
@@ -341,7 +288,7 @@ class Halftone (autosuper) :
         """
         ht   = self
         oct  = 0
-        key  = Key (key)
+        key  = Key.get (key)
         while fifth :
             if key.offset >= 6 and fifth > 0 or key.offset <= -6 and fifth < 0 :
                 ht = ht.enharmonic_equivalent ()
@@ -402,6 +349,53 @@ class Halftone (autosuper) :
                     n = n + ","
         return self.get (n)
     # end def transpose_octaves
+
+    def transpose (self, steps, key = 'C') :
+        """ Transpose by given number of halftone steps.
+            Positive is up.
+            We determine the number of fifth to transpose and decide how
+            many octaves we must use to compensate.
+            Note that a fifth has 7 halftones and the multiplicative
+            inverse of 7 mod 12 is again 7. So to divide by 7 mod 12 we
+            can multiply by 7.
+            We use this complicated method of transposing by fifth to
+            keep the correct enharmonic equivalence. When transposing
+            up, sharps are preferred while when transposing down, flats
+            are preferred.
+        >>> Halftone ("C").transpose (-1)
+        B,
+        >>> Halftone ("c").transpose (-1)
+        B
+        >>> Halftone ("c").transpose (-2)
+        _B
+        >>> Halftone ("C,,,").transpose (-1)
+        B,,,,
+        >>> Halftone ("c'''").transpose (-1)
+        b''
+        >>> Halftone ("c").transpose (1)
+        _d
+        >>> Halftone ("C").transpose (6)
+        ^F
+        >>> Halftone ("c").transpose (-6)
+        _G
+        >>> Halftone ("E").transpose (2)
+        ^F
+        >>> Halftone ("_A").transpose (-2)
+        _G
+        """
+        key = Key.get (key)
+        nfifth = (7 * steps) % 12
+        if nfifth > 6 :
+            nfifth = nfifth - 12
+        assert (nfifth * 7 - steps) % 12 == 0
+        oct  = - (nfifth * 7 - steps) // 12
+        ht   = self.transpose_octaves (oct)
+        ht   = ht.transpose_fifth (nfifth, key)
+        offs = key.transpose (nfifth).offset
+        if offs == 6 and steps < 0 :
+            ht = ht.enharmonic_equivalent ()
+        return ht
+    # end def transpose
 
     def __str__ (self) :
         return self.name
@@ -593,6 +587,8 @@ class Key (object) :
     def get (cls, name) :
         """ Implement sort-of singleton
         """
+        if isinstance (name, cls) :
+            return name
         if name in cls.reg :
             return cls.reg [name]
         return cls (name)

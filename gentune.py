@@ -154,8 +154,7 @@ class Create_Contrapunctus (PGA) :
             b.add (Tone (dorian [a], 4, unit = 4))
             v2.add (b)
         b  = Bar (4, 4)
-        # FIXME: Don't hard-code subsemitonium
-        b.add (Tone (halftone ('^c'), 4, unit = 4))
+        b.add (Tone (dorian.subsemitonium, 4, unit = 4))
         v2.add (b)
         b  = Bar (4, 4)
         b.add (Tone (dorian [7], 4, unit = 4))

@@ -17,6 +17,8 @@ class Gregorian (object) :
     e''
     >>> d [-1]
     C
+    >>> d.subsemitonium
+    ^c
     """
 
     def __init__ (self, ambitus) :
@@ -28,7 +30,7 @@ class Gregorian (object) :
     def subsemitonium (self) :
         """ Leading tone, German: Leitton
         """
-        FIXME
+        return self [7].transpose (-1)
     # end def subsemitonium
 
     @property
