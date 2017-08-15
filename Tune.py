@@ -55,6 +55,84 @@ class Halftone (autosuper) :
     # standard_pitch has halftone offset 0
     standard_pitch = 'A'
 
+    enharmonics = \
+        { '^B,' : 'C'
+        , '^C'  : '_D'
+        , '_C'  : 'B,'
+        , '^D'  : '_E'
+        , '^E'  : 'F'
+        , '_F'  : 'E'
+        , '^F'  : '_G'
+        , '^G'  : '_A'
+        , '^A'  : '_B'
+        , '^B'  : 'c'
+        , '_c'  : 'B'
+        }
+    # Add Reverse mappings
+    enharmonics.update \
+        ((v, k) for k, v in enharmonics.items () if v [0] in '^_')
+
+    fifth_up = dict \
+        (( ( 'C',   'G')
+         , ('^C',  '^G')
+         , ( 'D',   'A')
+         , ('^D',  '^A')
+         , ( 'E',   'B')
+         , ( 'F',   'c')
+         , ('^F',  '^c')
+         , ('_G',  '_d')
+         , ( 'G',   'd')
+         , ('^G',  '^d')
+         , ( 'A',   'e')
+         , ('^A',  '^e')
+         , ( 'B',  '^f')
+         , ( 'c',   'g')
+         , ('^c',  '^g')
+         , ( 'd',   'a')
+         , ('^d',  '^a')
+         , ( 'e',   'b')
+         , ( 'f',   "c'")
+         , ('^f',  "^c'")
+         , ('_g',  "_d'")
+         , ( 'g',   "d'")
+         , ('^g',  "^d'")
+         , ( 'a',   "e'")
+         , ('^a',  "^e'")
+         , ( 'b',  "^f'")
+        ))
+    fifth_up_inv = dict \
+        ((v, k) for k, v in fifth_up.items () if not v.startswith ('_'))
+    fifth_down = dict \
+        (( ( 'C',   'F,')
+         , ('_D',  '_G,')
+         , ( 'D',   'G,')
+         , ('_E',  '_A,')
+         , ( 'E',   'A,')
+         , ( 'F',  '_B,')
+         , ('^F',   'B,')
+         , ('_G',  '_C')
+         , ( 'G',   'C')
+         , ('_A',  '_D')
+         , ( 'A',   'D')
+         , ('_B',  '_E')
+         , ( 'B',   'E')
+         , ( 'c',   'F')
+         , ( 'd',   'G')
+         , ('_d',  '_G')
+         , ( 'e',   'A')
+         , ('_e',  '_A')
+         , ( 'f',  '_B')
+         , ('^f',   'b')
+         , ('_g',  '_c')
+         , ( 'g',   'c')
+         , ('_a',  '_d')
+         , ( 'a',   'd')
+         , ('_b',  '_e')
+         , ( 'b',   'e')
+        ))
+    fifth_down_inv = dict \
+        ((v, k) for k, v in fifth_down.items () if not v.startswith ('^'))
+
     reg = {}
 
     def register (self) :
@@ -85,6 +163,84 @@ class Halftone (autosuper) :
         return cls (name)
     # end def get
 
+    def enharmonic_equivalent (self) :
+        """ We return the enharmonic equivalent of the current Halftone.
+            Note that we only do this for tones with a flat or sharp
+            mark and we consider only single marks.
+        >>> halftone ('^b').enharmonic_equivalent ()
+        c'
+        >>> halftone ('^B').enharmonic_equivalent ()
+        c
+        >>> halftone ('^e').enharmonic_equivalent ()
+        f
+        >>> halftone ('^E').enharmonic_equivalent ()
+        F
+        >>> halftone ('^a').enharmonic_equivalent ()
+        _b
+        >>> halftone ('^A').enharmonic_equivalent ()
+        _B
+        >>> halftone ('^d').enharmonic_equivalent ()
+        _e
+        >>> halftone ('^D').enharmonic_equivalent ()
+        _E
+        >>> halftone ('^g').enharmonic_equivalent ()
+        _a
+        >>> halftone ('^G').enharmonic_equivalent ()
+        _A
+        >>> halftone ('^C').enharmonic_equivalent ()
+        _D
+        >>> halftone ('^C,,').enharmonic_equivalent ()
+        _D,,
+        >>> halftone ('^c').enharmonic_equivalent ()
+        _d
+        >>> halftone ('^f').enharmonic_equivalent ()
+        _g
+        >>> halftone ('^F').enharmonic_equivalent ()
+        _G
+        >>> halftone ('_f').enharmonic_equivalent ()
+        e
+        >>> halftone ('_F').enharmonic_equivalent ()
+        E
+        >>> halftone ('_c').enharmonic_equivalent ()
+        B
+        >>> halftone ('_C').enharmonic_equivalent ()
+        B,
+        >>> halftone ('_g').enharmonic_equivalent ()
+        ^f
+        >>> halftone ('_G').enharmonic_equivalent ()
+        ^F
+        >>> halftone ('_d').enharmonic_equivalent ()
+        ^c
+        >>> halftone ('_D').enharmonic_equivalent ()
+        ^C
+        >>> halftone ('_a').enharmonic_equivalent ()
+        ^g
+        >>> halftone ('_A').enharmonic_equivalent ()
+        ^G
+        >>> halftone ('_e').enharmonic_equivalent ()
+        ^d
+        >>> halftone ('_E').enharmonic_equivalent ()
+        ^D
+        >>> halftone ('_b').enharmonic_equivalent ()
+        ^a
+        >>> halftone ('_B').enharmonic_equivalent ()
+        ^A
+        """
+        name = self.name
+        if not name.startswith ('^') and not name.startswith ('_') :
+            return self
+        if name in self.enharmonics :
+            return self.get (self.enharmonics [name])
+        oct, off = divmod (self.offset, 12)
+        while off > 2 :
+            off -= 12
+            oct += 1
+        assert -10 <= off <= 2
+        tr = self.transpose_octaves (-oct)
+        assert tr.name in self.enharmonics
+        return tr.enharmonic_equivalent ().transpose_octaves (oct)
+    # end def enharmonic_equivalent
+
     def get_interval (self, offset) :
         """ Transpose the current Halftone by offset (in half-tones)
         >>> Halftone ("C").get_interval (-1)
@@ -93,11 +249,12 @@ class Halftone (autosuper) :
         B
         >>> Halftone ("c").get_interval (-2)
         ^A
-        >>> Halftone ("C,,,").get_interval (-1)
+
+        x>>> Halftone ("C,,,").get_interval (-1)
         B,,,,
-        >>> Halftone ("c'''").get_interval (-1)
+        x>>> Halftone ("c'''").get_interval (-1)
         b''
-        >>> Halftone ("c").get_interval (1)
+        x>>> Halftone ("c").get_interval (1)
         ^c
         """
         (octaves, offs) = divmod (offset, 12)
@@ -138,7 +295,76 @@ class Halftone (autosuper) :
         return self.get (symbol)
     # end get_interval
 
-    def transpose_octaves (self, octaves=1) :
+    def transpose_fifth (self, key = 'C', fifth = 1) :
+        """ Transpose by fifth (up or down).
+            Positive means up, negative down.
+            Note that the key is used internally for determining when we
+            need the enharmonic equivalent. Also note that we don't
+            output keys with more than 6 flats or 6 sharps. These are
+            using the enharmonic equivalent. For input we accept keys
+            with a maximum of 7 flats or sharps.
+        >>> h = halftone ('C')
+        >>> h.transpose_fifth ('C', 0)
+        C
+        >>> h.transpose_fifth ('C')
+        G
+
+        >>> for i in range (12) :
+        ...     h.transpose_fifth ('C', i)
+        C
+        G
+        d
+        a
+        e'
+        b'
+        ^f''
+        _d'''
+        _a'''
+        _e''''
+        _b''''
+        f'''''
+
+        >>> for i in range (12) :
+        ...     h.transpose_fifth ('C', -i)
+        C
+        F,
+        _B,,
+        _E,,
+        _A,,,
+        _D,,,
+        _G,,,,
+        B,,,,,
+        E,,,,,
+        A,,,,,,
+        D,,,,,,
+        G,,,,,,,
+        """
+        ht   = self
+        oct  = 0
+        key  = Key (key)
+        while fifth :
+            if key.offset >= 6 and fifth > 0 or key.offset <= -6 and fifth < 0 :
+                ht = ht.enharmonic_equivalent ()
+            if "," in ht.name or "'" in ht.name or ht.offset > 3 :
+                oc, off = divmod (ht.offset, 12)
+                oct += oc
+                ht = ht.transpose_octaves (-oc)
+                if ht.offset > 8 :
+                    ht = ht.transpose_octaves (-1)
+                    oct += 1
+            lt  = [self.fifth_up, self.fifth_down]        [fifth < 0]
+            lti = [self.fifth_down_inv, self.fifth_up_inv][fifth < 0]
+            n   = lt.get (ht.name)
+            if not n :
+                n = lti.get (ht.name)
+            assert n
+            ht  = halftone (n)
+            key = key.transpose (sgn (fifth))
+            fifth -= sgn (fifth)
+        return ht.transpose_octaves (oct)
+    # end def transpose_fifth
+
+    def transpose_octaves (self, octaves = 1) :
         """ Transpose given tune by given number of octaves.
             Positive means up, negative down.
         >>> h = halftone ('^C')
@@ -255,6 +481,150 @@ class Meter (autosuper) :
     # end def __str__
 
 # end class Meter
+
+class Key (object) :
+    """ Model a key, either major or minor or one of the gregorian modes
+    >>> key = Key.get ('E')
+    >>> key.transpose (-12)
+    E
+    >>> key.transpose (12)
+    E
+    >>> key.transpose (48)
+    E
+    >>> key.transpose (-1)
+    A
+    >>> key.transpose (-2)
+    D
+    >>> key.transpose (-3)
+    G
+    >>> key.transpose (-4)
+    C
+    >>> key.transpose (-5)
+    F
+    >>> key.transpose (-6)
+    Bb
+    >>> key.transpose (-7)
+    Eb
+    >>> key.transpose (-8)
+    Ab
+    >>> key.transpose (-9)
+    Db
+    >>> key.transpose (-10)
+    Gb
+    >>> key.transpose (-11)
+    B
+    >>> key.transpose (1)
+    B
+    >>> key.transpose (2)
+    F#
+    >>> key.transpose (3)
+    Db
+    >>> key.transpose (4)
+    Ab
+    >>> key.transpose (5)
+    Eb
+    >>> key.transpose (6)
+    Bb
+    >>> key.transpose (7)
+    F
+    >>> key.transpose (8)
+    C
+    >>> key.transpose (9)
+    G
+    >>> key.transpose (10)
+    D
+    >>> key.transpose (11)
+    A
+    >>> Key.get ('Cb').transpose (0)
+    B
+    >>> Key.get ('C#').transpose (0)
+    Db
+    >>> Key.get ('Gb').transpose (12)
+    F#
+    >>> Key.get ('Gb').transpose (-12)
+    Gb
+    >>> Key.get ('F#').transpose (-12)
+    Gb
+    >>> Key.get ('F#').transpose (12)
+    F#
+    """
+
+    ionian = major = \
+        ( 'Cb', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F'
+        , 'C',  'G',  'D',  'A',  'E',  'B',  'F#', 'C#'
+        )
+    aeolian = minor = \
+        ( 'A#m', 'D#m', 'G#m', 'C#m', 'F#m', 'Bm',  'Em'
+        , 'Am',  'Dm',  'Gm',  'Cm',  'Fm',  'Bbm', 'Ebm', 'Abm',
+        )
+    mixolydian = \
+        ( 'G#Mix', 'C#Mix', 'F#Mix', 'BMix',  'EMix',  'AMix',  'DMix'
+        , 'GMix',  'CMix',  'FMix',  'BbMix', 'EbMix', 'AbMix', 'DbMix', 'GbMix'
+        )
+    dorian = \
+        ( 'D#Dor', 'G#Dor', 'C#Dor', 'F#Dor', 'BDor',  'EDor',  'ADor'
+        , 'DDor',  'GDor',  'CDor',  'FDor',  'BbDor', 'EbDor', 'AbDor', 'DbDor'
+        )
+    phrygian = \
+        ( 'E#Phr', 'A#Phr', 'D#Phr', 'G#Phr', 'C#Phr', 'F#Phr', 'BPhr'
+        , 'EPhr',  'APhr',  'DPhr',  'GPhr',  'CPhr',  'FPhr',  'BbPhr', 'EbPhr'
+        )
+    lydian = \
+        ( 'F#Lyd', 'BLyd',  'ELyd',  'ALyd',  'DLyd',  'GLyd',  'CLyd'
+        , 'FLyd',  'BbLyd', 'EbLyd', 'AbLyd', 'DbLyd', 'GbLyd', 'CbLyd', 'FbLyd'
+        )
+    locrian = \
+        ( 'B#Loc', 'E#Loc', 'A#Loc', 'D#Loc', 'G#Loc', 'C#Loc', 'F#Loc'
+        , 'BLoc',  'ELoc',  'ALoc',  'DLoc',  'GLoc',  'CLoc',  'FLoc', 'BbLoc'
+        )
+    modes = ( 'ionian', 'major', 'aeolian', 'minor', 'mixolydian'
+            , 'dorian', 'phrygian', 'lydian', 'locrian'
+            )
+
+    table = {}
+    reg   = {}
+
+    def __init__ (self, name) :
+        self.mode, self.offset = self.table [name]
+        self.name = name
+    # end def __init__
+
+    @classmethod
+    def get (cls, name) :
+        """ Implement sort-of singleton
+        """
+        if name in cls.reg :
+            return cls.reg [name]
+        return cls (name)
+    # end def get
+
+    def transpose (self, n_fifth) :
+        """ Note that on transposition we never return something with
+            more than 6 flats or sharps. This can be used to transpose
+            something with 7 sharps or 7 flats to something with 5 flats
+            or 5 sharps, respectively. If we transpose up, we prefer
+            sharps, if we transpose down we prefer flats.
+            To get the enharmonic equivalent of something with 6 sharps
+            or flats transpose up or down by a multiple of 12.
+        """
+        t = (self.offset + n_fifth) % 12
+        if t > 6 :
+            t -= 12
+        if t == 6 and n_fifth < 0 :
+            t = -6
+        return self.get (getattr (self, self.mode) [t + 7])
+    # end def transpose
+
+    def __str__ (self) :
+        return self.name
+    # end def __str__
+    __repr__ = __str__
+
+# end class Key
+
+for m in Key.modes :
+    for n, name in enumerate (getattr (Key, m)) :
+        Key.table [name] = (m, n - 7)
 
 class Bar (autosuper) :
 
