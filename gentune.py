@@ -142,7 +142,7 @@ class Create_Contrapunctus (PGA) :
             ( number = 1
             , meter  = Meter (4, 4)
             , Q      = '1/4=370'
-            , key    = 'C'
+            , key    = 'DDor'
             , unit   = 4
             , score  = '(V2) (V1)'
             )
@@ -165,6 +165,8 @@ class Create_Contrapunctus (PGA) :
 
     def print_string (self, file, p, pop) :
         tune = self.gen (p, pop)
+        if self.args.transpose :
+            tune = tune.transpose (self.args.transpose)
         print (tune, file = file)
     # end def print_string
 
@@ -183,6 +185,12 @@ def main () :
         , help    = "Length of generated tune"
         , type    = int
         , default = 11
+        )
+    cmd.add_argument \
+        ( "-t", "--transpose"
+        , help    = "Number of halftones to transpose resulting tune"
+        , type    = int
+        , default = 0
         )
     args = cmd.parse_args ()
     cp = Create_Contrapunctus (args)

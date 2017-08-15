@@ -10,6 +10,29 @@ def sgn (i) :
     return 0
 # end def sgn
 
+def transpose_steps_to_fifth (steps) :
+    """ Determine by how many fifth to transpose to reach the given
+        number of halftone-steps.
+        Note that a fifth has 7 halftones and the multiplicative
+        inverse of 7 mod 12 is again 7:
+        7 * 7 = 49 -> mod 12 -> 1
+        So to divide by 7 mod 12 we can multiply by 7.
+        transpose_steps_to_fifth (1)
+        -5
+        transpose_steps_to_fifth (-1)
+        5
+        transpose_steps_to_fifth (7)
+        1
+        transpose_steps_to_fifth (-2)
+        -2
+    """
+    nfifth = (7 * steps) % 12
+    if nfifth > 6 :
+        nfifth = nfifth - 12
+    assert (nfifth * 7 - steps) % 12 == 0
+    return nfifth
+# end def transpose_steps_to_fifth
+
 class Halftone (autosuper) :
     """ Model a halftone with abc notation
         We have a table of the first two octaves and extrapolate the
@@ -355,9 +378,6 @@ class Halftone (autosuper) :
             Positive is up.
             We determine the number of fifth to transpose and decide how
             many octaves we must use to compensate.
-            Note that a fifth has 7 halftones and the multiplicative
-            inverse of 7 mod 12 is again 7. So to divide by 7 mod 12 we
-            can multiply by 7.
             We use this complicated method of transposing by fifth to
             keep the correct enharmonic equivalence. When transposing
             up, sharps are preferred while when transposing down, flats
@@ -384,10 +404,7 @@ class Halftone (autosuper) :
         _G
         """
         key = Key.get (key)
-        nfifth = (7 * steps) % 12
-        if nfifth > 6 :
-            nfifth = nfifth - 12
-        assert (nfifth * 7 - steps) % 12 == 0
+        nfifth = transpose_steps_to_fifth (steps)
         oct  = - (nfifth * 7 - steps) // 12
         ht   = self.transpose_octaves (oct)
         ht   = ht.transpose_fifth (nfifth, key)
@@ -438,6 +455,14 @@ class Tone (Bar_Object) :
         return "%s%s" % (self.halftone.name, self.length (unit))
     # end def as_abc
 
+    def transpose (self, steps, key = 'C') :
+        return self.__class__ \
+            ( self.halftone.transpose (steps, key)
+            , duration = self.duration
+            , unit     = self.unit
+            )
+    # end def transpose
+
 # end class Tone
 
 class Pause (Bar_Object) :
@@ -445,6 +470,10 @@ class Pause (Bar_Object) :
     def as_abc (self, unit = None) :
         return "z%s" % (self.length (unit))
     # end def as_abc
+
+    def transpose (self, steps, key = 'C') :
+        return self
+    # end def transpose
 
 # end class Pause
 
@@ -541,6 +570,10 @@ class Key (object) :
     Gb
     >>> Key.get ('F#').transpose (12)
     F#
+    >>> Key.get ('C').transpose (-2)
+    Bb
+    >>> Key.get ('DDor').transpose (-2)
+    CDor
     """
 
     ionian = major = \
@@ -548,28 +581,28 @@ class Key (object) :
         , 'C',  'G',  'D',  'A',  'E',  'B',  'F#', 'C#'
         )
     aeolian = minor = \
-        ( 'A#m', 'D#m', 'G#m', 'C#m', 'F#m', 'Bm',  'Em'
-        , 'Am',  'Dm',  'Gm',  'Cm',  'Fm',  'Bbm', 'Ebm', 'Abm',
+        ( 'Abm', 'Ebm', 'Bbm', 'Fm',  'Cm',  'Gm',  'Dm'
+        , 'Am',  'Em',  'Bm',  'F#m', 'C#m', 'G#m', 'D#m', 'A#m'
         )
     mixolydian = \
-        ( 'G#Mix', 'C#Mix', 'F#Mix', 'BMix',  'EMix',  'AMix',  'DMix'
-        , 'GMix',  'CMix',  'FMix',  'BbMix', 'EbMix', 'AbMix', 'DbMix', 'GbMix'
+        ( 'GbMix', 'DbMix', 'AbMix', 'EbMix', 'BbMix', 'FMix',  'CMix'
+        , 'GMix',  'DMix',  'AMix',  'EMix',  'BMix',  'F#Mix', 'C#Mix', 'G#Mix'
         )
     dorian = \
-        ( 'D#Dor', 'G#Dor', 'C#Dor', 'F#Dor', 'BDor',  'EDor',  'ADor'
-        , 'DDor',  'GDor',  'CDor',  'FDor',  'BbDor', 'EbDor', 'AbDor', 'DbDor'
+        ( 'DbDor', 'AbDor', 'EbDor', 'BbDor', 'FDor',  'CDor',  'GDor'
+        , 'DDor',  'ADor',  'EDor',  'BDor',  'F#Dor', 'C#Dor', 'G#Dor', 'D#Dor'
         )
     phrygian = \
-        ( 'E#Phr', 'A#Phr', 'D#Phr', 'G#Phr', 'C#Phr', 'F#Phr', 'BPhr'
-        , 'EPhr',  'APhr',  'DPhr',  'GPhr',  'CPhr',  'FPhr',  'BbPhr', 'EbPhr'
+        ( 'EbPhr', 'BbPhr', 'FPhr',  'CPhr',  'GPhr',  'DPhr',  'APhr'
+        , 'EPhr',  'BPhr',  'F#Phr', 'C#Phr', 'G#Phr', 'D#Phr', 'A#Phr', 'E#Phr'
         )
     lydian = \
-        ( 'F#Lyd', 'BLyd',  'ELyd',  'ALyd',  'DLyd',  'GLyd',  'CLyd'
-        , 'FLyd',  'BbLyd', 'EbLyd', 'AbLyd', 'DbLyd', 'GbLyd', 'CbLyd', 'FbLyd'
+        ( 'FbLyd', 'CbLyd', 'GbLyd', 'DbLyd', 'AbLyd', 'EbLyd', 'BbLyd'
+        , 'FLyd',  'CLyd',  'GLyd',  'DLyd',  'ALyd',  'ELyd',  'BLyd', 'F#Lyd'
         )
     locrian = \
-        ( 'B#Loc', 'E#Loc', 'A#Loc', 'D#Loc', 'G#Loc', 'C#Loc', 'F#Loc'
-        , 'BLoc',  'ELoc',  'ALoc',  'DLoc',  'GLoc',  'CLoc',  'FLoc', 'BbLoc'
+        ( 'BbLoc', 'FLoc',  'CLoc',  'GLoc',  'DLoc',  'ALoc',  'ELoc'
+        , 'BLoc',  'F#Loc', 'C#Loc', 'G#Loc', 'D#Loc', 'A#Loc', 'E#Loc', 'B#Loc'
         )
     modes = ( 'ionian', 'major', 'aeolian', 'minor', 'mixolydian'
             , 'dorian', 'phrygian', 'lydian', 'locrian'
@@ -628,6 +661,7 @@ class Bar (autosuper) :
         self.duration = Rational (duration)
         self.dur_sum  = Rational (0)
         self.objects  = []
+        self.unit     = unit
         for b in bar_object :
             self.add (b)
     # end def __init__
@@ -648,6 +682,13 @@ class Bar (autosuper) :
         r.append ('|')
         return ' '.join (r)
     # end def as_abc
+
+    def transpose (self, steps, key = 'C') :
+        b = self.__class__ (self.duration, self.unit)
+        for o in self.objects :
+            b.add (o.transpose (steps, key))
+        return b
+    # end def transpose
 
 # end class Bar
 
@@ -686,6 +727,13 @@ class Voice (autosuper) :
         return 'V:%s %s' % (self.id, ' '.join (prp))
     # end def as_abc_header
 
+    def transpose (self, steps, key = 'C') :
+        v = self.__class__ (self.id, **self.properties)
+        for b in self.bars :
+            v.add (b.transpose (steps, key))
+        return v
+    # end def transpose
+
 # end class Voice
 
 class Tune (autosuper) :
@@ -699,7 +747,7 @@ class Tune (autosuper) :
         ) :
         self.voices = []
         self.meter  = meter
-        self.key    = key
+        self.key    = Key.get (key)
         self.title  = title
         self.number = number
         self.kw     = kw
@@ -723,7 +771,6 @@ class Tune (autosuper) :
                 r.append ('%s: %s' % (k, self.kw [k]))
             else :
                 r.append ('%%%%%s %s' % (k, self.kw [k]))
-        r.append ("M: %s" % self.meter)
         r.append ("L: %s" % (Rational (1) // self.unit))
         for v in self.voices :
             h = v.as_abc_header ()
@@ -758,6 +805,16 @@ class Tune (autosuper) :
             for bo in bar.objects :
                 yield bo
     # end def iter
+
+    def transpose (self, steps) :
+        fifth = transpose_steps_to_fifth (steps)
+        k = self.key.transpose (fifth)
+        t = self.__class__ \
+            (self.meter, k, self.title, self.number, self.unit, **self.kw)
+        for v in self.voices :
+            t.add (v.transpose (steps, self.key))
+        return t
+    # end def transpose
 
     def __str__ (self) :
         return self.as_abc ()
