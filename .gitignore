@@ -2,3 +2,7 @@
 *.pyo
 .*.swp
 Out.ps
+*.abc
+*.mid
+*.ps
+*.pdf
