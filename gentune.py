@@ -41,7 +41,7 @@ class Create_Contrapunctus (PGA) :
             , init          = [(0,7)] * self.v1length + [(0,16)] * self.v2length
             , random_seed   = self.args.random_seed
             , pop_size      = 500
-            , num_replace   = 250
+            , num_replace   = 450
             , print_options = [PGA_REPORT_STRING, PGA_REPORT_ONLINE]
             , stopping_rule_types = stop_on
             )
@@ -94,11 +94,11 @@ class Create_Contrapunctus (PGA) :
                 prim_seen = True
             # 0.1.2: no seventh (Septime)
             for i in range (2) :
-                if 10 <= diff [i] <= 11 :
+                if 10 <= diff [i] % 12 <= 11 :
                     badness *= 10.0
             # 0.1.2: no Devils interval:
             for i in range (2) :
-                if diff [i] == 6 :
+                if diff [i] % 12 == 6 :
                     badness *= 10.0
             # First voice (Cantus Firmus):
             if diff [0] > 2 :
@@ -132,14 +132,16 @@ class Create_Contrapunctus (PGA) :
                 badness *= 10.0
             # Prime or Sekund between tones
             # 1.2: Use no unisons except at the beginning or end.
-            if 0 <= dist <= 2 :
+            if dist == 0 :
+                badness *= 10.0
+            if 1 <= dist % 12 <= 2 :
                 badness *= 10.0
             # 1.4: Avoid moving in parallel fourths (In practice
             # Palestrina and others frequently allowed themselves such
-            # progressions, especially if the do not involve the lowest
+            # progressions, especially if they do not involve the lowest
             # of the parts)
             # Magdalena: 5/6 verboten
-            if 5 <= dist <= 6 :
+            if 5 <= dist % 12 <= 6 :
                 badness *= 10.0
             # Magdalena: 10/11 verboten
             if 10 <= dist <= 11 :
@@ -151,8 +153,11 @@ class Create_Contrapunctus (PGA) :
             # 1.6: Attempt to keep any two adjacent parts within a tenth
             # of each other, unless an exceptionally pleasing line can
             # be written by moving outside of that range.
-            if dist > 14 :
+            if dist > 16 :
                 badness *= 10.0
+            # Magdalena: intervals above octave should be avoided
+            if dist > 12 :
+                uglyness += 1
             # Upper voice must be *up*
             if dist < 0 :
                 badness *= 10.0
@@ -167,6 +172,10 @@ class Create_Contrapunctus (PGA) :
             if 3 <= dist <= 4 or 8 <= dist <= 9 :
                 if dir [0] == dir [1] == 0 :
                     uglyness += 3
+            # Generally it's better that voices move in opposite
+            # direction (or one stays the same if allowed)
+            if dir [0] == dir [1] :
+                uglyness += 0.1
             last = tone
         return uglyness * badness
     # end def evaluate
