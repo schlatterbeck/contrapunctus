@@ -17,6 +17,25 @@ Some more articles on musical theory:
 https://de.wikipedia.org/wiki/Kirchentonart
 https://de.wikipedia.org/wiki/Quintenzirkel
 
+Testing
+-------
+
+For testing we're using pytest. You can run the tests with::
+
+    python3 -m pytest test
+
+Coverage
+++++++++
+
+The test coverage can be computed with::
+
+    python3 -m pytest -cov contrapunctus test
+
+or more verbose (including a report about untested lines) with::
+
+    python3 -m pytest --cov-report term-missing --cov contrapunctus test
+
+Of course as of this writing the coverage is very poor.
 
 Regeln für Cantus Firmus
 ------------------------

@@ -1,12 +1,16 @@
 #!/usr/bin/python3
 
-from Tune import halftone
+from .tune import halftone
 
 class Gregorian (object):
     """
     >>> d = dorian
     >>> d [0]
     D
+    >>> d.finalis
+    D
+    >>> d.step2
+    E
     >>> d [12]
     b
     >>> d [13]

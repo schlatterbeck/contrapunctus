@@ -4,14 +4,11 @@ from   __future__ import print_function
 
 import sys
 import pga
-from   Tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
-from   gregorian import dorian
-from   pga       import PGA, PGA_REPORT_STRING, PGA_REPORT_ONLINE, PGA_NEWPOP
-from   pga       import PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR
-from   argparse  import ArgumentParser
-from   rsclib.iter_recipes import zip
+from   .tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
+from   .gregorian import dorian
+from   argparse   import ArgumentParser
 
-class Create_Contrapunctus (PGA):
+class Create_Contrapunctus (pga.PGA):
 
     """ The rules for counterpoint are taken partly from wikipedia
         "Counterpoint" article (in particular "species counterpoint"),
@@ -34,15 +31,19 @@ class Create_Contrapunctus (PGA):
         # Length of the automatically-generated voices
         self.v1length   = self.tunelength - 3
         self.v2length   = self.tunelength - 2
-        stop_on = [PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR]
-        super (self.__class__, self).__init__ \
+        stop_on = \
+            [ pga.PGA_STOP_NOCHANGE
+            , pga.PGA_STOP_MAXITER
+            , pga.PGA_STOP_TOOSIMILAR
+            ]
+        super ().__init__ \
             ( type (2), self.v1length + self.v2length
             , maximize      = False
             , init          = [(0,7)] * self.v1length + [(0,16)] * self.v2length
             , random_seed   = self.args.random_seed
             , pop_size      = 500
             , num_replace   = 450
-            , print_options = [PGA_REPORT_STRING, PGA_REPORT_ONLINE]
+            , print_options = [pga.PGA_REPORT_STRING, pga.PGA_REPORT_ONLINE]
             , stopping_rule_types = stop_on
             )
     # end def __init__
@@ -50,7 +51,7 @@ class Create_Contrapunctus (PGA):
     def evaluate (self, p, pop):
         jumpcount  = 0.0
         badness    = 1.0
-        tune       = self.gen (p, pop)
+        tune       = self.phenotype (p, pop)
         last       = ()
         jump       = [False, False]
         uglyness   = 1.0
@@ -195,17 +196,17 @@ class Create_Contrapunctus (PGA):
                     if idx + offs + 1 > len (self):
                         raise ValueError ("Line %s: Gene too long" % ln)
                     i = int (i.strip ().lstrip ('[').rstrip (']').strip ())
-                    self.set_allele (1, PGA_NEWPOP, idx + offs, i)
+                    self.set_allele (1, pga.PGA_NEWPOP, idx + offs, i)
                 idx += offs + 1
                 if idx + 1 > len (self):
                     break
             else:
                 raise ValueError ("Line %s: Gene too short" % ln)
-        self.print_string (sys.stdout, 1, PGA_NEWPOP)
-        print (self.evaluate (1, PGA_NEWPOP))
+        self.print_string (sys.stdout, 1, pga.PGA_NEWPOP)
+        print (self.evaluate (1, pga.PGA_NEWPOP))
     # end def from_gene
 
-    def gen (self, p, pop):
+    def phenotype (self, p, pop):
         v1 = Voice (id = 'V1')
         b  = Bar (4, 4)
         b.add (Tone (dorian.finalis, 4, unit = 4))
@@ -260,14 +261,15 @@ class Create_Contrapunctus (PGA):
         v2.add (b)
         tune.add (v2)
         return tune
-    # end def gen
+    # end def phenotype
 
     def print_string (self, file, p, pop):
-        tune = self.gen (p, pop)
+        tune = self.phenotype (p, pop)
         if self.args.transpose:
             tune = tune.transpose (self.args.transpose)
         print (tune, file = file)
-        super (self.__class__, self).print_string (file, p, pop)
+        file.flush ()
+        super ().print_string (file, p, pop)
     # end def print_string
 
 # end class Create_Contrapunctus
