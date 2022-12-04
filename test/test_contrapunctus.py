@@ -8,8 +8,9 @@ import contrapunctus.tune
 import contrapunctus.circle
 import contrapunctus.gentune
 import contrapunctus.gregorian
-
-from contrapunctus.tune  import Voice, Bar, Tone, Tune, Pause, halftone, Meter
+from pga.testsupport import PGA_Test_Instrumentation
+from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
+from contrapunctus.gentune import main as gentune_main
 
 tune_output = """\
 X: 1
@@ -28,9 +29,11 @@ K: Gm
 [V:B1] z8 |z2 f2 g2 a2 |b2 z2 z2 e2 |f4 f2 z2 |
 """
 
-class Test_Contrapunctus:
+class Test_Contrapunctus (PGA_Test_Instrumentation):
 
     def test_tune (self):
+        if pytest.mpi_rank != 0:
+            return
         v1 = Voice (id = 'T1', clef='treble-8', name='Tenore I', snm='T.I')
         b1 = Bar (8, 8)
         b1.add (Tone (halftone ('B'), 2))
@@ -120,6 +123,12 @@ class Test_Contrapunctus:
         t.add (v3)
         assert t.as_abc ().strip () == tune_output.strip ()
     # end def test_tune
+
+    def test_gentune (self):
+        gentune_main (self.out_options)
+        self.compare ()
+    # end def test_gentune
+
 # end class Test_Contrapunctus
 
 class Test_Doctest:

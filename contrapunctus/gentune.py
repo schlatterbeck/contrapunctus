@@ -36,16 +36,18 @@ class Create_Contrapunctus (pga.PGA):
             , pga.PGA_STOP_MAXITER
             , pga.PGA_STOP_TOOSIMILAR
             ]
-        super ().__init__ \
-            ( type (2), self.v1length + self.v2length
-            , maximize      = False
+        d = dict \
+            ( maximize      = False
             , init          = [(0,7)] * self.v1length + [(0,16)] * self.v2length
             , random_seed   = self.args.random_seed
             , pop_size      = 500
             , num_replace   = 450
-            , print_options = [pga.PGA_REPORT_STRING, pga.PGA_REPORT_ONLINE]
+            , print_options = [pga.PGA_REPORT_STRING]
             , stopping_rule_types = stop_on
             )
+        if self.args.output_file:
+            d ['output_file'] = args.output_file
+        super ().__init__ (type (2), self.v1length + self.v2length, **d)
     # end def __init__
 
     def evaluate (self, p, pop):
@@ -184,8 +186,14 @@ class Create_Contrapunctus (pga.PGA):
     def from_gene (self):
         idx = 0
         with open (self.args.gene_file, 'r') as f:
+            c = 0
+            if self.args.best_eval:
+                for n, line in enumerate (f):
+                    if line.startswith ('The Best String:'):
+                        c = n
+                        break
             for n, line in enumerate (f):
-                ln = n + 1
+                ln = n + 1 + c
                 if not line.startswith ('#'):
                     continue
                 i, l = line [1:].split (':')
@@ -203,7 +211,8 @@ class Create_Contrapunctus (pga.PGA):
             else:
                 raise ValueError ("Line %s: Gene too short" % ln)
         self.print_string (sys.stdout, 1, pga.PGA_NEWPOP)
-        print (self.evaluate (1, pga.PGA_NEWPOP))
+        if self.args.verbose:
+            print (self.evaluate (1, pga.PGA_NEWPOP))
     # end def from_gene
 
     def phenotype (self, p, pop):
@@ -277,11 +286,16 @@ class Create_Contrapunctus (pga.PGA):
 def main (argv = None):
     cmd = ArgumentParser ()
     cmd.add_argument \
+        ( "-b", "--best-eval"
+        , help    = "Asume a search trace for -g option and output best"
+        , action  = 'store_true'
+        )
+    cmd.add_argument \
         ( "-g", "--gene-file"
         , help    = "Read gene-file and output phenotype, no searching"
         )
     cmd.add_argument \
-        ( "-r", "--random-seed"
+        ( "-R", "--random-seed"
         , help    = "Random seed initialisation for reproduceable results"
         , type    = int
         , default = 23
@@ -293,10 +307,19 @@ def main (argv = None):
         , default = 11
         )
     cmd.add_argument \
+        ( "-O", "--output-file"
+        , help    = "Output file for progress information"
+        )
+    cmd.add_argument \
         ( "-t", "--transpose"
         , help    = "Number of halftones to transpose resulting tune"
         , type    = int
         , default = 0
+        )
+    cmd.add_argument \
+        ( "-v", "--verbose"
+        , help    = "Verbose output of gene string with -g"
+        , action  = 'store_true'
         )
     args = cmd.parse_args (argv)
     cp = Create_Contrapunctus (args)
