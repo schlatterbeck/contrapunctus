@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
-from rsclib.Rational import Rational
-from tone            import Voice, Bar, Tone, Tune, Pause, halftone, Meter
+from contrapunctus.Tune  import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 
 v1 = Voice (id = 'T1', clef='treble-8', name='Tenore I', snm='T.I')
 b1 = Bar (8, 8)

@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from Tune import halftone
 
-class Gregorian (object) :
+class Gregorian (object):
     """
     >>> d = dorian
     >>> d [0]
@@ -21,33 +21,33 @@ class Gregorian (object) :
     ^c
     """
 
-    def __init__ (self, ambitus) :
+    def __init__ (self, ambitus):
         assert len (ambitus) == 7
         self.ambitus = [halftone (x) for x in ambitus]
     # end def __init__
 
     @property
-    def subsemitonium (self) :
+    def subsemitonium (self):
         """ Leading tone, German: Leitton
         """
         return self [7].transpose (-1)
     # end def subsemitonium
 
     @property
-    def finalis (self) :
+    def finalis (self):
         return self.ambitus [0]
     # end def finalis
 
     @property
-    def step2 (self) :
+    def step2 (self):
         return self [1]
     # end def step2
 
-    def __getitem__ (self, idx) :
+    def __getitem__ (self, idx):
         """ Get halftone with index idx from our tones, note that we
             synthesize tones outside the given ambitus dynamically.
         """
-        if 0 <= idx < len (self.ambitus) :
+        if 0 <= idx < len (self.ambitus):
             return self.ambitus [idx]
         d, m = divmod (idx, 7)
         return self.ambitus [m].transpose_octaves (d)

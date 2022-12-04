@@ -1,16 +1,17 @@
+#!/usr/bin/python3
 from __future__ import division
 from rsclib.Rational  import Rational
 from rsclib.autosuper import autosuper
 
-def sgn (i) :
-    if i > 0 :
+def sgn (i):
+    if i > 0:
         return 1
-    if i < 0 :
+    if i < 0:
         return -1
     return 0
 # end def sgn
 
-def transpose_steps_to_fifth (steps) :
+def transpose_steps_to_fifth (steps):
     """ Determine by how many fifth to transpose to reach the given
         number of halftone-steps.
         Note that a fifth has 7 halftones and the multiplicative
@@ -27,13 +28,13 @@ def transpose_steps_to_fifth (steps) :
         -2
     """
     nfifth = (7 * steps) % 12
-    if nfifth > 6 :
+    if nfifth > 6:
         nfifth = nfifth - 12
     assert (nfifth * 7 - steps) % 12 == 0
     return nfifth
 # end def transpose_steps_to_fifth
 
-class Halftone (autosuper) :
+class Halftone (autosuper):
     """ Model a halftone with abc notation
         We have a table of the first two octaves and extrapolate the
         rest.
@@ -94,7 +95,7 @@ class Halftone (autosuper) :
         }
     # Add Reverse mappings
     enharmonics.update \
-        ((v, k) for k, v in enharmonics.items () if v [0] in '^_')
+        ((v, k) for k, v in list (enharmonics.items ()) if v [0] in '^_')
 
     fifth_up = dict \
         (( ( 'C',   'G')
@@ -159,18 +160,18 @@ class Halftone (autosuper) :
 
     reg = {}
 
-    def register (self) :
+    def register (self):
         self.reg [self.name] = self
     # end def register
 
-    def __init__ (self, name) :
+    def __init__ (self, name):
         tr = 0
         ln = name
-        while ln.endswith (',') :
+        while ln.endswith (','):
             ln = ln [:-1]
             tr = tr - 12
         assert not ln.endswith ("'") or tr == 0
-        while ln.endswith ("'") :
+        while ln.endswith ("'"):
             ln = ln [:-1]
             tr = tr + 12
         self.offset = self.symbols [ln] + tr
@@ -179,15 +180,15 @@ class Halftone (autosuper) :
     # end def __init__
 
     @classmethod
-    def get (cls, name) :
+    def get (cls, name):
         """ Implement sort-of singleton
         """
-        if name in cls.reg :
+        if name in cls.reg:
             return cls.reg [name]
         return cls (name)
     # end def get
 
-    def enharmonic_equivalent (self) :
+    def enharmonic_equivalent (self):
         """ We return the enharmonic equivalent of the current Halftone.
             Note that we only do this for tones with a flat or sharp
             mark and we consider only single marks.
@@ -251,12 +252,12 @@ class Halftone (autosuper) :
         ^A
         """
         name = self.name
-        if not name.startswith ('^') and not name.startswith ('_') :
+        if not name.startswith ('^') and not name.startswith ('_'):
             return self
-        if name in self.enharmonics :
+        if name in self.enharmonics:
             return self.get (self.enharmonics [name])
         oct, off = divmod (self.offset, 12)
-        while off > 2 :
+        while off > 2:
             off -= 12
             oct += 1
         assert -10 <= off <= 2
@@ -265,7 +266,7 @@ class Halftone (autosuper) :
         return tr.enharmonic_equivalent ().transpose_octaves (oct)
     # end def enharmonic_equivalent
 
-    def transpose_fifth (self, fifth = 1, key = 'C') :
+    def transpose_fifth (self, fifth = 1, key = 'C'):
         """ Transpose by fifth (up or down).
             Positive means up, negative down.
             Note that the key is used internally for determining when we
@@ -279,7 +280,7 @@ class Halftone (autosuper) :
         >>> h.transpose_fifth ()
         G
 
-        >>> for i in range (12) :
+        >>> for i in range (12):
         ...     h.transpose_fifth (i, 'C')
         C
         G
@@ -294,7 +295,7 @@ class Halftone (autosuper) :
         _b''''
         f'''''
 
-        >>> for i in range (12) :
+        >>> for i in range (12):
         ...     h.transpose_fifth (-i , 'C')
         C
         F,
@@ -312,20 +313,20 @@ class Halftone (autosuper) :
         ht   = self
         oct  = 0
         key  = Key.get (key)
-        while fifth :
-            if key.offset >= 6 and fifth > 0 or key.offset <= -6 and fifth < 0 :
+        while fifth:
+            if key.offset >= 6 and fifth > 0 or key.offset <= -6 and fifth < 0:
                 ht = ht.enharmonic_equivalent ()
-            if "," in ht.name or "'" in ht.name or ht.offset > 3 :
+            if "," in ht.name or "'" in ht.name or ht.offset > 3:
                 oc, off = divmod (ht.offset, 12)
                 oct += oc
                 ht = ht.transpose_octaves (-oc)
-                if ht.offset > 8 :
+                if ht.offset > 8:
                     ht = ht.transpose_octaves (-1)
                     oct += 1
             lt  = [self.fifth_up, self.fifth_down]        [fifth < 0]
             lti = [self.fifth_down_inv, self.fifth_up_inv][fifth < 0]
             n   = lt.get (ht.name)
-            if not n :
+            if not n:
                 n = lti.get (ht.name)
             assert n
             ht  = halftone (n)
@@ -334,7 +335,7 @@ class Halftone (autosuper) :
         return ht.transpose_octaves (oct)
     # end def transpose_fifth
 
-    def transpose_octaves (self, octaves = 1) :
+    def transpose_octaves (self, octaves = 1):
         """ Transpose given tune by given number of octaves.
             Positive means up, negative down.
         >>> h = halftone ('^C')
@@ -354,26 +355,26 @@ class Halftone (autosuper) :
         ^C
         """
         n = self.name
-        if octaves > 0 :
-            for i in range (octaves) :
-                if n.endswith (",") :
+        if octaves > 0:
+            for i in range (octaves):
+                if n.endswith (","):
                     n = n [:-1]
-                elif n.lower () != n :
+                elif n.lower () != n:
                     n = n.lower ()
-                else :
+                else:
                     n = n + "'"
         elif octaves < 0:
-            for i in range (abs (octaves)) :
-                if n.endswith ("'") :
+            for i in range (abs (octaves)):
+                if n.endswith ("'"):
                     n = n [:-1]
-                elif n.upper () != n :
+                elif n.upper () != n:
                     n = n.upper ()
-                else :
+                else:
                     n = n + ","
         return self.get (n)
     # end def transpose_octaves
 
-    def transpose (self, steps, key = 'C') :
+    def transpose (self, steps, key = 'C'):
         """ Transpose by given number of halftone steps.
             Positive is up.
             We determine the number of fifth to transpose and decide how
@@ -409,32 +410,32 @@ class Halftone (autosuper) :
         ht   = self.transpose_octaves (oct)
         ht   = ht.transpose_fifth (nfifth, key)
         offs = key.transpose (nfifth).offset
-        if offs == 6 and steps < 0 :
+        if offs == 6 and steps < 0:
             ht = ht.enharmonic_equivalent ()
         return ht
     # end def transpose
 
-    def __str__ (self) :
+    def __str__ (self):
         return self.name
     # end def __str__
     __repr__ = __str__
 
 # end class Halftone
 
-def halftone (name) :
+def halftone (name):
     """ Return singleton tone """
     return Halftone.get (name)
 # end def halftone
 
-class Bar_Object (autosuper) :
+class Bar_Object (autosuper):
 
-    def __init__ (self, duration, unit = 8) :
+    def __init__ (self, duration, unit = 8):
         self.__super.__init__ ()
         self.duration = duration
         self.unit     = unit
     # end def __init__
 
-    def length (self, unit = None) :
+    def length (self, unit = None):
         unit = unit or self.unit
         l = Rational (self.duration, self.unit) * Rational (unit)
         return l
@@ -442,20 +443,20 @@ class Bar_Object (autosuper) :
 
 # end class Bar_Object
 
-class Tone (Bar_Object) :
+class Tone (Bar_Object):
 
-    def __init__ (self, halftone, duration, unit = 8) :
+    def __init__ (self, halftone, duration, unit = 8):
         self.halftone = halftone
         self.__super.__init__ (duration, unit)
         self.duration = duration
         self.unit     = unit
     # end def __init__
 
-    def as_abc (self, unit = None) :
+    def as_abc (self, unit = None):
         return "%s%s" % (self.halftone.name, self.length (unit))
     # end def as_abc
 
-    def transpose (self, steps, key = 'C') :
+    def transpose (self, steps, key = 'C'):
         return self.__class__ \
             ( self.halftone.transpose (steps, key)
             , duration = self.duration
@@ -465,47 +466,47 @@ class Tone (Bar_Object) :
 
 # end class Tone
 
-class Pause (Bar_Object) :
+class Pause (Bar_Object):
 
-    def as_abc (self, unit = None) :
+    def as_abc (self, unit = None):
         return "z%s" % (self.length (unit))
     # end def as_abc
 
-    def transpose (self, steps, key = 'C') :
+    def transpose (self, steps, key = 'C'):
         return self
     # end def transpose
 
 # end class Pause
 
-class Meter (autosuper) :
+class Meter (autosuper):
     """ Represent the meter of a tune, e.g. 4/4, 3/4 or similar
     """
 
-    def __init__ (self, measure, beats) :
+    def __init__ (self, measure, beats):
         self.measure = measure
         self.beats   = beats
     # end def __init__
 
     @property
-    def duration (self) :
+    def duration (self):
         return len (self)
     # end def duration
 
-    def as_abc (self) :
+    def as_abc (self):
         return "M: %s/%s" % (self.measure, self.beats)
     # end def as_abc
 
-    def length (self) :
+    def length (self):
         return Rational (self.measure, self.beats)
     # end def length
 
-    def __str__ (self) :
+    def __str__ (self):
         return '%s/%s' % (self.measure, self.beats)
     # end def __str__
 
 # end class Meter
 
-class Key (object) :
+class Key (object):
     """ Model a key, either major or minor or one of the gregorian modes
     >>> key = Key.get ('E')
     >>> key.transpose (-12)
@@ -611,23 +612,23 @@ class Key (object) :
     table = {}
     reg   = {}
 
-    def __init__ (self, name) :
+    def __init__ (self, name):
         self.mode, self.offset = self.table [name]
         self.name = name
     # end def __init__
 
     @classmethod
-    def get (cls, name) :
+    def get (cls, name):
         """ Implement sort-of singleton
         """
-        if isinstance (name, cls) :
+        if isinstance (name, cls):
             return name
-        if name in cls.reg :
+        if name in cls.reg:
             return cls.reg [name]
         return cls (name)
     # end def get
 
-    def transpose (self, n_fifth) :
+    def transpose (self, n_fifth):
         """ Note that on transposition we never return something with
             more than 6 flats or sharps. This can be used to transpose
             something with 7 sharps or 7 flats to something with 5 flats
@@ -637,37 +638,37 @@ class Key (object) :
             or flats transpose up or down by a multiple of 12.
         """
         t = (self.offset + n_fifth) % 12
-        if t > 6 :
+        if t > 6:
             t -= 12
-        if t == 6 and n_fifth < 0 :
+        if t == 6 and n_fifth < 0:
             t = -6
         return self.get (getattr (self, self.mode) [t + 7])
     # end def transpose
 
-    def __str__ (self) :
+    def __str__ (self):
         return self.name
     # end def __str__
     __repr__ = __str__
 
 # end class Key
 
-for m in Key.modes :
-    for n, name in enumerate (getattr (Key, m)) :
+for m in Key.modes:
+    for n, name in enumerate (getattr (Key, m)):
         Key.table [name] = (m, n - 7)
 
-class Bar (autosuper) :
+class Bar (autosuper):
 
-    def __init__ (self, duration, unit = 8, *bar_object) :
+    def __init__ (self, duration, unit = 8, *bar_object):
         self.duration = Rational (duration)
         self.dur_sum  = Rational (0)
         self.objects  = []
         self.unit     = unit
-        for b in bar_object :
+        for b in bar_object:
             self.add (b)
     # end def __init__
 
-    def add (self, bar_object) :
-        if self.dur_sum + bar_object.length () > self.duration :
+    def add (self, bar_object):
+        if self.dur_sum + bar_object.length () > self.duration:
             raise ValueError \
                 ( "Overfull bar: %s + %s > %s"
                 % (self.dur_sum, bar_object.duration, self.duration)
@@ -675,68 +676,68 @@ class Bar (autosuper) :
         self.objects.append (bar_object)
     # end def add
 
-    def as_abc (self) :
+    def as_abc (self):
         r = []
-        for bo in self.objects :
+        for bo in self.objects:
             r.append (bo.as_abc ())
         r.append ('|')
         return ' '.join (r)
     # end def as_abc
 
-    def transpose (self, steps, key = 'C') :
+    def transpose (self, steps, key = 'C'):
         b = self.__class__ (self.duration, self.unit)
-        for o in self.objects :
+        for o in self.objects:
             b.add (o.transpose (steps, key))
         return b
     # end def transpose
 
 # end class Bar
 
-class Voice (autosuper) :
+class Voice (autosuper):
     """ A single voice of a complex tune
     """
-    def __init__ (self, id = None, *bars, **properties) :
+    def __init__ (self, id = None, *bars, **properties):
         self.bars = []
         self.id   = id
-        for b in bars :
+        for b in bars:
             self.add (b)
         self.properties = properties
     # end def __init__
 
-    def add (self, bar) :
+    def add (self, bar):
         self.bars.append (bar)
     # end def add
 
-    def as_abc (self) :
+    def as_abc (self):
         r = []
-        if id :
+        if id:
             r.append ("[V:%s] " % self.id)
-        for bar in self.bars :
+        for bar in self.bars:
             r.append (bar.as_abc ())
         return ''.join (r)
     # end def as_abc
 
-    def as_abc_header (self) :
-        if not self.id :
+    def as_abc_header (self):
+        if not self.id:
             return ''
-        def tq (p) :
-            if ' ' in p :
+        def tq (p):
+            if ' ' in p:
                 return '"%s"' % p
             return p
         prp = ('%s=%s' % (k, tq (self.properties [k])) for k in self.properties)
         return 'V:%s %s' % (self.id, ' '.join (prp))
     # end def as_abc_header
 
-    def transpose (self, steps, key = 'C') :
+    def transpose (self, steps, key = 'C'):
         v = self.__class__ (self.id, **self.properties)
-        for b in self.bars :
+        for b in self.bars:
             v.add (b.transpose (steps, key))
         return v
     # end def transpose
 
 # end class Voice
 
-class Tune (autosuper) :
+class Tune (autosuper):
 
     def __init__ \
         ( self, meter, key
@@ -744,7 +745,7 @@ class Tune (autosuper) :
         , number = 1
         , unit   = None
         , *voices, **kw
-        ) :
+        ):
         self.voices = []
         self.meter  = meter
         self.key    = Key.get (key)
@@ -752,71 +753,71 @@ class Tune (autosuper) :
         self.number = number
         self.kw     = kw
         self.unit   = unit or Rational (8)
-        for v in voices :
+        for v in voices:
             self.add (v)
     # end def __init__
 
-    def add (self, voice) :
+    def add (self, voice):
         self.voices.append (voice)
     # end def add
 
-    def as_abc (self) :
+    def as_abc (self):
         r = []
         r.append ('X: %s' % self.number)
-        if self.title :
+        if self.title:
             r.append ('T: %s' % self.title)
         r.append (self.meter.as_abc ())
-        for k in self.kw :
-            if len (k) == 1 :
+        for k in self.kw:
+            if len (k) == 1:
                 r.append ('%s: %s' % (k, self.kw [k]))
-            else :
+            else:
                 r.append ('%%%%%s %s' % (k, self.kw [k]))
         r.append ("L: %s" % (Rational (1) // self.unit))
-        for v in self.voices :
+        for v in self.voices:
             h = v.as_abc_header ()
-            if h :
+            if h:
                 r.append (h)
         r.append ("K: %s" % self.key)
-        for v in self.voices :
+        for v in self.voices:
             r.append (v.as_abc ())
         return '\n'.join (r)
     # end def as_abc
 
     @classmethod
-    def from_file (cls, fn) :
+    def from_file (cls, fn):
         """ Unfinished """
         version   = None
         in_header = True
         kw        = {}
-        with open (fn, 'r') as f :
-            for n, line in enumerate (f) :
-                if n == 0 and line.startswith ('%abc') :
+        with open (fn, 'r') as f:
+            for n, line in enumerate (f):
+                if n == 0 and line.startswith ('%abc'):
                     version = line [4:].strip ()
-                if in_header :
-                    if line [1] == ':' :
+                if in_header:
+                    if line [1] == ':':
                         k = line [0]
-                        if k not in kw :
+                        if k not in kw:
                             kw [k] = []
                         kw [k].append (line [2:].strip ())
     # end def from_file
 
-    def iter (self, voice_idx) :
-        for bar in self.voices [voice_idx].bars :
-            for bo in bar.objects :
+    def iter (self, voice_idx):
+        for bar in self.voices [voice_idx].bars:
+            for bo in bar.objects:
                 yield bo
     # end def iter
 
-    def transpose (self, steps) :
+    def transpose (self, steps):
         fifth = transpose_steps_to_fifth (steps)
         k = self.key.transpose (fifth)
         t = self.__class__ \
             (self.meter, k, self.title, self.number, self.unit, **self.kw)
-        for v in self.voices :
+        for v in self.voices:
             t.add (v.transpose (steps, self.key))
         return t
     # end def transpose
 
-    def __str__ (self) :
+    def __str__ (self):
         return self.as_abc ()
     # end def __str__
     __repr__ = __str__

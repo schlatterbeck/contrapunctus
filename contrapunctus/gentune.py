@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from   __future__ import print_function
 
@@ -11,7 +11,7 @@ from   pga       import PGA_STOP_NOCHANGE, PGA_STOP_MAXITER, PGA_STOP_TOOSIMILAR
 from   argparse  import ArgumentParser
 from   rsclib.iter_recipes import zip
 
-class Create_Contrapunctus (PGA) :
+class Create_Contrapunctus (PGA):
 
     """ The rules for counterpoint are taken partly from wikipedia
         "Counterpoint" article (in particular "species counterpoint"),
@@ -27,7 +27,7 @@ class Create_Contrapunctus (PGA) :
           points, they are numbered 1.1--1.9 in the following.
     """
 
-    def __init__ (self, args) :
+    def __init__ (self, args):
         self.args = args
         assert args.tune_length > 3
         self.tunelength = args.tune_length
@@ -47,7 +47,7 @@ class Create_Contrapunctus (PGA) :
             )
     # end def __init__
 
-    def evaluate (self, p, pop) :
+    def evaluate (self, p, pop):
         jumpcount  = 0.0
         badness    = 1.0
         tune       = self.gen (p, pop)
@@ -60,15 +60,15 @@ class Create_Contrapunctus (PGA) :
         quint_seen = False
         okt_seen   = False
         dir        = (-1, 1)
-        for tone in zip (tune.iter (0), tune.iter (1)) :
+        for tone in zip (tune.iter (0), tune.iter (1)):
             dist = tone [1].halftone.offset - tone [0].halftone.offset
             # First note
-            if not last :
+            if not last:
                 last = tone
                 # 1.1. Begin and end on either unison, octave, fifth,
                 # unless the added part is underneath [it isn't here],
                 # in which case begin and end only on unison or octave.
-                if dist != 0 and dist != 7 and dist != 12 :
+                if dist != 0 and dist != 7 and dist != 12:
                     badness *= 100.
                 continue
             off_o = tuple (last [n].halftone.offset for n in range (2))
@@ -86,65 +86,65 @@ class Create_Contrapunctus (PGA) :
             # series.
 
             # 0.1.2: No unison (Prim) allowed
-            if diff [0] == 0 :
+            if diff [0] == 0:
                 badness *= 10.0
-            if diff [1] == 0 :
-                if prim_seen :
+            if diff [1] == 0:
+                if prim_seen:
                     badness *= 10.0
                 prim_seen = True
             # 0.1.2: no seventh (Septime)
-            for i in range (2) :
-                if 10 <= diff [i] % 12 <= 11 :
+            for i in range (2):
+                if 10 <= diff [i] % 12 <= 11:
                     badness *= 10.0
             # 0.1.2: no Devils interval:
-            for i in range (2) :
-                if diff [i] % 12 == 6 :
+            for i in range (2):
+                if diff [i] % 12 == 6:
                     badness *= 10.0
             # First voice (Cantus Firmus):
-            if diff [0] > 2 :
+            if diff [0] > 2:
                 # Jump
-                if jump [0] :
+                if jump [0]:
                     # No two jumps in series
                     badness *= 10.0
                 jump [0] = sgn (off_n [0] - off_o [0])
-                if diff [0] == 5 or diff [0] == 7 :
+                if diff [0] == 5 or diff [0] == 7:
                     uglyness += 1
-                if 8 <= diff [0] <= 9 :
+                if 8 <= diff [0] <= 9:
                     uglyness += 10
-                if diff [0] == 12 :
+                if diff [0] == 12:
                     uglyness += 2
-            else :
+            else:
                 # Step not jump
                 # After a jump movement should not be same direction
-                if jump [0] == sgn (off_n [0] - off_o [0]) :
+                if jump [0] == sgn (off_n [0] - off_o [0]):
                     badness *= 10.0
                 jump [0] = False
-            if diff [1] > 2 :
+            if diff [1] > 2:
                 # Jump
-                if jump [1] == sgn (off_n [1] - off_o [1]) :
+                if jump [1] == sgn (off_n [1] - off_o [1]):
                     # No two jumps in same direction
                     badness *= 10.0
                 jump [1] = sgn (off_n [1] - off_o [1])
-            else :
+            else:
                 jump [1] = False
             # Not both voices may jump
-            if jump [0] and jump [1] :
+            if jump [0] and jump [1]:
                 badness *= 10.0
             # Prime or Sekund between tones
             # 1.2: Use no unisons except at the beginning or end.
-            if dist == 0 :
+            if dist == 0:
                 badness *= 10.0
-            if 1 <= dist % 12 <= 2 :
+            if 1 <= dist % 12 <= 2:
                 badness *= 10.0
             # 1.4: Avoid moving in parallel fourths (In practice
             # Palestrina and others frequently allowed themselves such
             # progressions, especially if they do not involve the lowest
             # of the parts)
             # Magdalena: 5/6 verboten
-            if 5 <= dist % 12 <= 6 :
+            if 5 <= dist % 12 <= 6:
                 badness *= 10.0
             # Magdalena: 10/11 verboten
-            if 10 <= dist <= 11 :
+            if 10 <= dist <= 11:
                 badness *= 10.0
             # Don't get carried away :-)
             # 0.2.5: "The interval of a tenth should not be exceeded
@@ -153,64 +153,64 @@ class Create_Contrapunctus (PGA) :
             # 1.6: Attempt to keep any two adjacent parts within a tenth
             # of each other, unless an exceptionally pleasing line can
             # be written by moving outside of that range.
-            if dist > 16 :
+            if dist > 16:
                 badness *= 10.0
             # Magdalena: intervals above octave should be avoided
-            if dist > 12 :
+            if dist > 12:
                 uglyness += 1
             # Upper voice must be *up*
-            if dist < 0 :
+            if dist < 0:
                 badness *= 10.0
             dir  = tuple (sgn (off_n [n] - off_o [n]) for n in range (2))
             # Magdalena: Avoid parallel fifth or octaves: Ensure that
             # the last direction (from where is the fifth or octave
             # approached) is different.
-            if dist == 7 or dist == 12 :
-                if dir [0] == dir [1] :
+            if dist == 7 or dist == 12:
+                if dir [0] == dir [1]:
                     badness *= 9.0
             # For sext (sixth) or terz (third) don't allow several in a row
-            if 3 <= dist <= 4 or 8 <= dist <= 9 :
-                if dir [0] == dir [1] == 0 :
+            if 3 <= dist <= 4 or 8 <= dist <= 9:
+                if dir [0] == dir [1] == 0:
                     uglyness += 3
             # Generally it's better that voices move in opposite
             # direction (or one stays the same if allowed)
-            if dir [0] == dir [1] :
+            if dir [0] == dir [1]:
                 uglyness += 0.1
             last = tone
         return uglyness * badness
     # end def evaluate
 
-    def from_gene (self) :
+    def from_gene (self):
         idx = 0
-        with open (self.args.gene_file, 'r') as f :
-            for n, line in enumerate (f) :
+        with open (self.args.gene_file, 'r') as f:
+            for n, line in enumerate (f):
                 ln = n + 1
-                if not line.startswith ('#') :
+                if not line.startswith ('#'):
                     continue
                 i, l = line [1:].split (':')
                 i = int (i)
-                if i != idx :
+                if i != idx:
                     raise ValueError ("Line %s: Invalid gene-file format" % ln)
-                for offs, i in enumerate (l.split (',')) :
-                    if idx + offs + 1 > len (self) :
+                for offs, i in enumerate (l.split (',')):
+                    if idx + offs + 1 > len (self):
                         raise ValueError ("Line %s: Gene too long" % ln)
                     i = int (i.strip ().lstrip ('[').rstrip (']').strip ())
                     self.set_allele (1, PGA_NEWPOP, idx + offs, i)
                 idx += offs + 1
-                if idx + 1 > len (self) :
+                if idx + 1 > len (self):
                     break
-            else :
+            else:
                 raise ValueError ("Line %s: Gene too short" % ln)
         self.print_string (sys.stdout, 1, PGA_NEWPOP)
         print (self.evaluate (1, PGA_NEWPOP))
     # end def from_gene
 
-    def gen (self, p, pop) :
+    def gen (self, p, pop):
         v1 = Voice (id = 'V1')
         b  = Bar (4, 4)
         b.add (Tone (dorian.finalis, 4, unit = 4))
         v1.add (b)
-        for i in range (self.v1length) :
+        for i in range (self.v1length):
             a = self.get_allele (p, pop, i)
             b = Bar (4, 4)
             b.add (Tone (dorian [a], 4, unit = 4))
@@ -240,7 +240,7 @@ class Create_Contrapunctus (PGA) :
             )
         tune.add (v1)
         v2 = Voice (id = 'V2')
-        for i in range (self.v2length) :
+        for i in range (self.v2length):
             a = self.get_allele (p, pop, i + self.v1length)
             b = Bar (4, 4)
             b.add (Tone (dorian [a], 4, unit = 4))
@@ -262,9 +262,9 @@ class Create_Contrapunctus (PGA) :
         return tune
     # end def gen
 
-    def print_string (self, file, p, pop) :
+    def print_string (self, file, p, pop):
         tune = self.gen (p, pop)
-        if self.args.transpose :
+        if self.args.transpose:
             tune = tune.transpose (self.args.transpose)
         print (tune, file = file)
         super (self.__class__, self).print_string (file, p, pop)
@@ -272,7 +272,7 @@ class Create_Contrapunctus (PGA) :
 
 # end class Create_Contrapunctus
 
-def main () :
+def main (argv = None):
     cmd = ArgumentParser ()
     cmd.add_argument \
         ( "-g", "--gene-file"
@@ -296,14 +296,14 @@ def main () :
         , type    = int
         , default = 0
         )
-    args = cmd.parse_args ()
+    args = cmd.parse_args (argv)
     cp = Create_Contrapunctus (args)
-    if args.gene_file :
+    if args.gene_file:
         cp.from_gene ()
-    else :
+    else:
         cp.run ()
 # end def main
 
-if __name__ == '__main__' :
-    main ()
+if __name__ == '__main__':
+    main (sys.argv [1:])
 
