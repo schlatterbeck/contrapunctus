@@ -12,3 +12,4 @@ Out.ps
 *.egg-info
 dist
 build
+VERSION

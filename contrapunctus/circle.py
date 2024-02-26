@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-# Copyright (C) 2017-2022 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2017-2024
+# Magdalena Schlatterbeck
+# Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # ****************************************************************************

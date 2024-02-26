@@ -2,14 +2,16 @@
 # git clone git@github.com:schlatterbeck/releasetool.git
 # or from sourceforge:
 # git clone git://git.code.sf.net/p/sfreleasetools/code sfreleasetools
-# And point the environment variable RELEASETOOLS to the checkout
-ifeq (,${RELEASETOOLS})
-    RELEASETOOLS=../releasetools
+# And point the environment variable RELEASETOOL to the checkout
+ifeq (,${RELEASETOOL})
+    RELEASETOOL=../releasetool
 endif
 
 README=README.rst
-SRC=Makefile setup.py $(README) contrapunctus/*.py
-LASTRELEASE:=$(shell $(RELEASETOOLS)/lastrelease -n)
+CONTRAPUNCTUS=circle.py gregorian.py gentune.py tune.py
+SRC=Makefile setup.py $(README) $(CONTRAPUNCTUS:%.py=contrapunctus/%.py)
+
+LASTRELEASE:=$(shell $(RELEASETOOL)/lastrelease -n)
 
 USERNAME=schlatterbeck
 PROJECT=contrapunctus
@@ -17,6 +19,8 @@ PACKAGE=contrapunctus
 CHANGES=changes
 NOTES=notes
 VERSIONPY=$(PROJECT)/Version.py
+VERSIONTXT=VERSION
+VERSION=$(VERSIONPY) $(VERSIONTXT)
 
 all: $(VERSIONPY)
 
@@ -30,7 +34,7 @@ all: $(VERSIONPY)
 	abc2midi $< -o $@
 
 clean:
-	rm -f MANIFEST Version.py README.html
-	rm -rf ${CLEAN} *.egg-info __pycache__
+	rm -f MANIFEST Version.py README.html VERSION
+	rm -rf ${CLEAN} *.egg-info __pycache__ $(PACKAGE)/__pycache__
 
-include $(RELEASETOOLS)/Makefile-pyrelease
+include $(RELEASETOOL)/Makefile-pyrelease
