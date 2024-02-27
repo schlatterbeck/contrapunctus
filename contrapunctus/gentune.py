@@ -75,7 +75,6 @@ class Create_Contrapunctus (pga.PGA):
         jumpcount  = 0.0
         badness    = 1.0
         tune       = self.phenotype (p, pop)
-        last       = ()
         jump       = [False, False]
         uglyness   = 1.0
         prim_seen  = False
@@ -84,19 +83,41 @@ class Create_Contrapunctus (pga.PGA):
         quint_seen = False
         okt_seen   = False
         dir        = (-1, 1)
-        for tone in zip (tune.iter (0), tune.iter (1)):
-            dist = tone [1].halftone.offset - tone [0].halftone.offset
+
+        # A tune contains two (or theoretically more) voices. We can
+        # iterate over the bars of a voice via tune.iter (N) where N is
+        # the voice index (starting with 0).
+        # A bar contains many Bar_Object objects. These can either be a
+        # Tone or a Pause. A tone contains a Halftone object in the
+        # attribute halftone.
+        # Each bar has a .prev and .next bar which can be None (prev is
+        # None for the first bar while next is None for the last).
+        # We iterate over the bars in each tune.
+        # cf: Cantus Firmus (Object of class 'Bar')
+        # cp: Contrapunctus (Object of class 'Bar')
+        # For now each bar object only contains a single Tone object.
+        for cp, cf in zip (tune.iter (0), tune.iter (1)):
+            # For now a bar only contains one single note, the 0th
+            # object in bar
+            cf_tone = cf.objects [0].halftone.offset
+            cp_tone = cp.objects [0].halftone.offset
+            prev_cf = cf.prev
+            prev_cp = cp.prev
+            # dist is the distance between cp and cf
+            dist = cf_tone - cp_tone
             # First note
-            if not last:
-                last = tone
+            if not prev_cf:
                 # 1.1. Begin and end on either unison, octave, fifth,
                 # unless the added part is underneath [it isn't here],
                 # in which case begin and end only on unison or octave.
                 if dist != 0 and dist != 7 and dist != 12:
                     badness *= 100.
                 continue
-            off_o = tuple (last [n].halftone.offset for n in range (2))
-            off_n = tuple (tone [n].halftone.offset for n in range (2))
+            p_cp_tone = prev_cp.objects [0].halftone.offset
+            p_cf_tone = prev_cf.objects [0].halftone.offset
+
+            off_o = (p_cp_tone, p_cf_tone)
+            off_n = (cp_tone,   cf_tone)
             diff  = tuple (abs (off_o [n] - off_n [n]) for n in range (2))
             # 0.1.2: "Permitted melodic intervals are the perfect fourth,
             # fifth, and octave, as well as the major and minor second,
@@ -200,7 +221,6 @@ class Create_Contrapunctus (pga.PGA):
             # direction (or one stays the same if allowed)
             if dir [0] == dir [1]:
                 uglyness += 0.1
-            last = tone
         return uglyness * badness
     # end def evaluate
 

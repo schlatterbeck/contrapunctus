@@ -450,10 +450,15 @@ def halftone (name):
 # end def halftone
 
 class Bar_Object (autosuper):
+    """ Base class of all objects that go into a Bar
+    """
 
     def __init__ (self, duration, unit = 8):
         self.__super.__init__ ()
         self.duration = duration
+        # offset in Bar (parent), filled when inserting into Bar
+        self.offset   = None
+        self.bar      = None
         self.unit     = unit
     # end def __init__
 
@@ -462,6 +467,14 @@ class Bar_Object (autosuper):
         l = Rational (self.duration, self.unit) * Rational (unit)
         return l
     # end def length
+    __len__ = length
+
+    def register (self, bar, offset):
+        assert self.offset is None
+        assert self.bar    is None
+        self.bar    = bar
+        self.offset = offset
+    # end def register
 
 # end class Bar_Object
 
@@ -470,8 +483,6 @@ class Tone (Bar_Object):
     def __init__ (self, halftone, duration, unit = 8):
         self.halftone = halftone
         self.__super.__init__ (duration, unit)
-        self.duration = duration
-        self.unit     = unit
     # end def __init__
 
     def as_abc (self, unit = None):
@@ -685,6 +696,9 @@ class Bar (autosuper):
         self.dur_sum  = Rational (0)
         self.objects  = []
         self.unit     = unit
+        self.prev     = None
+        self.next     = None
+        self.voice    = None
         for b in bar_object:
             self.add (b)
     # end def __init__
@@ -695,6 +709,8 @@ class Bar (autosuper):
                 ( "Overfull bar: %s + %s > %s"
                 % (self.dur_sum, bar_object.duration, self.duration)
                 )
+        bar_object.register (self, self.dur_sum)
+        self.dur_sum += bar_object.length ()
         self.objects.append (bar_object)
     # end def add
 
@@ -727,7 +743,14 @@ class Voice (autosuper):
     # end def __init__
 
     def add (self, bar):
+        assert bar.next is None
+        assert bar.prev is None
+        if self.bars:
+            assert self.bars [-1].next is None
+            self.bars [-1].next = bar
+            bar.prev = self.bars [-1]
         self.bars.append (bar)
+        bar.voice = self
     # end def add
 
     def as_abc (self):
@@ -825,8 +848,7 @@ class Tune (autosuper):
 
     def iter (self, voice_idx):
         for bar in self.voices [voice_idx].bars:
-            for bo in bar.objects:
-                yield bo
+            yield bar
     # end def iter
 
     def transpose (self, steps):
