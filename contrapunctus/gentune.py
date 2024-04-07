@@ -49,9 +49,52 @@ class Create_Contrapunctus (pga.PGA):
         self.args = args
         assert args.tune_length > 3
         self.tunelength = args.tune_length
+        # The first voice is the cantus firmus, the second voice is the
+        # contrapunctus.
         # Length of the automatically-generated voices
+        # Now that we allow up to 1/8 notes the gene for the first voice
+        # is longer.
+        # A bar can contain at most 14 tunes:
+        # - A 'heavy' position must not contain 1/8
+        # - so we have at least 2*1/4 for the heavy position
+        # - and the rest 1/8 makes 16/8 - 2*1/4 = 12/8
+        # We have for each tune in a bar:
+        # - length of tune (or pause, for now we do not generate a pause)
+        # - the length can only be 16, 12, 8, 6, 4, 3, 2, 1
+        # But we only use one bar (8/8) and we bind the second tone if
+        # it is the same pitch (maybe with some probability). The gene
+        # coding is:
+        # - log_2 of the length (left out if there is only 1 possibility)
+        # - pitch for each tune
+        # Thats 7 pairs of genes (where the length is sometimes left out):
+        # - 1-3 (8, 4, 2)/8, the heavy position has at least 1/4
+        # - pitch 0-16
+        # - 0-1 (2 or 1)/8 for first 1/4 light position
+        # - pitch 0-16
+        # - pitch 0-16 (1/8 light can only be 1/8, so no length)
+        # - 0-2 (4, 2, 1)/8
+        # - pitch 0-16
+        # - pitch 0-16 (1/8 light can only be 1/8)
+        # - 0-1 (2 or 1)/8
+        # - pitch 0-16
+        # - pitch 0-16 (1/8 light can only be 1/8)
+        # if the previous tune is longer some of the genes are not used
+
         self.v1length   = self.tunelength - 3
         self.v2length   = self.tunelength - 2
+        init            = [(0,7)] * self.v1length
+        for i in range (self.v2length):
+            init.append ((1,  3)) # duration heavy
+            init.append ((0, 16)) # pitch
+            init.append ((0,  1)) # duration light 1/4
+            init.append ((0, 16)) # pitch
+            init.append ((0, 16)) # pitch light 1/8
+            init.append ((0,  2)) # duration half-heavy 1/2
+            init.append ((0, 16)) # pitch
+            init.append ((0, 16)) # pitch light 1/8
+            init.append ((0,  1)) # duration light 1/4
+            init.append ((0, 16)) # pitch
+            init.append ((0, 16)) # pitch light 1/8
         stop_on = \
             [ pga.PGA_STOP_NOCHANGE
             , pga.PGA_STOP_MAXITER
@@ -59,7 +102,7 @@ class Create_Contrapunctus (pga.PGA):
             ]
         d = dict \
             ( maximize      = False
-            , init          = [(0,7)] * self.v1length + [(0,16)] * self.v2length
+            , init          = init
             , random_seed   = self.args.random_seed
             , pop_size      = 500
             , num_replace   = 450
@@ -68,15 +111,34 @@ class Create_Contrapunctus (pga.PGA):
             )
         if self.args.output_file:
             d ['output_file'] = args.output_file
-        super ().__init__ (type (2), self.v1length + self.v2length, **d)
+        super ().__init__ (type (2), len (init), **d)
     # end def __init__
+
+    def check_tune (self, diff):
+        """ Check current tune against *last* tune (in time)
+            These are common for both voices.
+            We return the badness and the ugliness.
+        """
+        ugliness = 0.0
+        badness  = 1.0
+        # 0.1.2: no Devils interval:
+        if diff % 12 == 6:
+            badness *= 10.0
+        # 0.1.2: no seventh (Septime)
+        if 10 <= diff % 12 <= 11:
+            badness *= 10.0
+        # 0.1.2: no Devils interval:
+        if diff % 12 == 6:
+            badness *= 10.0
+        return badness, ugliness
+    # end def check_tune
 
     def evaluate (self, p, pop):
         jumpcount  = 0.0
         badness    = 1.0
         tune       = self.phenotype (p, pop)
         jump       = [False, False]
-        uglyness   = 1.0
+        ugliness   = 1.0
         prim_seen  = False
         par_fifth  = False
         par_oct    = False
@@ -95,133 +157,133 @@ class Create_Contrapunctus (pga.PGA):
         # We iterate over the bars in each tune.
         # cf: Cantus Firmus (Object of class 'Bar')
         # cp: Contrapunctus (Object of class 'Bar')
-        # For now each bar object only contains a single Tone object.
         for cp, cf in zip (tune.iter (0), tune.iter (1)):
-            # For now a bar only contains one single note, the 0th
-            # object in bar
+            # For now a bar in the cantus firmus (1st voice) only
+            # contains one single note, the 0th object in bar
             cf_tone = cf.objects [0].halftone.offset
-            cp_tone = cp.objects [0].halftone.offset
             prev_cf = cf.prev
-            prev_cp = cp.prev
-            # dist is the distance between cp and cf
-            dist = cf_tone - cp_tone
-            # First note
-            if not prev_cf:
-                # 1.1. Begin and end on either unison, octave, fifth,
-                # unless the added part is underneath [it isn't here],
-                # in which case begin and end only on unison or octave.
-                if dist != 0 and dist != 7 and dist != 12:
-                    badness *= 100.
-                continue
-            p_cp_tone = prev_cp.objects [0].halftone.offset
-            p_cf_tone = prev_cf.objects [0].halftone.offset
+            if prev_cf:
+                p_cf_tone = prev_cf.objects [0].halftone.offset
+                d     = cf_tone - p_cf_tone
+                adiff = abs (d)
+                sdiff = sgn (d)
+                # 0.1.2: No unison (Prim) allowed
+                if adiff == 0:
+                    badness *= 10.0
+                b, u = self.check_tune (adiff)
+                badness  *= b
+                ugliness += u
+                # First voice (Cantus Firmus):
+                if adiff > 2:
+                    # Jump
+                    if jump [0]:
+                        # No two jumps in series
+                        badness *= 10.0
+                    jump [0] = sdiff
+                    if adiff == 5 or adiff == 7:
+                        ugliness += 1
+                    if 8 <= adiff <= 9:
+                        ugliness += 10
+                    if adiff == 12:
+                        ugliness += 2
+                else:
+                    # Step not jump
+                    # After a jump movement should not be same direction
+                    if jump [0] == sdiff:
+                        badness *= 10.0
+                    jump [0] = False
+            for cp_obj in cp.objects:
+                cp_tone = cp_obj.halftone.offset
+                # dist is the distance between cp and cf
+                dist = cf_tone - cp_tone
+                # First note
+                if not prev_cf:
+                    # 1.1. Begin and end on either unison, octave, fifth,
+                    # unless the added part is underneath [it isn't here],
+                    # in which case begin and end only on unison or octave.
+                    if dist != 0 and dist != 7 and dist != 12:
+                        badness *= 100.
+                    continue
+                p_cp_tone = cp_obj.prev.halftone.offset
 
-            off_o = (p_cp_tone, p_cf_tone)
-            off_n = (cp_tone,   cf_tone)
-            diff  = tuple (abs (off_o [n] - off_n [n]) for n in range (2))
-            # 0.1.2: "Permitted melodic intervals are the perfect fourth,
-            # fifth, and octave, as well as the major and minor second,
-            # major and minor third, and ascending minor sixth. The
-            # ascending minor sixth must be immediately followed by
-            # motion downwards." This means we allow the following
-            # halftone intervals: 1, 2, 3, 4, 5, 7, 8, 9, 12 and forbid
-            # the following: 0, 6, 10, 11
-            # We currently allow sixth in both directions
-            # We allow unison in the second voice but not several in a
-            # series.
+                off_o = (p_cp_tone, p_cf_tone)
+                off_n = (cp_tone,   cf_tone)
+                diff  = tuple (abs (off_o [n] - off_n [n]) for n in range (2))
+                # 0.1.2: "Permitted melodic intervals are the perfect fourth,
+                # fifth, and octave, as well as the major and minor second,
+                # major and minor third, and ascending minor sixth. The
+                # ascending minor sixth must be immediately followed by
+                # motion downwards." This means we allow the following
+                # halftone intervals: 1, 2, 3, 4, 5, 7, 8, 9, 12 and forbid
+                # the following: 0, 6, 10, 11
+                # We currently allow sixth in both directions
+                # We allow unison in the second voice but not several in a
+                # series.
 
-            # 0.1.2: No unison (Prim) allowed
-            if diff [0] == 0:
-                badness *= 10.0
-            if diff [1] == 0:
-                if prim_seen:
+                # 0.1.2: No unison (Prim) allowed
+                if diff [1] == 0:
+                    if prim_seen:
+                        badness *= 10.0
+                    prim_seen = True
+                self.check_tune (diff [1])
+                if diff [1] > 2:
+                    # Jump
+                    if jump [1] == sgn (off_n [1] - off_o [1]):
+                        # No two jumps in same direction
+                        badness *= 10.0
+                    jump [1] = sgn (off_n [1] - off_o [1])
+                else:
+                    jump [1] = False
+                # Not both voices may jump
+                if jump [0] and jump [1]:
                     badness *= 10.0
-                prim_seen = True
-            # 0.1.2: no seventh (Septime)
-            for i in range (2):
-                if 10 <= diff [i] % 12 <= 11:
+                # Prime or Sekund between tones
+                # 1.2: Use no unisons except at the beginning or end.
+                if dist == 0:
                     badness *= 10.0
-            # 0.1.2: no Devils interval:
-            for i in range (2):
-                if diff [i] % 12 == 6:
+                if 1 <= dist % 12 <= 2:
                     badness *= 10.0
-            # First voice (Cantus Firmus):
-            if diff [0] > 2:
-                # Jump
-                if jump [0]:
-                    # No two jumps in series
+                # 1.4: Avoid moving in parallel fourths (In practice
+                # Palestrina and others frequently allowed themselves such
+                # progressions, especially if they do not involve the lowest
+                # of the parts)
+                # Magdalena: 5/6 verboten
+                if 5 <= dist % 12 <= 6:
                     badness *= 10.0
-                jump [0] = sgn (off_n [0] - off_o [0])
-                if diff [0] == 5 or diff [0] == 7:
-                    uglyness += 1
-                if 8 <= diff [0] <= 9:
-                    uglyness += 10
-                if diff [0] == 12:
-                    uglyness += 2
-            else:
-                # Step not jump
-                # After a jump movement should not be same direction
-                if jump [0] == sgn (off_n [0] - off_o [0]):
+                # Magdalena: 10/11 verboten
+                if 10 <= dist <= 11:
                     badness *= 10.0
-                jump [0] = False
-            if diff [1] > 2:
-                # Jump
-                if jump [1] == sgn (off_n [1] - off_o [1]):
-                    # No two jumps in same direction
+                # Don't get carried away :-)
+                # 0.2.5: "The interval of a tenth should not be exceeded
+                # between two adjacent parts unless by necessity." We limit
+                # this to a ninth.
+                # 1.6: Attempt to keep any two adjacent parts within a tenth
+                # of each other, unless an exceptionally pleasing line can
+                # be written by moving outside of that range.
+                if dist > 16:
                     badness *= 10.0
-                jump [1] = sgn (off_n [1] - off_o [1])
-            else:
-                jump [1] = False
-            # Not both voices may jump
-            if jump [0] and jump [1]:
-                badness *= 10.0
-            # Prime or Sekund between tones
-            # 1.2: Use no unisons except at the beginning or end.
-            if dist == 0:
-                badness *= 10.0
-            if 1 <= dist % 12 <= 2:
-                badness *= 10.0
-            # 1.4: Avoid moving in parallel fourths (In practice
-            # Palestrina and others frequently allowed themselves such
-            # progressions, especially if they do not involve the lowest
-            # of the parts)
-            # Magdalena: 5/6 verboten
-            if 5 <= dist % 12 <= 6:
-                badness *= 10.0
-            # Magdalena: 10/11 verboten
-            if 10 <= dist <= 11:
-                badness *= 10.0
-            # Don't get carried away :-)
-            # 0.2.5: "The interval of a tenth should not be exceeded
-            # between two adjacent parts unless by necessity." We limit
-            # this to a ninth.
-            # 1.6: Attempt to keep any two adjacent parts within a tenth
-            # of each other, unless an exceptionally pleasing line can
-            # be written by moving outside of that range.
-            if dist > 16:
-                badness *= 10.0
-            # Magdalena: intervals above octave should be avoided
-            if dist > 12:
-                uglyness += 1
-            # Upper voice must be *up*
-            if dist < 0:
-                badness *= 10.0
-            dir  = tuple (sgn (off_n [n] - off_o [n]) for n in range (2))
-            # Magdalena: Avoid parallel fifth or octaves: Ensure that
-            # the last direction (from where is the fifth or octave
-            # approached) is different.
-            if dist == 7 or dist == 12:
+                # Magdalena: intervals above octave should be avoided
+                if dist > 12:
+                    ugliness += 1
+                # Upper voice must be *up*
+                if dist < 0:
+                    badness *= 10.0
+                dir  = tuple (sgn (off_n [n] - off_o [n]) for n in range (2))
+                # Magdalena: Avoid parallel fifth or octaves: Ensure that
+                # the last direction (from where is the fifth or octave
+                # approached) is different.
+                if dist == 7 or dist == 12:
+                    if dir [0] == dir [1]:
+                        badness *= 9.0
+                # For sext (sixth) or terz (third) don't allow several in a row
+                if 3 <= dist <= 4 or 8 <= dist <= 9:
+                    if dir [0] == dir [1] == 0:
+                        ugliness += 3
+                # Generally it's better that voices move in opposite
+                # direction (or one stays the same if allowed)
                 if dir [0] == dir [1]:
-                    badness *= 9.0
-            # For sext (sixth) or terz (third) don't allow several in a row
-            if 3 <= dist <= 4 or 8 <= dist <= 9:
-                if dir [0] == dir [1] == 0:
-                    uglyness += 3
-            # Generally it's better that voices move in opposite
-            # direction (or one stays the same if allowed)
-            if dir [0] == dir [1]:
-                uglyness += 0.1
-        return uglyness * badness
+                    ugliness += 0.1
+        return ugliness * badness
     # end def evaluate
 
     def from_gene (self):
@@ -258,13 +320,13 @@ class Create_Contrapunctus (pga.PGA):
 
     def phenotype (self, p, pop):
         v1 = Voice (id = 'V1')
-        b  = Bar (4, 4)
-        b.add (Tone (dorian.finalis, 4, unit = 4))
+        b  = Bar (8, 8)
+        b.add (Tone (dorian.finalis, 8, unit = 8))
         v1.add (b)
         for i in range (self.v1length):
             a = self.get_allele (p, pop, i)
-            b = Bar (4, 4)
-            b.add (Tone (dorian [a], 4, unit = 4))
+            b = Bar (8, 8)
+            b.add (Tone (dorian [a], 8, unit = 8))
             v1.add (b)
         # 0.1.1: "The final must be approached by step. If the final is
         # approached from below, then the leading tone must be raised in
@@ -275,28 +337,60 @@ class Create_Contrapunctus (pga.PGA):
         # the first voice.
         # 1.1: "The counterpoint must begin and end on a perfect
         # consonance" is also achived by hard-coding the last tone.
-        b  = Bar (4, 4)
-        b.add (Tone (dorian.step2, 4, unit = 4))
+        b  = Bar (8, 8)
+        b.add (Tone (dorian.step2, 8, unit = 8))
         v1.add (b)
-        b  = Bar (4, 4)
-        b.add (Tone (dorian.finalis, 4, unit = 4))
+        b  = Bar (8, 8)
+        b.add (Tone (dorian.finalis, 8, unit = 8))
         v1.add (b)
         tune = Tune \
             ( number = 1
             , meter  = Meter (4, 4)
             , Q      = '1/4=370'
             , key    = 'DDor'
-            , unit   = 4
+            , unit   = 8
             , score  = '(V2) (V1)'
             )
         tune.add (v1)
-        v2 = Voice (id = 'V2')
+        v2  = Voice (id = 'V2')
+        off = self.v1length
         for i in range (self.v2length):
-            a = self.get_allele (p, pop, i + self.v1length)
-            b = Bar (4, 4)
-            b.add (Tone (dorian [a], 4, unit = 4))
+            boff = 0 # offset in bar
+            v = []
+            for j in range (11):
+                v.append (self.get_allele (p, pop, j + off))
+            off += 11
+            b = Bar (8, 8)
+            l = 1 << v [0]
+            assert 2 <= l <= 8
+            b.add (Tone (dorian [v [1]], l, unit = 8))
+            boff += l
+            if boff == 2:
+                l = 1 << v [2]
+                assert 1 <= l <= 2
+                b.add (Tone (dorian [v [3]], l, unit = 8))
+                boff += l
+            if boff == 3:
+                b.add (Tone (dorian [v [4]], 1, unit = 8))
+                boff += 1
+            if boff == 4:
+                l = 1 << v [5]
+                assert 1 <= l <= 4
+                b.add (Tone (dorian [v [6]], l, unit = 8))
+                boff += l
+            if boff == 5:
+                b.add (Tone (dorian [v [7]], 1, unit = 8))
+                boff += 1
+            if boff == 6:
+                l = 1 << v [8]
+                assert 1 <= l <= 2
+                b.add (Tone (dorian [v [9]], l, unit = 8))
+                boff += l
+            if boff == 7:
+                b.add (Tone (dorian [v [10]], 1, unit = 8))
+                boff += 1
             v2.add (b)
-        b  = Bar (4, 4)
+        b  = Bar (8, 8)
         # 0.1.1: "The final must be approached by step. If the final is
         # approached from below, then the leading tone must be raised in
         # a minor key (Dorian, Hypodorian, Aeolian, Hypoaeolian), but
@@ -304,10 +398,10 @@ class Create_Contrapunctus (pga.PGA):
         # on D a C# is necessary at the cadence." We achieve this by
         # hard-coding the tone prior to the final to be the
         # subsemitonium for the second voice.
-        b.add (Tone (dorian.subsemitonium, 4, unit = 4))
+        b.add (Tone (dorian.subsemitonium, 8, unit = 8))
         v2.add (b)
-        b  = Bar (4, 4)
-        b.add (Tone (dorian [7], 4, unit = 4))
+        b  = Bar (8, 8)
+        b.add (Tone (dorian [7], 8, unit = 8))
         v2.add (b)
         tune.add (v2)
         return tune

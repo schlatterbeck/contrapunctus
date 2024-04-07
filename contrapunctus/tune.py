@@ -462,6 +462,16 @@ class Bar_Object (autosuper):
         self.unit     = unit
     # end def __init__
 
+    @property
+    def prev (self):
+        if self.offset == 0:
+            if self.bar.prev is None:
+                return None
+            return self.bar.prev.objects [-1]
+        else:
+            return self.bar.objects [self.offset - 1]
+    # end def prev
+
     def length (self, unit = None):
         unit = unit or self.unit
         l = Rational (self.duration, self.unit) * Rational (unit)
