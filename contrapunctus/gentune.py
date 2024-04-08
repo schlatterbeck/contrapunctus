@@ -72,7 +72,7 @@ class Create_Contrapunctus (pga.PGA):
         # - 0-1 (2 or 1)/8 for first 1/4 light position
         # - pitch 0-16
         # - pitch 0-16 (1/8 light can only be 1/8, so no length)
-        # - 0-2 (4, 2, 1)/8
+        # - 1-2 (4, 2)/8, the half-heavy position has at least 1/4
         # - pitch 0-16
         # - pitch 0-16 (1/8 light can only be 1/8)
         # - 0-1 (2 or 1)/8
@@ -89,7 +89,7 @@ class Create_Contrapunctus (pga.PGA):
             init.append ((0,  1)) # duration light 1/4
             init.append ((0, 16)) # pitch
             init.append ((0, 16)) # pitch light 1/8
-            init.append ((0,  2)) # duration half-heavy 1/2
+            init.append ((1,  2)) # duration half-heavy 1/4 or 1/2
             init.append ((0, 16)) # pitch
             init.append ((0, 16)) # pitch light 1/8
             init.append ((0,  1)) # duration light 1/4
@@ -375,7 +375,7 @@ class Create_Contrapunctus (pga.PGA):
                 boff += 1
             if boff == 4:
                 l = 1 << v [5]
-                assert 1 <= l <= 4
+                assert 2 <= l <= 4
                 b.add (Tone (dorian [v [6]], l, unit = 8))
                 boff += l
             if boff == 5:
