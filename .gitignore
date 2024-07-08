@@ -7,6 +7,7 @@ Out.ps
 *.ps
 *.pdf
 *.out
+*.log
 .coverage*
 .nfs*
 *.egg-info

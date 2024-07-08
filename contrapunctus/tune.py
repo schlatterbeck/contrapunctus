@@ -460,6 +460,8 @@ class Bar_Object (autosuper):
         self.offset   = None
         self.bar      = None
         self.unit     = unit
+        self._prev    = None
+        self._next    = None
     # end def __init__
 
     @property
@@ -469,8 +471,9 @@ class Bar_Object (autosuper):
                 return None
             return self.bar.prev.objects [-1]
         else:
-            return self.bar.objects [self.offset - 1]
+            return self._prev
     # end def prev
+
 
     def length (self, unit = None):
         unit = unit or self.unit
@@ -720,6 +723,10 @@ class Bar (autosuper):
                 % (self.dur_sum, bar_object.duration, self.duration)
                 )
         bar_object.register (self, self.dur_sum)
+        if self.objects:
+            prev = self.objects [-1]
+            bar_object._prev = prev
+            prev._next = bar_object
         self.dur_sum += bar_object.length ()
         self.objects.append (bar_object)
     # end def add

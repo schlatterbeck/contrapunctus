@@ -26,7 +26,7 @@ from   __future__ import print_function
 import sys
 import pga
 from   .tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
-from   .gregorian import dorian
+from   .gregorian import dorian, hypodorian
 from   argparse   import ArgumentParser
 
 class Create_Contrapunctus (pga.PGA):
@@ -54,18 +54,18 @@ class Create_Contrapunctus (pga.PGA):
         # Length of the automatically-generated voices
         # Now that we allow up to 1/8 notes the gene for the first voice
         # is longer.
-        # A bar can contain at most 14 tunes:
+        # A bar can contain at most 14 notes:
         # - A 'heavy' position must not contain 1/8
         # - so we have at least 2*1/4 for the heavy position
         # - and the rest 1/8 makes 16/8 - 2*1/4 = 12/8
-        # We have for each tune in a bar:
-        # - length of tune (or pause, for now we do not generate a pause)
+        # We have for each note in a bar:
+        # - length of note (or pause, for now we do not generate a pause)
         # - the length can only be 16, 12, 8, 6, 4, 3, 2, 1
-        # But we only use one bar (8/8) and we bind the second tone if
+        # But we only use one bar (8/8) and we bind the second note if
         # it is the same pitch (maybe with some probability). The gene
         # coding is:
         # - log_2 of the length (left out if there is only 1 possibility)
-        # - pitch for each tune
+        # - pitch for each note
         # Thats 7 pairs of genes (where the length is sometimes left out):
         # - 1-3 (8, 4, 2)/8, the heavy position has at least 1/4
         # - pitch 0-16
@@ -78,23 +78,24 @@ class Create_Contrapunctus (pga.PGA):
         # - 0-1 (2 or 1)/8
         # - pitch 0-16
         # - pitch 0-16 (1/8 light can only be 1/8)
-        # if the previous tune is longer some of the genes are not used
+        # if the previous note is longer some of the genes are not used
 
         self.v1length   = self.tunelength - 3
         self.v2length   = self.tunelength - 2
-        init            = [(0,7)] * self.v1length
+        init = []
+        init.extend ([(0,7)] * self.v1length)
         for i in range (self.v2length):
             init.append ((1,  3)) # duration heavy
-            init.append ((0, 16)) # pitch
+            init.append ((0,  7)) # pitch
             init.append ((0,  1)) # duration light 1/4
-            init.append ((0, 16)) # pitch
-            init.append ((0, 16)) # pitch light 1/8
+            init.append ((0,  7)) # pitch
+            init.append ((0,  7)) # pitch light 1/8
             init.append ((1,  2)) # duration half-heavy 1/4 or 1/2
-            init.append ((0, 16)) # pitch
-            init.append ((0, 16)) # pitch light 1/8
+            init.append ((0,  7)) # pitch
+            init.append ((0,  7)) # pitch light 1/8
             init.append ((0,  1)) # duration light 1/4
-            init.append ((0, 16)) # pitch
-            init.append ((0, 16)) # pitch light 1/8
+            init.append ((0,  7)) # pitch
+            init.append ((0,  7)) # pitch light 1/8
         stop_on = \
             [ pga.PGA_STOP_NOCHANGE
             , pga.PGA_STOP_MAXITER
@@ -114,8 +115,8 @@ class Create_Contrapunctus (pga.PGA):
         super ().__init__ (type (2), len (init), **d)
     # end def __init__
 
-    def check_tune (self, diff):
-        """ Check current tune against *last* tune (in time)
+    def check_interval (self, diff):
+        """ Check current note against *last* note (in time)
             These are common for both voices.
             We return the badness and the ugliness.
         """
@@ -131,7 +132,7 @@ class Create_Contrapunctus (pga.PGA):
         if diff % 12 == 6:
             badness *= 10.0
         return badness, ugliness
-    # end def check_tune
+    # end def check_interval
 
     def evaluate (self, p, pop):
         jumpcount  = 0.0
@@ -158,7 +159,7 @@ class Create_Contrapunctus (pga.PGA):
         # cf: Cantus Firmus (Object of class 'Bar')
         # cp: Contrapunctus (Object of class 'Bar')
         for cp, cf in zip (tune.iter (0), tune.iter (1)):
-            # For now a bar in the cantus firmus (1st voice) only
+            # For now a bar in the cantus firmus (index 1) only
             # contains one single note, the 0th object in bar
             cf_tone = cf.objects [0].halftone.offset
             prev_cf = cf.prev
@@ -170,7 +171,7 @@ class Create_Contrapunctus (pga.PGA):
                 # 0.1.2: No unison (Prim) allowed
                 if adiff == 0:
                     badness *= 10.0
-                b, u = self.check_tune (adiff)
+                b, u = self.check_interval (adiff)
                 badness  *= b
                 ugliness += u
                 # First voice (Cantus Firmus):
@@ -227,7 +228,7 @@ class Create_Contrapunctus (pga.PGA):
                     prim_seen = True
                 else:
                     prim_seen = False
-                self.check_tune (diff [1])
+                self.check_interval (diff [1])
                 if diff [1] > 2:
                     # Jump
                     if jump [1] == sgn (off_n [1] - off_o [1]):
@@ -328,7 +329,7 @@ class Create_Contrapunctus (pga.PGA):
         for i in range (self.v1length):
             a = self.get_allele (p, pop, i)
             b = Bar (8, 8)
-            b.add (Tone (dorian [a], 8, unit = 8))
+            b.add (Tone (hypodorian [a], 8, unit = 8))
             v1.add (b)
         # 0.1.1: "The final must be approached by step. If the final is
         # approached from below, then the leading tone must be raised in
@@ -348,7 +349,7 @@ class Create_Contrapunctus (pga.PGA):
         tune = Tune \
             ( number = 1
             , meter  = Meter (4, 4)
-            , Q      = '1/4=370'
+            , Q      = '1/4=200'
             , key    = 'DDor'
             , unit   = 8
             , score  = '(V2) (V1)'
@@ -441,7 +442,7 @@ def main (argv = None):
         ( "-l", "--tune-length"
         , help    = "Length of generated tune"
         , type    = int
-        , default = 11
+        , default = 12
         )
     cmd.add_argument \
         ( "-O", "--output-file"

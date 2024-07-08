@@ -80,4 +80,5 @@ class Gregorian (object):
 
 # end class Gregorian
 
-dorian = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'c'])
+dorian     = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'c'])
+hypodorian = Gregorian (['A,', 'B,', 'C', 'D', 'E', 'F', 'G'])
