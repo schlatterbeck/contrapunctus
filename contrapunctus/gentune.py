@@ -225,6 +225,8 @@ class Create_Contrapunctus (pga.PGA):
                     if prim_seen:
                         badness *= 10.0
                     prim_seen = True
+                else:
+                    prim_seen = False
                 self.check_tune (diff [1])
                 if diff [1] > 2:
                     # Jump
