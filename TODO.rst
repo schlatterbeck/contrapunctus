@@ -4,6 +4,9 @@ TO DO
 - Takt auf zwei Ganze (Brevis)
 - Takt bis Achteln erweitern
 - schwere, leichte und halbschwere Taktzeiten definieren
+- diff und dist auf Melodie- und Simultan-/Harmonieintervalle umbenennen
+- Kategorien für perfekte und imperfekte Konsonanzen und Dissonanzen macehn
+- Bewegungsrichtungen definieren
 - Überbindungen 
 
   * was darf gebunden werden?
@@ -19,6 +22,8 @@ TO DO
 - Ténor einbauen?
 - seperate Zielfunktion für C.F. (multiobjective optimization)
 - Cambiata
+- C.F. soll auch Halbe können (extra Regel für Synkopen?)
+- C.F. auch angeben zu können wäre gut
 
 wichtige Rand-/ Zwischennotizen
 --------------------------------
@@ -33,4 +38,4 @@ wichtige Rand-/ Zwischennotizen
   * z.B. c' und e', dann d' und fis' -> zwischen c' und fis' ü4 (Tritonus)
 
 - alterierte Töne nur bei Terz und Sext möglich
-- Viertel müssen auf leichte Zeit einsetzen
+- Viertel müssen auf leichte Zeit einsetzen (=leichte Halbe)
