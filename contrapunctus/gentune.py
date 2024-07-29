@@ -49,8 +49,8 @@ class Create_Contrapunctus (pga.PGA):
         self.args = args
         assert args.tune_length > 3
         self.tunelength = args.tune_length
-        # The first voice is the cantus firmus, the second voice is the
-        # contrapunctus.
+        # The first voice in the gene is the cantus firmus, the second
+        # voice is the contrapunctus.
         # Length of the automatically-generated voices
         # Now that we allow up to 1/8 notes the gene for the first voice
         # is longer.
@@ -80,11 +80,10 @@ class Create_Contrapunctus (pga.PGA):
         # - pitch 0-16 (1/8 light can only be 1/8)
         # if the previous note is longer some of the genes are not used
 
-        self.v1length   = self.tunelength - 3
-        self.v2length   = self.tunelength - 2
-        init = []
-        init.extend ([(0,7)] * self.v1length)
-        for i in range (self.v2length):
+        self.cflength   = self.tunelength - 3
+        self.cplength   = self.tunelength - 2
+        init            = [(0,7)] * self.cflength
+        for i in range (self.cplength):
             init.append ((1,  3)) # duration heavy
             init.append ((0,  7)) # pitch
             init.append ((0,  1)) # duration light 1/4
@@ -158,8 +157,10 @@ class Create_Contrapunctus (pga.PGA):
         # We iterate over the bars in each tune.
         # cf: Cantus Firmus (Object of class 'Bar')
         # cp: Contrapunctus (Object of class 'Bar')
-        for cp, cf in zip (tune.iter (0), tune.iter (1)):
-            # For now a bar in the cantus firmus (index 1) only
+        for cf, cp in zip (tune.iter (0), tune.iter (1)):
+            assert cp.voice.id == 'Contrapunctus'
+            assert cf.voice.id == 'Cantus_Firmus'
+            # For now a bar in the cantus firmus only
             # contains one single note, the 0th object in bar
             cf_tone = cf.objects [0].halftone.offset
             prev_cf = cf.prev
@@ -322,42 +323,42 @@ class Create_Contrapunctus (pga.PGA):
     # end def from_gene
 
     def phenotype (self, p, pop):
-        v1 = Voice (id = 'V1')
+        cf = Voice (id = 'Cantus_Firmus')
         b  = Bar (8, 8)
         b.add (Tone (dorian.finalis, 8, unit = 8))
-        v1.add (b)
-        for i in range (self.v1length):
+        cf.add (b)
+        for i in range (self.cflength):
             a = self.get_allele (p, pop, i)
             b = Bar (8, 8)
             b.add (Tone (hypodorian [a], 8, unit = 8))
-            v1.add (b)
+            cf.add (b)
         # 0.1.1: "The final must be approached by step. If the final is
         # approached from below, then the leading tone must be raised in
         # a minor key (Dorian, Hypodorian, Aeolian, Hypoaeolian), but
         # not in Phrygian or Hypophrygian mode. Thus, in the Dorian mode
         # on D a C# is necessary at the cadence." We achieve this by
         # hard-coding the tone prior to the final to be the step2 for
-        # the first voice.
+        # the cantus firmus
         # 1.1: "The counterpoint must begin and end on a perfect
         # consonance" is also achived by hard-coding the last tone.
         b  = Bar (8, 8)
         b.add (Tone (dorian.step2, 8, unit = 8))
-        v1.add (b)
+        cf.add (b)
         b  = Bar (8, 8)
         b.add (Tone (dorian.finalis, 8, unit = 8))
-        v1.add (b)
+        cf.add (b)
         tune = Tune \
             ( number = 1
             , meter  = Meter (4, 4)
             , Q      = '1/4=200'
             , key    = 'DDor'
             , unit   = 8
-            , score  = '(V2) (V1)'
+            , score  = '(Contrapunctus) (Cantus_Firmus)'
             )
-        tune.add (v1)
-        v2  = Voice (id = 'V2')
-        off = self.v1length
-        for i in range (self.v2length):
+        tune.add (cf)
+        cp  = Voice (id = 'Contrapunctus')
+        off = self.cflength
+        for i in range (self.cplength):
             boff = 0 # offset in bar
             v = []
             for j in range (11):
@@ -392,7 +393,7 @@ class Create_Contrapunctus (pga.PGA):
             if boff == 7:
                 b.add (Tone (dorian [v [10]], 1, unit = 8))
                 boff += 1
-            v2.add (b)
+            cp.add (b)
         b  = Bar (8, 8)
         # 0.1.1: "The final must be approached by step. If the final is
         # approached from below, then the leading tone must be raised in
@@ -400,13 +401,13 @@ class Create_Contrapunctus (pga.PGA):
         # not in Phrygian or Hypophrygian mode. Thus, in the Dorian mode
         # on D a C# is necessary at the cadence." We achieve this by
         # hard-coding the tone prior to the final to be the
-        # subsemitonium for the second voice.
+        # subsemitonium for the contrapunctus.
         b.add (Tone (dorian.subsemitonium, 8, unit = 8))
-        v2.add (b)
+        cp.add (b)
         b  = Bar (8, 8)
         b.add (Tone (dorian [7], 8, unit = 8))
-        v2.add (b)
-        tune.add (v2)
+        cp.add (b)
+        tune.add (cp)
         return tune
     # end def phenotype
 

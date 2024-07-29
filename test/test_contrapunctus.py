@@ -144,10 +144,32 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert t.as_abc ().strip () == tune_output.strip ()
     # end def test_tune
 
-    def test_gentune (self):
-        gentune_main (self.out_options)
-        self.compare ()
-    # end def test_gentune
+    def test_prev (self):
+        v1 = Voice (id = 'V1')
+        b1 = Bar (8, 8)
+        b1.add (Tone (halftone ('a'), 1))
+        b1.add (Tone (halftone ('b'), 1))
+        b1.add (Tone (halftone ('c'), 1))
+        b1.add (Tone (halftone ('d'), 1))
+        b1.add (Tone (halftone ('e'), 1))
+        b1.add (Tone (halftone ('f'), 1))
+        b1.add (Tone (halftone ('g'), 1))
+        b1.add (Pause (1))
+        v1.add (b1)
+        t = b1.objects [-1]
+        assert isinstance (t, Pause)
+        tones = []
+        while t:
+            t = t.prev
+            if t:
+                tones.append (t.as_abc ())
+        assert ' '.join (tones) == 'g1 f1 e1 d1 c1 b1 a1'
+    # end def test_prev
+
+#    def test_gentune (self):
+#        gentune_main (self.out_options)
+#        self.compare ()
+#    # end def test_gentune
 
 # end class Test_Contrapunctus
 

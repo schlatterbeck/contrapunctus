@@ -458,6 +458,8 @@ class Bar_Object (autosuper):
         self.duration = duration
         # offset in Bar (parent), filled when inserting into Bar
         self.offset   = None
+        # Index into Bar (parent)
+        self.idx      = None
         self.bar      = None
         self.unit     = unit
         self._prev    = None
@@ -478,15 +480,18 @@ class Bar_Object (autosuper):
     def length (self, unit = None):
         unit = unit or self.unit
         l = Rational (self.duration, self.unit) * Rational (unit)
-        return l
+        assert int (l) == l
+        return int (l)
     # end def length
     __len__ = length
 
-    def register (self, bar, offset):
+    def register (self, bar, offset, idx):
         assert self.offset is None
+        assert self.idx    is None
         assert self.bar    is None
         self.bar    = bar
         self.offset = offset
+        self.idx    = idx
     # end def register
 
 # end class Bar_Object
@@ -705,8 +710,9 @@ for m in Key.modes:
 class Bar (autosuper):
 
     def __init__ (self, duration, unit = 8, *bar_object):
-        self.duration = Rational (duration)
-        self.dur_sum  = Rational (0)
+        assert isinstance (duration, int)
+        self.duration = duration
+        self.dur_sum  = 0
         self.objects  = []
         self.unit     = unit
         self.prev     = None
@@ -722,7 +728,7 @@ class Bar (autosuper):
                 ( "Overfull bar: %s + %s > %s"
                 % (self.dur_sum, bar_object.duration, self.duration)
                 )
-        bar_object.register (self, self.dur_sum)
+        bar_object.register (self, self.dur_sum, len (self.objects))
         if self.objects:
             prev = self.objects [-1]
             bar_object._prev = prev
@@ -758,6 +764,13 @@ class Voice (autosuper):
             self.add (b)
         self.properties = properties
     # end def __init__
+
+    def __getattr__ (self, prop):
+        try:
+            v = self.properties [prop]
+        except KeyError as err:
+            raise AttributeError (err)
+    # end def __getattr__
 
     def add (self, bar):
         assert bar.next is None
