@@ -718,6 +718,7 @@ class Bar (autosuper):
         self.prev     = None
         self.next     = None
         self.voice    = None
+        self.idx      = None
         for b in bar_object:
             self.add (b)
     # end def __init__
@@ -775,10 +776,12 @@ class Voice (autosuper):
     def add (self, bar):
         assert bar.next is None
         assert bar.prev is None
+        assert bar.idx  is None
         if self.bars:
             assert self.bars [-1].next is None
             self.bars [-1].next = bar
             bar.prev = self.bars [-1]
+        bar.idx = len (self.bars)
         self.bars.append (bar)
         bar.voice = self
     # end def add

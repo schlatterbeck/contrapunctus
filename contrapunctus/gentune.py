@@ -28,6 +28,305 @@ import pga
 from   .tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
 from   .gregorian import dorian, hypodorian
 from   argparse   import ArgumentParser
+from   copy       import deepcopy
+
+class Check:
+    """ Super class of all checks
+        This gets the description of the check.
+    """
+    prefix = ''
+
+    def __init__ (self, desc, badness, ugliness):
+        self.desc     = desc
+        self.badness  = badness
+        self.ugliness = ugliness
+    # end def __init__
+
+    def __str__ (self):
+        """ Describes a failed check
+            This interpolates the parameters of the last check into the
+            desc attribute.
+        """
+        self.compute_description ()
+        suffix = ' (B: %(badness)g U: %(ugliness)g)'
+        return (self.prefix + self.desc + suffix) % self.__dict__
+    # end def __str__
+    __repr__ = __str__
+
+    def compute_description (self):
+        raise NotImplementedError ('Need compute_description method')
+    # end def compute_description
+
+# end class Check
+
+class Check_Melody (Check):
+    """ Common base class for melody checks
+    """
+    def __init__ \
+        ( self, desc, interval
+        , badness = 0, ugliness = 0
+        , signed      = False
+        , modulo      = True
+        , only_repeat = False
+        ):
+        super ().__init__ (desc, badness, ugliness)
+        self.interval    = set (interval)
+        self.signed      = signed
+        self.modulo      = modulo
+        self.only_repeat = only_repeat
+        self.reset ()
+    # end def __init__
+
+    def compute_description (self):
+        bar   = self.current.bar
+        voice = bar.voice.id
+        self.prefix = \
+            ('Voice: %s bar: %d note: %d '
+            % (voice, bar.idx + 1, current.idx + 1)
+            )
+    # end def compute_description
+
+    def compute_interval (self):
+        d = self.current.halftone.offset - self.prev.halftone.offset
+        if not self.signed:
+            d = abs (d)
+        if self.modulo:
+            d %= 12
+        return d
+    # end def compute_interval
+
+    def reset (self):
+        self.current    = None
+        self.prev_match = False
+        self.prev       = None
+    # end def reset
+
+# end class Check_Melody
+
+class Check_Melody_Interval (Check_Melody):
+    """ Check on the progression of a melody
+        This compares two consecutive tones of a voice.
+        We keep a history of the last tone.
+    """
+
+    def check (self, current):
+        if not self.prev:
+            self.prev = current
+            return 0, 0
+        self.current = current
+        d = self.compute_interval ()
+        self.prev = self.current
+        if d in self.interval:
+            rv = (self.badness, self.ugliness)
+            if self.only_repeat and not self.prev_match:
+                rv = (0, 0)
+            self.prev_match = True
+            return rv
+        self.prev_match = False
+        return 0, 0
+    # end def check
+
+# end class Check_Melody_Interval
+
+class Check_Melody_Jump (Check_Melody):
+
+    def __init__ (self, desc, badness = 0, ugliness = 0):
+        super ().__init__ (desc, (), badness, ugliness, True, False)
+    # end def __init__
+
+    def check (self, current):
+        if not self.prev:
+            self.prev = current
+            return 0, 0
+        self.current = current
+        d = self.compute_interval ()
+        self.prev = self.current
+        b = 0
+        u = 0
+        # We might want to make the badness and the ugliness different
+        # for jumps and directional movements after a jump
+        if abs (d) > 2:
+            if self.prev_match:
+                b = self.badness
+                u = self.ugliness
+            self.prev_match = sgn (d)
+        else: # Step not jump
+            if self.prev_match and self.prev_match == sgn (d):
+                b = self.badness
+                u = self.ugliness
+            self.prev_match = 0
+        return b, u
+    # end def check
+
+# end class Check_Melody_Jump
+
+class Check_Interval (Check):
+
+    def __init__ \
+        ( self, desc, interval
+        , badness = 0, ugliness = 0
+        , modulo = False
+        ):
+        self.interval = interval
+        self.modulo   = modulo
+        super ().__init__ (desc, badness, ugliness)
+    # end def __init__
+
+    def check (self, cf_obj, cp_obj):
+        d = self.compute_interval (cf_obj, cp_obj)
+        if d in self.interval:
+            return self.badness, self.ugliness
+        return 0, 0
+    # end def check
+
+    def compute_interval (self, cf_obj, cp_obj):
+        self.cft = cf_obj.halftone.offset
+        self.cpt = cp_obj.halftone.offset
+        d = self.cft - self.cpt
+        if self.modulo:
+            d %= 12
+        return d
+    # end def compute_interval
+
+# end class Check_Interval
+
+class Check_First_Interval (Check_Interval):
+    """ Note that the interval is *inverted*: Only the elements in
+        interval are allowed.
+    """
+    def check (self, cf_obj, cp_obj):
+        # Only check for the very first object
+        # Not sure if this holds for *all* cp_objects in the first bar,
+        # if this should be the case we need to use cf_obj below.
+        if cp_obj.prev:
+            return 0, 0
+        d = self.compute_interval (cf_obj, cp_obj)
+        if d not in self.interval:
+            return self.badness, self.ugliness
+        return 0, 0
+    # end def check
+
+# end def Check_First_Interval
+
+class Check_Interval_Max (Check_Interval):
+
+    def __init__ \
+        ( self, desc, maximum
+        , badness = 0, ugliness = 0
+        ):
+        self.maximum = maximum
+        super ().__init__ (desc, None, badness, ugliness, False)
+    # end def __init__
+
+    def check (self, cf_obj, cp_obj):
+        d = self.compute_interval (cf_obj, cp_obj)
+        if d > self.maximum:
+            return self.badness, self.ugliness
+        return 0, 0
+    # end def check
+
+# end class Check_Interval_Max
+
+class Check_Interval_Min (Check_Interval):
+
+    def __init__ \
+        ( self, desc, minimum
+        , badness = 0, ugliness = 0
+        ):
+        self.minimum = minimum
+        super ().__init__ (desc, None, badness, ugliness, False)
+    # end def __init__
+
+    def check (self, cf_obj, cp_obj):
+        d = self.compute_interval (cf_obj, cp_obj)
+        if d < self.minimum:
+            return self.badness, self.ugliness
+        return 0, 0
+    # end def check
+
+# end class Check_Interval_Min
+
+class Check_Jump_2 (Check):
+
+    def __init__ (self, desc, limit = 2, badness = 0, ugliness = 0):
+        super ().__init__ (desc, badness, ugliness)
+        self.limit = limit
+    # end def __init__
+
+    def check (self, cf_obj, cp_obj):
+        if not self.p_cf_obj:
+            self.p_cf_obj = cf_obj
+            self.p_cp_obj = cp_obj
+            return 0, 0
+        d1 = cf_obj.halftone.offset - self.p_cf_obj.halftone.offset
+        d2 = cp_obj.halftone.offset - self.p_cp_obj.halftone.offset
+        self.p_cf_obj = cf_obj
+        self.p_cp_obj = cp_obj
+        if d1 > self.limit and d2 > self.limit:
+            return self.badness, self.ugliness
+        return 0, 0
+    # end def check
+
+    def reset (self):
+        self.p_cf_obj = None
+        self.p_cp_obj = None
+    # end def reset
+
+# end class Check_Jump_2
+
+class Check_Interval_Direction (Check_Interval):
+
+    def __init__ \
+        ( self, desc, interval
+        , badness = 0, ugliness = 0
+        , modulo = False
+        , dir    = 'same'
+        ):
+        super ().__init__ (desc, interval, badness, ugliness, modulo)
+        self.dir = dir
+    # end def __init__
+
+    def check (self, cf_obj, cp_obj):
+        if not self.p_cf_obj:
+            self.p_cf_obj = cf_obj
+            self.p_cp_obj = cp_obj
+            return 0, 0
+        d = self.compute_interval (cf_obj, cp_obj)
+        self.p_cf_obj = cf_obj
+        self.p_cp_obj = cp_obj
+        # An empty interval matches everything
+        if  (   (not self.interval or d in self.interval)
+            and self.direction_check ()
+            ):
+            return self.badness, self.ugliness
+        return 0, 0
+    # end def check
+
+    def compute_interval (self, cf_obj, cp_obj):
+        self.dir_cf = sgn \
+            (cf_obj.halftone.offset - self.p_cf_obj.halftone.offset)
+        self.dir_cp = sgn \
+            (cp_obj.halftone.offset - self.p_cp_obj.halftone.offset)
+        return super ().compute_interval (cf_obj, cp_obj)
+    # end def compute_interval
+
+    def direction_check (self):
+        if self.dir == 'same':
+            return self.dir_cf == self.dir_cp
+        elif self.dir == 'different':
+            return self.dir_cf == self.dir_cp
+        elif self.dir == 'zero':
+            return self.dir_cf == self.dir_cp == 0
+        else:
+            assert 0
+    # end def direction_check
+
+    def reset (self):
+        self.p_cf_obj = None
+        self.p_cp_obj = None
+    # end def reset
+
+# end class Check_Interval_Direction
 
 class Create_Contrapunctus (pga.PGA):
 
@@ -44,6 +343,156 @@ class Create_Contrapunctus (pga.PGA):
         - Wikipedia section "First species" has an enumeration with 9
           points, they are numbered 1.1--1.9 in the following.
     """
+
+    # 0.1.2: "Permitted melodic intervals are the perfect fourth, fifth,
+    # and octave, as well as the major and minor second, major and minor
+    # third, and ascending minor sixth. The ascending minor sixth must
+    # be immediately followed by motion downwards." This means we allow
+    # the following halftone intervals: 1, 2, 3, 4, 5, 7, 8, 9, 12 and
+    # forbid the following: 0, 6, 10, 11
+    # We currently allow sixth in both directions
+    # We allow unison in the second voice but not several in a series.
+    melody_checks_cf = \
+        [ Check_Melody_Interval
+            ( "0.1.2: no seventh (Septime)"
+            , interval = (10, 11)
+            , badness  = 10.0
+            )
+        , Check_Melody_Interval
+            ( "0.1.2: no Devils interval"
+            , interval = (6,)
+            , badness  = 10.0
+            )
+        , Check_Melody_Interval
+            ("0.1.2: No unison (Prim) allowed"
+            , interval =  (0,)
+            , badness  = 10.0
+            , modulo   = False
+            )
+        , Check_Melody_Interval
+            ( "5 or 7"
+            , interval =  (5, 7)
+            , ugliness = 1.0
+            , modulo   = False
+            )
+        , Check_Melody_Interval
+            ( "8 or 9"
+            , interval =  (8, 9)
+            , ugliness = 10.0
+            , modulo   = False
+            )
+        , Check_Melody_Interval
+            ( "Octave"
+            , interval =  (12,)
+            , ugliness = 2.0
+            , modulo   = False
+            )
+        , Check_Melody_Jump
+            ( "Jump"
+            , badness = 10.0
+            )
+        ]
+    melody_checks_cp = \
+        [ Check_Melody_Interval
+            ( "0.1.2: no seventh (Septime)"
+            , interval = (10, 11)
+            , badness  = 10.0
+            )
+        , Check_Melody_Interval
+            ( "0.1.2: no Devils interval"
+            , interval = (6,)
+            , badness  = 10.0
+            )
+        , Check_Melody_Interval
+            ("0.1.2: No consecutive unison (Prim) allowed"
+            , interval    = (0,)
+            , badness     = 10.0
+            , modulo      = False
+            , only_repeat = True
+            )
+        , Check_Melody_Jump
+            ( "Jump"
+            , badness = 10.0
+            )
+        ]
+    interval_checks = \
+        [ Check_Interval
+            ( "1.2: Use no unisons except at the beginning or end"
+            , interval = (0,)
+            , badness  = 10.0
+            , modulo   = False
+            )
+        , Check_Interval
+            ( "No Sekund"
+            , interval = (1, 2)
+            , badness  = 10.0
+            , modulo   = True
+            )
+        , Check_Interval
+            ( "Magdalena: 5/6 verboten"
+            , interval = (5, 6)
+            , badness  = 10.0
+            , modulo   = True
+            )
+        , Check_Interval
+            ( "Magdalena: 10/11 verboten"
+            , interval = (10, 11)
+            , badness  = 10.0
+            , modulo   = True
+            )
+        # 1.6: Attempt to keep any two adjacent parts within a tenth
+        # of each other, unless an exceptionally pleasing line can
+        # be written by moving outside of that range.
+        , Check_Interval_Max
+            ( "max. 16"
+            , maximum  = 16
+            , badness  = 10.0
+            )
+        , Check_Interval_Max
+            ( "Magdalena: intervals above octave should be avoided"
+            , maximum  = 12
+            , ugliness = 1.0
+            )
+        , Check_Interval_Min
+            ( "Upper voice must be *up*"
+            , minimum  = 0
+            , badness  = 10.0
+            )
+        , Check_First_Interval
+            ( "1.1. Begin and end on either unison, octave, fifth,"
+              " unless the added part is underneath [it isn't here],"
+              " in which case begin and end only on unison or octave."
+            , interval = (0, 7, 12)
+            , badness  = 100.
+            )
+        ]
+    interval_history_checks = \
+        [ Check_Jump_2
+            ( "Not both voices may jump"
+            , badness  = 10.0
+            )
+        , Check_Interval_Direction
+            ( "Magdalena: Avoid parallel fifth or octaves: Ensure that"
+              " the last direction (from where is the fifth or octave"
+              " approached) is different."
+            , interval = (7, 12)
+            , dir      = 'same'
+            , badness  = 9.0
+            )
+        , Check_Interval_Direction
+            ( "For sext (sixth) or terz (third) don't allow several in a row"
+            , interval = (3, 4, 8, 9)
+            , dir      = 'zero'
+            , ugliness = 3
+            )
+        , Check_Interval_Direction
+            ( "Generally it's better that voices move in opposite"
+              " direction (or one stays the same if allowed)"
+            , interval = () # All
+            , dir      = 'same'
+            , ugliness = 0.1
+            )
+        ]
 
     def __init__ (self, args):
         self.args = args
@@ -114,37 +563,19 @@ class Create_Contrapunctus (pga.PGA):
         super ().__init__ (type (2), len (init), **d)
     # end def __init__
 
-    def check_interval (self, diff):
-        """ Check current note against *last* note (in time)
-            These are common for both voices.
-            We return the badness and the ugliness.
-        """
-        ugliness = 0.0
-        badness  = 1.0
-        # 0.1.2: no Devils interval:
-        if diff % 12 == 6:
-            badness *= 10.0
-        # 0.1.2: no seventh (Septime)
-        if 10 <= diff % 12 <= 11:
-            badness *= 10.0
-        # 0.1.2: no Devils interval:
-        if diff % 12 == 6:
-            badness *= 10.0
-        return badness, ugliness
-    # end def check_interval
-
     def evaluate (self, p, pop):
-        jumpcount  = 0.0
-        badness    = 1.0
         tune       = self.phenotype (p, pop)
-        jump       = [False, False]
+        badness    = 1.0
         ugliness   = 1.0
-        prim_seen  = False
-        par_fifth  = False
-        par_oct    = False
-        quint_seen = False
-        okt_seen   = False
         dir        = (-1, 1)
+        # Reset history
+        for check in self.melody_checks_cf:
+            check.reset ()
+        for check in self.melody_checks_cp:
+            check.reset ()
+        for check in self.interval_history_checks:
+            check.reset ()
+        # interval_checks do not need reset
 
         # A tune contains two (or theoretically more) voices. We can
         # iterate over the bars of a voice via tune.iter (N) where N is
@@ -159,134 +590,46 @@ class Create_Contrapunctus (pga.PGA):
         # cp: Contrapunctus (Object of class 'Bar')
         for cf, cp in zip (tune.iter (0), tune.iter (1)):
             assert cp.voice.id == 'Contrapunctus'
-            assert cf.voice.id == 'Cantus_Firmus'
+            assert cf.voice.id == 'CantusFirmus'
+            cf_obj = cf.objects [0]
             # For now a bar in the cantus firmus only
             # contains one single note, the 0th object in bar
-            cf_tone = cf.objects [0].halftone.offset
-            prev_cf = cf.prev
-            if prev_cf:
-                p_cf_tone = prev_cf.objects [0].halftone.offset
-                d     = cf_tone - p_cf_tone
-                adiff = abs (d)
-                sdiff = sgn (d)
-                # 0.1.2: No unison (Prim) allowed
-                if adiff == 0:
-                    badness *= 10.0
-                b, u = self.check_interval (adiff)
-                badness  *= b
+            assert len (cf.objects) == 1
+
+            for check in self.melody_checks_cf:
+                b, u = check.check (cf_obj)
+                if b:
+                    badness *= b
                 ugliness += u
-                # First voice (Cantus Firmus):
-                if adiff > 2:
-                    # Jump
-                    if jump [0]:
-                        # No two jumps in series
-                        badness *= 10.0
-                    jump [0] = sdiff
-                    if adiff == 5 or adiff == 7:
-                        ugliness += 1
-                    if 8 <= adiff <= 9:
-                        ugliness += 10
-                    if adiff == 12:
-                        ugliness += 2
-                else:
-                    # Step not jump
-                    # After a jump movement should not be same direction
-                    if jump [0] == sdiff:
-                        badness *= 10.0
-                    jump [0] = False
+            bsum = usum = 0
             for cp_obj in cp.objects:
-                cp_tone = cp_obj.halftone.offset
-                # dist is the distance between cp and cf
-                dist = cf_tone - cp_tone
-                # First note
-                if not prev_cf:
-                    # 1.1. Begin and end on either unison, octave, fifth,
-                    # unless the added part is underneath [it isn't here],
-                    # in which case begin and end only on unison or octave.
-                    if dist != 0 and dist != 7 and dist != 12:
-                        badness *= 100.
-                    continue
-                p_cp_tone = cp_obj.prev.halftone.offset
+                for check in self.melody_checks_cp:
+                    b, u = check.check (cp_obj)
+                    bsum += b * len (cp_obj) / cp_obj.bar.unit
+                    usum += u * len (cp_obj) / cp_obj.bar.unit
+                for check in self.interval_checks:
+                    b, u = check.check (cf_obj, cp_obj)
+                    bsum += b * len (cp_obj) / cp_obj.bar.unit
+                    usum += u * len (cp_obj) / cp_obj.bar.unit
+                for check in self.interval_history_checks:
+                    b, u = check.check (cf_obj, cp_obj)
+                    bsum += b * len (cp_obj) / cp_obj.bar.unit
+                    usum += u * len (cp_obj) / cp_obj.bar.unit
 
-                off_o = (p_cp_tone, p_cf_tone)
-                off_n = (cp_tone,   cf_tone)
-                diff  = tuple (abs (off_o [n] - off_n [n]) for n in range (2))
-                # 0.1.2: "Permitted melodic intervals are the perfect fourth,
-                # fifth, and octave, as well as the major and minor second,
-                # major and minor third, and ascending minor sixth. The
-                # ascending minor sixth must be immediately followed by
-                # motion downwards." This means we allow the following
-                # halftone intervals: 1, 2, 3, 4, 5, 7, 8, 9, 12 and forbid
-                # the following: 0, 6, 10, 11
-                # We currently allow sixth in both directions
-                # We allow unison in the second voice but not several in a
-                # series.
-
-                # 0.1.2: No unison (Prim) allowed
-                if diff [1] == 0:
-                    if prim_seen:
-                        badness *= 10.0
-                    prim_seen = True
-                else:
-                    prim_seen = False
-                self.check_interval (diff [1])
-                if diff [1] > 2:
-                    # Jump
-                    if jump [1] == sgn (off_n [1] - off_o [1]):
-                        # No two jumps in same direction
-                        badness *= 10.0
-                    jump [1] = sgn (off_n [1] - off_o [1])
-                else:
-                    jump [1] = False
-                # Not both voices may jump
-                if jump [0] and jump [1]:
-                    badness *= 10.0
-                # Prime or Sekund between tones
-                # 1.2: Use no unisons except at the beginning or end.
-                if dist == 0:
-                    badness *= 10.0
-                if 1 <= dist % 12 <= 2:
-                    badness *= 10.0
                 # 1.4: Avoid moving in parallel fourths (In practice
                 # Palestrina and others frequently allowed themselves such
                 # progressions, especially if they do not involve the lowest
                 # of the parts)
-                # Magdalena: 5/6 verboten
-                if 5 <= dist % 12 <= 6:
-                    badness *= 10.0
-                # Magdalena: 10/11 verboten
-                if 10 <= dist <= 11:
-                    badness *= 10.0
+
                 # Don't get carried away :-)
                 # 0.2.5: "The interval of a tenth should not be exceeded
                 # between two adjacent parts unless by necessity." We limit
                 # this to a ninth.
-                # 1.6: Attempt to keep any two adjacent parts within a tenth
-                # of each other, unless an exceptionally pleasing line can
-                # be written by moving outside of that range.
-                if dist > 16:
-                    badness *= 10.0
-                # Magdalena: intervals above octave should be avoided
-                if dist > 12:
-                    ugliness += 1
-                # Upper voice must be *up*
-                if dist < 0:
-                    badness *= 10.0
-                dir  = tuple (sgn (off_n [n] - off_o [n]) for n in range (2))
-                # Magdalena: Avoid parallel fifth or octaves: Ensure that
-                # the last direction (from where is the fifth or octave
-                # approached) is different.
-                if dist == 7 or dist == 12:
-                    if dir [0] == dir [1]:
-                        badness *= 9.0
-                # For sext (sixth) or terz (third) don't allow several in a row
-                if 3 <= dist <= 4 or 8 <= dist <= 9:
-                    if dir [0] == dir [1] == 0:
-                        ugliness += 3
-                # Generally it's better that voices move in opposite
-                # direction (or one stays the same if allowed)
-                if dir [0] == dir [1]:
-                    ugliness += 0.1
+
+            ugliness += usum
+            if bsum:
+                assert bsum > 1
+                badness *= bsum
         return ugliness * badness
     # end def evaluate
 
@@ -323,7 +666,7 @@ class Create_Contrapunctus (pga.PGA):
     # end def from_gene
 
     def phenotype (self, p, pop):
-        cf = Voice (id = 'Cantus_Firmus')
+        cf = Voice (id = 'CantusFirmus')
         b  = Bar (8, 8)
         b.add (Tone (dorian.finalis, 8, unit = 8))
         cf.add (b)
@@ -353,7 +696,7 @@ class Create_Contrapunctus (pga.PGA):
             , Q      = '1/4=200'
             , key    = 'DDor'
             , unit   = 8
-            , score  = '(Contrapunctus) (Cantus_Firmus)'
+            , score  = '(Contrapunctus) (CantusFirmus)'
             )
         tune.add (cf)
         cp  = Voice (id = 'Contrapunctus')
@@ -383,6 +726,7 @@ class Create_Contrapunctus (pga.PGA):
                 b.add (Tone (dorian [v [6]], l, unit = 8))
                 boff += l
             if boff == 5:
+                # Probably never reached, prev tone may not be len 1
                 b.add (Tone (dorian [v [7]], 1, unit = 8))
                 boff += 1
             if boff == 6:
