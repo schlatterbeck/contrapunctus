@@ -31,6 +31,7 @@ import contrapunctus.gregorian
 from pga.testsupport import PGA_Test_Instrumentation
 from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 from contrapunctus.gentune import main as gentune_main
+from contrapunctus.checks import *
 
 tune_output = """\
 X: 1
@@ -165,6 +166,163 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
                 tones.append (t.as_abc ())
         assert ' '.join (tones) == 'g1 f1 e1 d1 c1 b1 a1'
     # end def test_prev
+
+    def test_check_harmony_interval_max (self):
+        check = Check_Harmony_Interval_Max \
+            ('must be up', maximum = 12, badness = 1)
+        t_cf  = Tone (halftone ('E'), 8)
+        t_cp  = Tone (halftone ('e'), 8)
+        t_cp2 = Tone (halftone ('f'), 8)
+        # This is the normal order of parameters for checks, cf first
+        b, u = check.check (t_cf, t_cp)
+        assert b == 0
+        b, u = check.check (t_cf, t_cp2)
+        assert b == 1
+    # end def test_check_harmony_interval_max
+
+    def test_check_harmony_interval_min (self):
+        check = Check_Harmony_Interval_Min \
+            ('must be up', minimum = 0, badness = 1)
+        t_cp = Tone (halftone ('e'), 8)
+        t_cf = Tone (halftone ('f'), 8)
+        # This is the normal order of parameters for checks, cf first
+        b, u = check.check (t_cf, t_cp)
+        assert b == 1
+        b, u = check.check (t_cp, t_cf)
+        assert b == 0
+        b, u = check.check (t_cp, t_cp)
+        assert b == 0
+    # end def test_check_harmony_interval_min
+
+    def test_check_harmony_interval_octave (self):
+        check = Check_Harmony_Interval \
+            ( 'Sekund'
+            , interval = (1, 2)
+            , badness  = 1
+            , octave   = True
+            )
+        t_cp = Tone (halftone ('e'), 8)
+        t_cf = Tone (halftone ('f'), 8)
+        b, u = check.check (t_cf, t_cp)
+        assert b == 1
+        b, u = check.check (t_cp, t_cf)
+        assert b == 1
+
+        t_cp = Tone (halftone ('c'), 8)
+        t_cf = Tone (halftone ('d'), 8)
+        b, u = check.check (t_cf, t_cp)
+        assert b == 1
+        b, u = check.check (t_cp, t_cf)
+        assert b == 1
+
+        t_cp = Tone (halftone ('C'), 8)
+        t_cf = Tone (halftone ('d'), 8)
+        b, u = check.check (t_cf, t_cp)
+        assert b == 1
+        b, u = check.check (t_cp, t_cf)
+        assert b == 1
+
+        t_cp = Tone (halftone ('c'), 8)
+        t_cf = Tone (halftone ('e'), 8)
+        b, u = check.check (t_cf, t_cp)
+        assert b == 0
+        b, u = check.check (t_cp, t_cf)
+        assert b == 0
+    # end def test_check_harmony_interval_octave
+
+    def test_check_harmony_interval_sign (self):
+        check = Check_Harmony_Interval \
+            ( 'Sekund'
+            , interval = (1, 2)
+            , badness  = 1
+            , octave   = False
+            , signed   = True
+            )
+        t_cf = Tone (halftone ('e'), 8)
+        t_cp = Tone (halftone ('f'), 8)
+        b, u = check.check (t_cf, t_cp)
+        assert b == 1
+        b, u = check.check (t_cp, t_cf)
+        assert b == 0
+    # end def test_check_harmony_interval_sign
+
+    def test_check_harmony_melody_direction_same (self):
+        check = Check_Harmony_Melody_Direction \
+            ( 'Opposite direction'
+            , interval = () # All
+            , dir      = 'same'
+            , ugliness = 0.1
+            )
+        t_cf  = Tone (halftone ('D'), 8)
+        t_cp1 = Tone (halftone ('B'), 4)
+        t_cp2 = Tone (halftone ('B'), 4)
+        b_cf = Bar (8, 8)
+        b_cp = Bar (8, 8)
+        b_cf.add (t_cf)
+        b_cp.add (t_cp1)
+        b_cp.add (t_cp2)
+        b, u = check.check (t_cf, t_cp1)
+        assert u == 0
+        b, u = check.check (t_cf, t_cp2)
+        assert u == 0
+    # end def test_check_harmony_melody_direction_same
+
+    def test_check_harmony_melody_direction_zero (self):
+        check = Check_Harmony_Melody_Direction \
+            ( 'No sixth or third in a row'
+            , interval = (3, 4, 8, 9)
+            , dir      = 'zero'
+            , ugliness = 3
+            )
+        # Although D-^A (8) and D-B (9) are both sixth they don't trigger
+        # if 8 follows 9.
+        t_cf  = Tone (halftone ('D'), 8)
+        t_cp1 = Tone (halftone ('^A'), 2)
+        t_cp2 = Tone (halftone ('^A'), 2)
+        t_cp3 = Tone (halftone ('B'), 2)
+        t_cp4 = Tone (halftone ('B'), 2)
+        b_cf = Bar (8, 8)
+        b_cp = Bar (8, 8)
+        b_cf.add (t_cf)
+        b_cp.add (t_cp1)
+        b_cp.add (t_cp2)
+        b_cp.add (t_cp3)
+        b_cp.add (t_cp4)
+        b, u = check.check (t_cf, t_cp1)
+        assert u == 0
+        b, u = check.check (t_cf, t_cp2)
+        assert u == 3
+        # Should this trigger, too??
+        b, u = check.check (t_cf, t_cp3)
+        assert u == 0
+        b, u = check.check (t_cf, t_cp4)
+        assert u == 3
+    # end def test_check_harmony_melody_direction_zero
+
+    def test_check_melody_interval (self):
+        check = Check_Melody_Interval \
+            ( 'Devils interval'
+            , interval = (6,)
+            , badness  = 10
+            )
+        bar = Bar (8, 8)
+        t1  = Tone (halftone ('C'), 1)
+        bar.add (t1)
+        t2  = Tone (halftone ('^F'), 1)
+        bar.add (t2)
+        t3  = Tone (halftone ('C'), 1)
+        bar.add (t3)
+        t4  = Tone (halftone ('^f'), 1)
+        bar.add (t4)
+        b, u = check.check (t1)
+        assert b == 0
+        b, u = check.check (t2)
+        assert b == 10
+        b, u = check.check (t3)
+        assert b == 10
+        b, u = check.check (t4)
+        assert b == 10
+    # end def
 
 #    def test_gentune (self):
 #        gentune_main (self.out_options)

@@ -70,25 +70,25 @@ class Create_Contrapunctus (pga.PGA):
             ("0.1.2: No unison (Prim) allowed"
             , interval =  (0,)
             , badness  = 10.0
-            , modulo   = False
+            , octave   = False
             )
         , Check_Melody_Interval
             ( "5 or 7"
             , interval =  (5, 7)
             , ugliness = 1.0
-            , modulo   = False
+            , octave   = False
             )
         , Check_Melody_Interval
             ( "8 or 9"
             , interval =  (8, 9)
             , ugliness = 10.0
-            , modulo   = False
+            , octave   = False
             )
         , Check_Melody_Interval
             ( "Octave"
             , interval =  (12,)
             , ugliness = 2.0
-            , modulo   = False
+            , octave   = False
             )
         , Check_Melody_Jump
             ( "Jump"
@@ -110,7 +110,7 @@ class Create_Contrapunctus (pga.PGA):
             ("0.1.2: No consecutive unison (Prim) allowed"
             , interval    = (0,)
             , badness     = 10.0
-            , modulo      = False
+            , octave      = False
             , only_repeat = True
             )
         , Check_Melody_Jump
@@ -123,25 +123,25 @@ class Create_Contrapunctus (pga.PGA):
             ( "1.2: Use no unisons except at the beginning or end"
             , interval = (0,)
             , badness  = 10.0
-            , modulo   = False
+            , octave   = False
             )
         , Check_Harmony_Interval
             ( "No Sekund"
             , interval = (1, 2)
             , badness  = 10.0
-            , modulo   = True
+            , octave   = True
             )
         , Check_Harmony_Interval
             ( "Magdalena: 5/6 verboten"
             , interval = (5, 6)
             , badness  = 10.0
-            , modulo   = True
+            , octave   = True
             )
         , Check_Harmony_Interval
             ( "Magdalena: 10/11 verboten"
             , interval = (10, 11)
             , badness  = 10.0
-            , modulo   = True
+            , octave   = True
             )
         # 1.6: Attempt to keep any two adjacent parts within a tenth
         # of each other, unless an exceptionally pleasing line can
@@ -157,7 +157,7 @@ class Create_Contrapunctus (pga.PGA):
             , ugliness = 1.0
             )
         , Check_Harmony_Interval_Min
-            ( "Upper voice must be *up*"
+            ( "Contrapunctus voice must be *up*"
             , minimum  = 0
             , badness  = 10.0
             )
@@ -174,6 +174,10 @@ class Create_Contrapunctus (pga.PGA):
             ( "Not both voices may jump"
             , badness  = 10.0
             )
+        # This might need more history, should probably only trigger if
+        # the *last* was already a fifth or octave. And switching from
+        # fifth to octave ore vice-versa might still be allowed, in
+        # which case we would need *two* checks.
         , Check_Harmony_Melody_Direction
             ( "Magdalena: Avoid parallel fifth or octaves: Ensure that"
               " the last direction (from where is the fifth or octave"
@@ -182,6 +186,9 @@ class Create_Contrapunctus (pga.PGA):
             , dir      = 'same'
             , badness  = 9.0
             )
+        # This only checks for two of the *same*. Not if we have several
+        # sixth in a row with different CF. This might need changes to
+        # the underlying check implementation.
         , Check_Harmony_Melody_Direction
             ( "For sext (sixth) or terz (third) don't allow several in a row"
             , interval = (3, 4, 8, 9)

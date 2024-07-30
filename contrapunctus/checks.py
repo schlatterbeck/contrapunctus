@@ -72,13 +72,13 @@ class Check_Melody (Check):
         ( self, desc, interval
         , badness = 0, ugliness = 0
         , signed      = False
-        , modulo      = True
+        , octave      = True
         , only_repeat = False
         ):
         super ().__init__ (desc, badness, ugliness)
         self.interval    = set (interval)
         self.signed      = signed
-        self.modulo      = modulo
+        self.octave      = octave
         self.only_repeat = only_repeat
         self.reset ()
     # end def __init__
@@ -96,7 +96,7 @@ class Check_Melody (Check):
         d = self.current.halftone.offset - self.prev.halftone.offset
         if not self.signed:
             d = abs (d)
-        if self.modulo:
+        if self.octave:
             d %= 12
         return d
     # end def compute_interval
@@ -189,10 +189,12 @@ class Check_Harmony_Interval (Check_Harmony):
     def __init__ \
         ( self, desc, interval
         , badness = 0, ugliness = 0
-        , modulo = False
+        , octave = False
+        , signed = False
         ):
         self.interval = interval
-        self.modulo   = modulo
+        self.octave   = octave
+        self.signed   = signed
         super ().__init__ (desc, badness, ugliness)
     # end def __init__
 
@@ -208,8 +210,10 @@ class Check_Harmony_Interval (Check_Harmony):
         self.cp_obj = cp_obj
         self.cft    = cf_obj.halftone.offset
         self.cpt    = cp_obj.halftone.offset
-        d = self.cft - self.cpt
-        if self.modulo:
+        d = self.cpt - self.cft
+        if not self.signed:
+            d = abs (d)
+        if self.octave:
             d %= 12
         return d
     # end def compute_interval
@@ -241,7 +245,7 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
         , badness = 0, ugliness = 0
         ):
         self.maximum = maximum
-        super ().__init__ (desc, None, badness, ugliness, False)
+        super ().__init__ (desc, None, badness, ugliness, False, signed = True)
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
@@ -260,7 +264,7 @@ class Check_Harmony_Interval_Min (Check_Harmony_Interval):
         , badness = 0, ugliness = 0
         ):
         self.minimum = minimum
-        super ().__init__ (desc, None, badness, ugliness, False)
+        super ().__init__ (desc, None, badness, ugliness, False, signed = True)
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
@@ -307,11 +311,13 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
     def __init__ \
         ( self, desc, interval
         , badness = 0, ugliness = 0
-        , modulo = False
+        , octave = False
         , dir    = 'same'
         ):
-        super ().__init__ (desc, interval, badness, ugliness, modulo)
+        super ().__init__ \
+            (desc, interval, badness, ugliness, octave, signed = True)
         self.dir = dir
+        self.p_cf_obj = self.p_cp_obj = None
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
@@ -342,7 +348,8 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
 
     def direction_check (self):
         if self.dir == 'same':
-            return self.dir_cf == self.dir_cp
+            # Sign must be positive or negative not 0 (no direction)
+            return self.dir_cf and self.dir_cf == self.dir_cp
         elif self.dir == 'different':
             return self.dir_cf == self.dir_cp
         elif self.dir == 'zero':
