@@ -21,7 +21,8 @@
 # 02110-1301, USA.
 # ****************************************************************************
 
-from   .tune      import sgn
+from textwrap import fill as text_wrap
+from .tune    import sgn
 
 class Check:
     """ Super class of all checks
@@ -40,11 +41,23 @@ class Check:
             This interpolates the parameters of the last check into the
             desc attribute.
         """
+        if not sum (self.result):
+            return ''
         self.compute_description ()
-        suffix = ' (B: %(badness)g U: %(ugliness)g)'
-        return (self.prefix + self.desc + suffix) % self.__dict__
+        suffix = '    (B: %(badness)g U: %(ugliness)g)'
+        desc   = text_wrap \
+            ( self.desc
+            , initial_indent    = ' ' * 4
+            , subsequent_indent = ' ' * 4
+            )
+        return (self.prefix + ':\n' + desc + '\n' + suffix) % self.__dict__
     # end def __str__
     __repr__ = __str__
+
+    def check (self, *args, **kw):
+        self.result = self._check (*args, **kw)
+        return self.result
+    # end def check
 
     def compute_description (self):
         raise NotImplementedError ('Need compute_description method')
@@ -74,8 +87,8 @@ class Check_Melody (Check):
         bar   = self.current.bar
         voice = bar.voice.id
         self.prefix = \
-            ('Voice: %s bar: %d note: %d '
-            % (voice, bar.idx + 1, current.idx + 1)
+            ( '%s bar: %d note: %d'
+            % (voice, bar.idx + 1, self.current.idx + 1)
             )
     # end def compute_description
 
@@ -102,8 +115,9 @@ class Check_Melody_Interval (Check_Melody):
         We keep a history of the last tone.
     """
 
-    def check (self, current):
+    def _check (self, current):
         if not self.prev:
+            self.current = current
             self.prev = current
             return 0, 0
         self.current = current
@@ -117,7 +131,7 @@ class Check_Melody_Interval (Check_Melody):
             return rv
         self.prev_match = False
         return 0, 0
-    # end def check
+    # end def _check
 
 # end class Check_Melody_Interval
 
@@ -127,9 +141,9 @@ class Check_Melody_Jump (Check_Melody):
         super ().__init__ (desc, (), badness, ugliness, True, False)
     # end def __init__
 
-    def check (self, current):
+    def _check (self, current):
         if not self.prev:
-            self.prev = current
+            self.prev = self.current = current
             return 0, 0
         self.current = current
         d = self.compute_interval ()
@@ -149,11 +163,28 @@ class Check_Melody_Jump (Check_Melody):
                 u = self.ugliness
             self.prev_match = 0
         return b, u
-    # end def check
+    # end def _check
 
 # end class Check_Melody_Jump
 
-class Check_Harmony_Interval (Check):
+class Check_Harmony (Check):
+
+    def compute_description (self):
+        b_cp = self.cp_obj.bar
+        b_cf = self.cf_obj.bar
+        v_cp = b_cp.voice.id
+        v_cf = b_cf.voice.id
+        self.prefix = \
+            ('%s bar: %d note: %d %s bar: %d note: %d'
+            % ( v_cp, b_cp.idx + 1, self.cp_obj.idx + 1
+              , v_cf, b_cf.idx + 1, self.cf_obj.idx + 1
+              )
+            )
+    # end def compute_description
+
+# end class Check_Harmony
+
+class Check_Harmony_Interval (Check_Harmony):
 
     def __init__ \
         ( self, desc, interval
@@ -165,16 +196,18 @@ class Check_Harmony_Interval (Check):
         super ().__init__ (desc, badness, ugliness)
     # end def __init__
 
-    def check (self, cf_obj, cp_obj):
+    def _check (self, cf_obj, cp_obj):
         d = self.compute_interval (cf_obj, cp_obj)
         if d in self.interval:
             return self.badness, self.ugliness
         return 0, 0
-    # end def check
+    # end def _check
 
     def compute_interval (self, cf_obj, cp_obj):
-        self.cft = cf_obj.halftone.offset
-        self.cpt = cp_obj.halftone.offset
+        self.cf_obj = cf_obj
+        self.cp_obj = cp_obj
+        self.cft    = cf_obj.halftone.offset
+        self.cpt    = cp_obj.halftone.offset
         d = self.cft - self.cpt
         if self.modulo:
             d %= 12
@@ -187,7 +220,7 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
     """ Note that the interval is *inverted*: Only the elements in
         interval are allowed.
     """
-    def check (self, cf_obj, cp_obj):
+    def _check (self, cf_obj, cp_obj):
         # Only check for the very first object
         # Not sure if this holds for *all* cp_objects in the first bar,
         # if this should be the case we need to use cf_obj below.
@@ -197,7 +230,7 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
         if d not in self.interval:
             return self.badness, self.ugliness
         return 0, 0
-    # end def check
+    # end def _check
 
 # end def Check_Harmony_First_Interval
 
@@ -211,12 +244,12 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
         super ().__init__ (desc, None, badness, ugliness, False)
     # end def __init__
 
-    def check (self, cf_obj, cp_obj):
+    def _check (self, cf_obj, cp_obj):
         d = self.compute_interval (cf_obj, cp_obj)
         if d > self.maximum:
             return self.badness, self.ugliness
         return 0, 0
-    # end def check
+    # end def _check
 
 # end class Check_Harmony_Interval_Max
 
@@ -230,27 +263,29 @@ class Check_Harmony_Interval_Min (Check_Harmony_Interval):
         super ().__init__ (desc, None, badness, ugliness, False)
     # end def __init__
 
-    def check (self, cf_obj, cp_obj):
+    def _check (self, cf_obj, cp_obj):
         d = self.compute_interval (cf_obj, cp_obj)
         if d < self.minimum:
             return self.badness, self.ugliness
         return 0, 0
-    # end def check
+    # end def _check
 
 # end class Check_Harmony_Interval_Min
 
-class Check_Melody_Jump_2 (Check):
+class Check_Melody_Jump_2 (Check_Harmony):
 
     def __init__ (self, desc, limit = 2, badness = 0, ugliness = 0):
         super ().__init__ (desc, badness, ugliness)
         self.limit = limit
     # end def __init__
 
-    def check (self, cf_obj, cp_obj):
+    def _check (self, cf_obj, cp_obj):
         if not self.p_cf_obj:
-            self.p_cf_obj = cf_obj
-            self.p_cp_obj = cp_obj
+            self.p_cf_obj = self.cf_obj = cf_obj
+            self.p_cp_obj = self.cp_obj = cp_obj
             return 0, 0
+        self.cf_obj = cf_obj
+        self.cp_obj = cp_obj
         d1 = cf_obj.halftone.offset - self.p_cf_obj.halftone.offset
         d2 = cp_obj.halftone.offset - self.p_cp_obj.halftone.offset
         self.p_cf_obj = cf_obj
@@ -258,7 +293,7 @@ class Check_Melody_Jump_2 (Check):
         if d1 > self.limit and d2 > self.limit:
             return self.badness, self.ugliness
         return 0, 0
-    # end def check
+    # end def _check
 
     def reset (self):
         self.p_cf_obj = None
@@ -279,11 +314,13 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
         self.dir = dir
     # end def __init__
 
-    def check (self, cf_obj, cp_obj):
+    def _check (self, cf_obj, cp_obj):
         if not self.p_cf_obj:
-            self.p_cf_obj = cf_obj
-            self.p_cp_obj = cp_obj
+            self.p_cf_obj = self.cf_obj = cf_obj
+            self.p_cp_obj = self.cp_obj = cp_obj
             return 0, 0
+        self.cf_obj = cf_obj
+        self.cp_obj = cp_obj
         d = self.compute_interval (cf_obj, cp_obj)
         self.p_cf_obj = cf_obj
         self.p_cp_obj = cp_obj
@@ -293,7 +330,7 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
             ):
             return self.badness, self.ugliness
         return 0, 0
-    # end def check
+    # end def _check
 
     def compute_interval (self, cf_obj, cp_obj):
         self.dir_cf = sgn \

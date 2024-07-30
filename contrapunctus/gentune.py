@@ -198,9 +198,11 @@ class Create_Contrapunctus (pga.PGA):
         ]
 
     def __init__ (self, args):
-        self.args = args
+        self.do_explain  = False
+        self.explanation = []
+        self.args        = args
+        self.tunelength  = args.tune_length
         assert args.tune_length > 3
-        self.tunelength = args.tune_length
         # The first voice in the gene is the cantus firmus, the second
         # voice is the contrapunctus.
         # Length of the automatically-generated voices
@@ -280,6 +282,8 @@ class Create_Contrapunctus (pga.PGA):
             check.reset ()
         # harmony_interval_checks do not need reset
 
+        self.explanation = []
+
         # A tune contains two (or theoretically more) voices. We can
         # iterate over the bars of a voice via tune.iter (N) where N is
         # the voice index (starting with 0).
@@ -304,20 +308,24 @@ class Create_Contrapunctus (pga.PGA):
                 if b:
                     badness *= b
                 ugliness += u
+                self.explain (check)
             bsum = usum = 0
             for cp_obj in cp.objects:
                 for check in self.melody_checks_cp:
                     b, u = check.check (cp_obj)
                     bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
+                    self.explain (check)
                 for check in self.harmony_interval_checks:
                     b, u = check.check (cf_obj, cp_obj)
                     bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
+                    self.explain (check)
                 for check in self.harmony_melody_checks:
                     b, u = check.check (cf_obj, cp_obj)
                     bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
+                    self.explain (check)
 
                 # 1.4: Avoid moving in parallel fourths (In practice
                 # Palestrina and others frequently allowed themselves such
@@ -336,36 +344,51 @@ class Create_Contrapunctus (pga.PGA):
         return ugliness * badness
     # end def evaluate
 
-    def from_gene (self):
+    def explain (self, check):
+        if self.do_explain:
+            ex = str (check)
+            if ex:
+                self.explanation.append (ex)
+    # end def explain
+
+    def from_gene_lines (self, iter):
         idx = 0
-        with open (self.args.gene_file, 'r') as f:
-            c = 0
-            if self.args.best_eval:
-                for n, line in enumerate (f):
-                    if line.startswith ('The Best String:'):
-                        c = n
-                        break
-            for n, line in enumerate (f):
-                ln = n + 1 + c
-                if not line.startswith ('#'):
-                    continue
-                i, l = line [1:].split (':')
-                i = int (i)
-                if i != idx:
-                    raise ValueError ("Line %s: Invalid gene-file format" % ln)
-                for offs, i in enumerate (l.split (',')):
-                    if idx + offs + 1 > len (self):
-                        raise ValueError ("Line %s: Gene too long" % ln)
-                    i = int (i.strip ().lstrip ('[').rstrip (']').strip ())
-                    self.set_allele (1, pga.PGA_NEWPOP, idx + offs, i)
-                idx += offs + 1
-                if idx + 1 > len (self):
+        c   = 0
+        if self.args.best_eval:
+            for n, line in enumerate (iter):
+                if line.startswith ('The Best String:'):
+                    c = n
                     break
-            else:
+        for n, line in enumerate (iter):
+            ln = n + 1 + c
+            if not line.startswith ('#'):
+                continue
+            i, l = line [1:].split (':')
+            i = int (i)
+            if i != idx:
+                raise ValueError ("Line %s: Invalid gene-file format" % ln)
+            for offs, i in enumerate (l.split (',')):
+                if idx + offs + 1 > len (self):
+                    raise ValueError ("Line %s: Gene too long" % ln)
+                i = int (i.strip ().lstrip ('[').rstrip (']').strip ())
+                self.set_allele (1, pga.PGA_NEWPOP, idx + offs, i)
+            idx += offs + 1
+            if idx + 1 > len (self):
+                idx = 0
+                yield True
+        else:
+            if idx > 0:
                 raise ValueError ("Line %s: Gene too short" % ln)
-        self.print_string (sys.stdout, 1, pga.PGA_NEWPOP)
-        if self.args.verbose:
-            print (self.evaluate (1, pga.PGA_NEWPOP))
+    # end def from_gene_lines
+
+    def from_gene (self):
+        with open (self.args.gene_file, 'r') as f:
+            for k in self.from_gene_lines (f):
+                self.print_string (sys.stdout, 1, pga.PGA_NEWPOP)
+                if self.args.verbose:
+                    self.do_explain = True
+                    print ('Eval: %g' % self.evaluate (1, pga.PGA_NEWPOP))
+                    print ('\n'.join (self.explanation))
     # end def from_gene
 
     def phenotype (self, p, pop):
@@ -483,12 +506,13 @@ def main (argv = None):
     cmd.add_argument \
         ( "-R", "--random-seed"
         , help    = "Random seed initialisation for reproduceable results"
+                    " default=%(default)s"
         , type    = int
         , default = 23
         )
     cmd.add_argument \
         ( "-l", "--tune-length"
-        , help    = "Length of generated tune"
+        , help    = "Length of generated tune, default=%(default)s"
         , type    = int
         , default = 12
         )
