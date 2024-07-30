@@ -153,7 +153,7 @@ class Check_Melody_Jump (Check_Melody):
 
 # end class Check_Melody_Jump
 
-class Check_Interval (Check):
+class Check_Harmony_Interval (Check):
 
     def __init__ \
         ( self, desc, interval
@@ -181,9 +181,9 @@ class Check_Interval (Check):
         return d
     # end def compute_interval
 
-# end class Check_Interval
+# end class Check_Harmony_Interval
 
-class Check_First_Interval (Check_Interval):
+class Check_Harmony_First_Interval (Check_Harmony_Interval):
     """ Note that the interval is *inverted*: Only the elements in
         interval are allowed.
     """
@@ -199,9 +199,9 @@ class Check_First_Interval (Check_Interval):
         return 0, 0
     # end def check
 
-# end def Check_First_Interval
+# end def Check_Harmony_First_Interval
 
-class Check_Interval_Max (Check_Interval):
+class Check_Harmony_Interval_Max (Check_Harmony_Interval):
 
     def __init__ \
         ( self, desc, maximum
@@ -218,9 +218,9 @@ class Check_Interval_Max (Check_Interval):
         return 0, 0
     # end def check
 
-# end class Check_Interval_Max
+# end class Check_Harmony_Interval_Max
 
-class Check_Interval_Min (Check_Interval):
+class Check_Harmony_Interval_Min (Check_Harmony_Interval):
 
     def __init__ \
         ( self, desc, minimum
@@ -237,9 +237,9 @@ class Check_Interval_Min (Check_Interval):
         return 0, 0
     # end def check
 
-# end class Check_Interval_Min
+# end class Check_Harmony_Interval_Min
 
-class Check_Jump_2 (Check):
+class Check_Melody_Jump_2 (Check):
 
     def __init__ (self, desc, limit = 2, badness = 0, ugliness = 0):
         super ().__init__ (desc, badness, ugliness)
@@ -265,9 +265,9 @@ class Check_Jump_2 (Check):
         self.p_cp_obj = None
     # end def reset
 
-# end class Check_Jump_2
+# end class Check_Melody_Jump_2
 
-class Check_Interval_Direction (Check_Interval):
+class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
 
     def __init__ \
         ( self, desc, interval
@@ -321,7 +321,8 @@ class Check_Interval_Direction (Check_Interval):
 
 # end class Check_Interval_Direction
 
-__all__ = [ 'Check_Melody_Interval', 'Check_Melody_Jump', 'Check_Interval'
-          , 'Check_Interval_Max', 'Check_Interval_Min', 'Check_First_Interval'
-          , 'Check_Jump_2', 'Check_Interval_Direction'
+__all__ = [ 'Check_Melody_Interval', 'Check_Melody_Jump'
+          , 'Check_Harmony_Interval', 'Check_Harmony_First_Interval'
+          , 'Check_Harmony_Interval_Max', 'Check_Harmony_Interval_Min'
+          , 'Check_Melody_Jump_2', 'Check_Harmony_Melody_Direction'
           ]

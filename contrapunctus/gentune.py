@@ -118,26 +118,26 @@ class Create_Contrapunctus (pga.PGA):
             , badness = 10.0
             )
         ]
-    interval_checks = \
-        [ Check_Interval
+    harmony_interval_checks = \
+        [ Check_Harmony_Interval
             ( "1.2: Use no unisons except at the beginning or end"
             , interval = (0,)
             , badness  = 10.0
             , modulo   = False
             )
-        , Check_Interval
+        , Check_Harmony_Interval
             ( "No Sekund"
             , interval = (1, 2)
             , badness  = 10.0
             , modulo   = True
             )
-        , Check_Interval
+        , Check_Harmony_Interval
             ( "Magdalena: 5/6 verboten"
             , interval = (5, 6)
             , badness  = 10.0
             , modulo   = True
             )
-        , Check_Interval
+        , Check_Harmony_Interval
             ( "Magdalena: 10/11 verboten"
             , interval = (10, 11)
             , badness  = 10.0
@@ -146,22 +146,22 @@ class Create_Contrapunctus (pga.PGA):
         # 1.6: Attempt to keep any two adjacent parts within a tenth
         # of each other, unless an exceptionally pleasing line can
         # be written by moving outside of that range.
-        , Check_Interval_Max
+        , Check_Harmony_Interval_Max
             ( "max. 16"
             , maximum  = 16
             , badness  = 10.0
             )
-        , Check_Interval_Max
+        , Check_Harmony_Interval_Max
             ( "Magdalena: intervals above octave should be avoided"
             , maximum  = 12
             , ugliness = 1.0
             )
-        , Check_Interval_Min
+        , Check_Harmony_Interval_Min
             ( "Upper voice must be *up*"
             , minimum  = 0
             , badness  = 10.0
             )
-        , Check_First_Interval
+        , Check_Harmony_First_Interval
             ( "1.1. Begin and end on either unison, octave, fifth,"
               " unless the added part is underneath [it isn't here],"
               " in which case begin and end only on unison or octave."
@@ -169,12 +169,12 @@ class Create_Contrapunctus (pga.PGA):
             , badness  = 100.
             )
         ]
-    interval_history_checks = \
-        [ Check_Jump_2
+    harmony_melody_checks = \
+        [ Check_Melody_Jump_2
             ( "Not both voices may jump"
             , badness  = 10.0
             )
-        , Check_Interval_Direction
+        , Check_Harmony_Melody_Direction
             ( "Magdalena: Avoid parallel fifth or octaves: Ensure that"
               " the last direction (from where is the fifth or octave"
               " approached) is different."
@@ -182,13 +182,13 @@ class Create_Contrapunctus (pga.PGA):
             , dir      = 'same'
             , badness  = 9.0
             )
-        , Check_Interval_Direction
+        , Check_Harmony_Melody_Direction
             ( "For sext (sixth) or terz (third) don't allow several in a row"
             , interval = (3, 4, 8, 9)
             , dir      = 'zero'
             , ugliness = 3
             )
-        , Check_Interval_Direction
+        , Check_Harmony_Melody_Direction
             ( "Generally it's better that voices move in opposite"
               " direction (or one stays the same if allowed)"
             , interval = () # All
@@ -276,9 +276,9 @@ class Create_Contrapunctus (pga.PGA):
             check.reset ()
         for check in self.melody_checks_cp:
             check.reset ()
-        for check in self.interval_history_checks:
+        for check in self.harmony_melody_checks:
             check.reset ()
-        # interval_checks do not need reset
+        # harmony_interval_checks do not need reset
 
         # A tune contains two (or theoretically more) voices. We can
         # iterate over the bars of a voice via tune.iter (N) where N is
@@ -308,16 +308,16 @@ class Create_Contrapunctus (pga.PGA):
             for cp_obj in cp.objects:
                 for check in self.melody_checks_cp:
                     b, u = check.check (cp_obj)
-                    bsum += b * len (cp_obj) / cp_obj.bar.unit
-                    usum += u * len (cp_obj) / cp_obj.bar.unit
-                for check in self.interval_checks:
+                    bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
+                    usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
+                for check in self.harmony_interval_checks:
                     b, u = check.check (cf_obj, cp_obj)
-                    bsum += b * len (cp_obj) / cp_obj.bar.unit
-                    usum += u * len (cp_obj) / cp_obj.bar.unit
-                for check in self.interval_history_checks:
+                    bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
+                    usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
+                for check in self.harmony_melody_checks:
                     b, u = check.check (cf_obj, cp_obj)
-                    bsum += b * len (cp_obj) / cp_obj.bar.unit
-                    usum += u * len (cp_obj) / cp_obj.bar.unit
+                    bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
+                    usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
 
                 # 1.4: Avoid moving in parallel fourths (In practice
                 # Palestrina and others frequently allowed themselves such
