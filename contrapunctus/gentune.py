@@ -121,9 +121,11 @@ class Create_Contrapunctus (pga.PGA):
     harmony_interval_checks = \
         [ Check_Harmony_Interval
             ( "1.2: Use no unisons except at the beginning or end"
-            , interval = (0,)
-            , badness  = 10.0
-            , octave   = False
+            , interval  = (0,)
+            , badness   = 10.0
+            , octave    = False
+            , not_first = True
+            , not_last  = True
             )
         , Check_Harmony_Interval
             ( "No Sekund"

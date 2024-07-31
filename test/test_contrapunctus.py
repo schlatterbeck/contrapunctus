@@ -246,6 +246,28 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert b == 0
     # end def test_check_harmony_interval_sign
 
+    def test_check_harmony_interval_first_last (self):
+        check = Check_Harmony_Interval \
+            ( 'first-last'
+            , interval  = (1, 2)
+            , badness   = 1
+            , not_first = True
+            , not_last  = True
+            )
+        b_cf  = Bar (8, 8)
+        b_cp  = Bar (8, 8)
+        t_cf  = Tone (halftone ('e'), 8)
+        b_cf.add (t_cf)
+        t_cp1 = Tone (halftone ('f'), 4)
+        t_cp2 = Tone (halftone ('f'), 4)
+        b_cp.add (t_cp1)
+        b_cp.add (t_cp2)
+        b, u = check.check (t_cf, t_cp1)
+        assert b == 0
+        b, u = check.check (t_cf, t_cp2)
+        assert b == 0
+    # end def test_check_harmony_interval_first_last
+
     def test_check_harmony_melody_direction_same (self):
         check = Check_Harmony_Melody_Direction \
             ( 'Opposite direction'
@@ -322,7 +344,7 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert b == 10
         b, u = check.check (t4)
         assert b == 10
-    # end def
+    # end def test_check_melody_interval
 
 #    def test_gentune (self):
 #        gentune_main (self.out_options)

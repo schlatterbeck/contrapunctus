@@ -467,6 +467,16 @@ class Bar_Object (autosuper):
     # end def __init__
 
     @property
+    def next (self):
+        if self.bar.objects [-1] is self:
+            if self.bar.next is None:
+                return None
+            return self.bar.next.objects [0]
+        else:
+            return self._next
+    # end def next
+
+    @property
     def prev (self):
         if self.offset == 0:
             if self.bar.prev is None:
@@ -475,7 +485,6 @@ class Bar_Object (autosuper):
         else:
             return self._prev
     # end def prev
-
 
     def length (self, unit = None):
         unit = unit or self.unit

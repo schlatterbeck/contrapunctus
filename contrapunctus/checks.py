@@ -31,7 +31,7 @@ class Check:
     prefix = ''
 
     def __init__ (self, desc, badness, ugliness):
-        self.desc     = desc
+        self.desc     = self.msg = desc
         self.badness  = badness
         self.ugliness = ugliness
     # end def __init__
@@ -41,12 +41,12 @@ class Check:
             This interpolates the parameters of the last check into the
             desc attribute.
         """
-        if not sum (self.result):
+        if not self.result:
             return ''
         self.compute_description ()
         suffix = '    (B: %(badness)g U: %(ugliness)g)'
         desc   = text_wrap \
-            ( self.desc
+            ( self.msg
             , initial_indent    = ' ' * 4
             , subsequent_indent = ' ' * 4
             )
@@ -55,8 +55,14 @@ class Check:
     __repr__ = __str__
 
     def check (self, *args, **kw):
+        """ We require an _check method for the actual implementation.
+            This *must* return True when the check condition matches,
+            i.e., when there is a violation of the rule.
+        """
         self.result = self._check (*args, **kw)
-        return self.result
+        if self.result:
+            return self.badness, self.ugliness
+        return 0, 0
     # end def check
 
     def compute_description (self):
@@ -93,7 +99,8 @@ class Check_Melody (Check):
     # end def compute_description
 
     def compute_interval (self):
-        d = self.current.halftone.offset - self.prev.halftone.offset
+        prev = self.current.prev
+        d = self.current.halftone.offset - prev.halftone.offset
         if not self.signed:
             d = abs (d)
         if self.octave:
@@ -104,7 +111,6 @@ class Check_Melody (Check):
     def reset (self):
         self.current    = None
         self.prev_match = False
-        self.prev       = None
     # end def reset
 
 # end class Check_Melody
@@ -116,54 +122,55 @@ class Check_Melody_Interval (Check_Melody):
     """
 
     def _check (self, current):
-        if not self.prev:
-            self.current = current
-            self.prev = current
-            return 0, 0
+        prev = current.prev
+        if not prev:
+            return False
         self.current = current
         d = self.compute_interval ()
-        self.prev = self.current
         if d in self.interval:
-            rv = (self.badness, self.ugliness)
+            rv = True
             if self.only_repeat and not self.prev_match:
-                rv = (0, 0)
+                rv = False
             self.prev_match = True
             return rv
         self.prev_match = False
-        return 0, 0
+        return False
     # end def _check
 
 # end class Check_Melody_Interval
 
 class Check_Melody_Jump (Check_Melody):
 
-    def __init__ (self, desc, badness = 0, ugliness = 0):
+    def __init__ (self, desc, badness = 0, ugliness = 0, limit = 2):
         super ().__init__ (desc, (), badness, ugliness, True, False)
+        self.limit = limit
     # end def __init__
 
     def _check (self, current):
-        if not self.prev:
-            self.prev = self.current = current
-            return 0, 0
         self.current = current
+        if not current.prev:
+            return False
         d = self.compute_interval ()
-        self.prev = self.current
-        b = 0
-        u = 0
+        retval = False
         # We might want to make the badness and the ugliness different
         # for jumps and directional movements after a jump
-        if abs (d) > 2:
+        if abs (d) > self.limit:
             if self.prev_match:
-                b = self.badness
-                u = self.ugliness
+                self.msg = self.desc
+                retval = True
             self.prev_match = sgn (d)
         else: # Step not jump
             if self.prev_match and self.prev_match == sgn (d):
-                b = self.badness
-                u = self.ugliness
+                self.msg = 'Same-direction movement after jump'
+                retval = True
             self.prev_match = 0
-        return b, u
+        return retval
     # end def _check
+
+    def reset (self):
+        super ().reset ()
+        self.msg = self.desc
+    # end def reset
 
 # end class Check_Melody_Jump
 
@@ -189,20 +196,28 @@ class Check_Harmony_Interval (Check_Harmony):
     def __init__ \
         ( self, desc, interval
         , badness = 0, ugliness = 0
-        , octave = False
-        , signed = False
+        , octave    = False
+        , signed    = False
+        , not_first = False
+        , not_last  = False
         ):
-        self.interval = interval
-        self.octave   = octave
-        self.signed   = signed
+        self.interval  = interval
+        self.octave    = octave
+        self.signed    = signed
+        self.not_first = not_first
+        self.not_last  = not_last
         super ().__init__ (desc, badness, ugliness)
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
+        if self.not_first and not cf_obj.prev and not cp_obj.prev:
+            return False
+        if self.not_last  and not cf_obj.next and not cp_obj.next:
+            return False
         d = self.compute_interval (cf_obj, cp_obj)
         if d in self.interval:
-            return self.badness, self.ugliness
-        return 0, 0
+            return True
+        return False
     # end def _check
 
     def compute_interval (self, cf_obj, cp_obj):
@@ -229,11 +244,11 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
         # Not sure if this holds for *all* cp_objects in the first bar,
         # if this should be the case we need to use cf_obj below.
         if cp_obj.prev:
-            return 0, 0
+            return False
         d = self.compute_interval (cf_obj, cp_obj)
         if d not in self.interval:
-            return self.badness, self.ugliness
-        return 0, 0
+            return True
+        return False
     # end def _check
 
 # end def Check_Harmony_First_Interval
@@ -251,8 +266,8 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
     def _check (self, cf_obj, cp_obj):
         d = self.compute_interval (cf_obj, cp_obj)
         if d > self.maximum:
-            return self.badness, self.ugliness
-        return 0, 0
+            return True
+        return False
     # end def _check
 
 # end class Check_Harmony_Interval_Max
@@ -270,8 +285,8 @@ class Check_Harmony_Interval_Min (Check_Harmony_Interval):
     def _check (self, cf_obj, cp_obj):
         d = self.compute_interval (cf_obj, cp_obj)
         if d < self.minimum:
-            return self.badness, self.ugliness
-        return 0, 0
+            return True
+        return False
     # end def _check
 
 # end class Check_Harmony_Interval_Min
@@ -287,7 +302,7 @@ class Check_Melody_Jump_2 (Check_Harmony):
         if not self.p_cf_obj:
             self.p_cf_obj = self.cf_obj = cf_obj
             self.p_cp_obj = self.cp_obj = cp_obj
-            return 0, 0
+            return False
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
         d1 = cf_obj.halftone.offset - self.p_cf_obj.halftone.offset
@@ -295,8 +310,8 @@ class Check_Melody_Jump_2 (Check_Harmony):
         self.p_cf_obj = cf_obj
         self.p_cp_obj = cp_obj
         if d1 > self.limit and d2 > self.limit:
-            return self.badness, self.ugliness
-        return 0, 0
+            return True
+        return False
     # end def _check
 
     def reset (self):
@@ -324,7 +339,7 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
         if not self.p_cf_obj:
             self.p_cf_obj = self.cf_obj = cf_obj
             self.p_cp_obj = self.cp_obj = cp_obj
-            return 0, 0
+            return False
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
         d = self.compute_interval (cf_obj, cp_obj)
@@ -334,8 +349,8 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
         if  (   (not self.interval or d in self.interval)
             and self.direction_check ()
             ):
-            return self.badness, self.ugliness
-        return 0, 0
+            return True
+        return False
     # end def _check
 
     def compute_interval (self, cf_obj, cp_obj):
