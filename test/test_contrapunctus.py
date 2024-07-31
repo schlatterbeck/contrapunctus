@@ -30,7 +30,6 @@ import contrapunctus.gentune
 import contrapunctus.gregorian
 from pga.testsupport import PGA_Test_Instrumentation
 from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
-from contrapunctus.gentune import main as gentune_main
 from contrapunctus.checks import *
 
 tune_output = """\
@@ -409,10 +408,11 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
                 i += 1
     # end def test_get_by_offset
 
-#    def test_gentune (self):
-#        gentune_main (self.out_options)
-#        self.compare ()
-#    # end def test_gentune
+    def test_reset_upcall (self):
+        check = Check_Melody_Jump ('Jump', badness = 10)
+        assert check.msg == 'Jump'
+        assert check.prev_match is False
+    # end def test_reset_upcall
 
 # end class Test_Contrapunctus
 

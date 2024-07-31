@@ -91,6 +91,8 @@ class History_Mixin:
     # end def _check
 
     def reset (self):
+        if hasattr (super (), 'reset'):
+            super ().reset ()
         self.prev_match = False
     # end def reset
 
@@ -104,14 +106,11 @@ class Check_Melody (Check):
         , badness = 0, ugliness = 0
         , signed      = False
         , octave      = True
-        , only_repeat = False
         ):
         super ().__init__ (desc, badness, ugliness)
         self.interval    = set (interval)
         self.signed      = signed
         self.octave      = octave
-        self.only_repeat = only_repeat
-        self.reset ()
     # end def __init__
 
     def compute_description (self):
@@ -133,11 +132,6 @@ class Check_Melody (Check):
         return d
     # end def compute_interval
 
-    def reset (self):
-        self.current    = None
-        self.prev_match = False
-    # end def reset
-
 # end class Check_Melody
 
 class Check_Melody_Interval (Check_Melody):
@@ -152,19 +146,15 @@ class Check_Melody_Interval (Check_Melody):
             return False
         self.current = current
         d = self.compute_interval ()
-        if d in self.interval:
-            rv = True
-            if self.only_repeat and not self.prev_match:
-                rv = False
-            self.prev_match = True
-            return rv
-        self.prev_match = False
-        return False
+        return d in self.interval
     # end def _check
 
 # end class Check_Melody_Interval
 
-class Check_Melody_Jump (Check_Melody):
+class Check_Melody_History (History_Mixin, Check_Melody_Interval):
+    pass
+
+class Check_Melody_Jump (Check_Melody_History):
 
     def __init__ (self, desc, badness = 0, ugliness = 0, limit = 2):
         super ().__init__ (desc, (), badness, ugliness, True, False)
@@ -413,5 +403,5 @@ __all__ = [ 'Check_Melody_Interval', 'Check_Melody_Jump'
           , 'Check_Harmony_Interval', 'Check_Harmony_First_Interval'
           , 'Check_Harmony_Interval_Max', 'Check_Harmony_Interval_Min'
           , 'Check_Melody_Jump_2', 'Check_Harmony_Melody_Direction'
-          , 'Check_Harmony_History'
+          , 'Check_Harmony_History', 'Check_Melody_History'
           ]

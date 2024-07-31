@@ -104,19 +104,21 @@ class Create_Contrapunctus (pga.PGA):
             , interval = (6,)
             , badness  = 10.0
             )
-        , Check_Melody_Interval
+        , Check_Melody_History
             ("0.1.2: No consecutive unison (Prim) allowed"
             , interval    = (0,)
             , badness     = 10.0
             , octave      = False
-            , only_repeat = True
             )
         , Check_Melody_Jump
             ( "Jump"
             , badness = 10.0
             )
         ]
-    harmony_interval_checks = \
+    # This need to call reset before each eval:
+    melody_history_checks = \
+        [c for c in melody_checks_cp + melody_checks_cf if hasattr (c, 'reset')]
+    harmony_checks = \
         [ Check_Harmony_Interval
             ( "1.2: Use no unisons except at the beginning or end"
             , interval  = (0,)
@@ -168,9 +170,7 @@ class Create_Contrapunctus (pga.PGA):
             , interval = (0, 7, 12)
             , badness  = 100.
             )
-        ]
-    harmony_melody_checks = \
-        [ Check_Melody_Jump_2
+        , Check_Melody_Jump_2
             ( "Not both voices may jump"
             , badness  = 10.0
             )
@@ -226,6 +226,7 @@ class Create_Contrapunctus (pga.PGA):
             , ugliness = 0.1
             )
         ]
+    harmony_history_checks = [c for c in harmony_checks if hasattr (c, 'reset')]
 
     def __init__ (self, args):
         self.do_explain  = False
@@ -304,13 +305,10 @@ class Create_Contrapunctus (pga.PGA):
         ugliness   = 1.0
         dir        = (-1, 1)
         # Reset history
-        for check in self.melody_checks_cf:
+        for check in self.melody_history_checks:
             check.reset ()
-        for check in self.melody_checks_cp:
+        for check in self.harmony_history_checks:
             check.reset ()
-        for check in self.harmony_melody_checks:
-            check.reset ()
-        # harmony_interval_checks do not need reset
 
         self.explanation = []
 
@@ -346,12 +344,7 @@ class Create_Contrapunctus (pga.PGA):
                     bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
                     self.explain (check)
-                for check in self.harmony_interval_checks:
-                    b, u = check.check (cf_obj, cp_obj)
-                    bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
-                    usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
-                    self.explain (check)
-                for check in self.harmony_melody_checks:
+                for check in self.harmony_checks:
                     b, u = check.check (cf_obj, cp_obj)
                     bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
