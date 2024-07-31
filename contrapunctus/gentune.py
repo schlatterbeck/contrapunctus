@@ -281,11 +281,7 @@ class Create_Contrapunctus (pga.PGA):
             init.append ((0,  7 + args.use_de)) # pitch
             init.append ((0,  7 + args.use_de)) # pitch light 1/8
         self.init = init
-        stop_on = \
-            [ pga.PGA_STOP_NOCHANGE
-            , pga.PGA_STOP_MAXITER
-            , pga.PGA_STOP_TOOSIMILAR
-            ]
+        stop_on = [ pga.PGA_STOP_MAXITER ]
         if not args.pop_size:
             if args.use_de:
                 args.pop_size = 50
@@ -299,6 +295,7 @@ class Create_Contrapunctus (pga.PGA):
             , num_replace   = args.pop_size * 9 // 10
             , print_options = [pga.PGA_REPORT_STRING]
             , stopping_rule_types = stop_on
+            , max_GA_iter   = args.max_generations
             )
         typ = int
         if args.use_de:
@@ -540,10 +537,21 @@ class Create_Contrapunctus (pga.PGA):
         tune = self.phenotype (p, pop)
         if self.args.transpose:
             tune = tune.transpose (self.args.transpose)
+        print ('Iter: %s Evals: %s' % (self.GA_iter, self.eval_count))
         print (tune, file = file)
         file.flush ()
         super ().print_string (file, p, pop)
     # end def print_string
+
+    def stop_cond (self):
+        best = self.get_best_report_index (pga.PGA_OLDPOP, 0)
+        eval = self.get_evaluation (best, pga.PGA_OLDPOP)
+        if eval == 1:
+            return True
+        if self.eval_count >= self.args.max_evals:
+            return True
+        return self.check_stopping_conditions ()
+    # end def stop_cond
 
 # end class Create_Contrapunctus
 
@@ -590,6 +598,28 @@ def main (argv = None):
         , help    = "Read gene-file and output phenotype, no searching"
         )
     cmd.add_argument \
+        ( "-l", "--tune-length"
+        , help    = "Length of generated tune, default=%(default)s"
+        , type    = int
+        , default = 12
+        )
+    cmd.add_argument \
+        ( "--max-evals"
+        , help    = "Maximum number of evaluations, default=%(default)s"
+        , type    = int
+        , default = 100000
+        )
+    cmd.add_argument \
+        ( "--max-generations"
+        , help    = "Maximum number of generations, default=%(default)s"
+        , type    = int
+        , default = 10000
+        )
+    cmd.add_argument \
+        ( "-O", "--output-file"
+        , help    = "Output file for progress information"
+        )
+    cmd.add_argument \
         ( "-p", "--pop-size"
         , help    = "Population size default for DE: 50 for GA: 500"
         , type    = int
@@ -600,16 +630,6 @@ def main (argv = None):
                     " default=%(default)s"
         , type    = int
         , default = 23
-        )
-    cmd.add_argument \
-        ( "-l", "--tune-length"
-        , help    = "Length of generated tune, default=%(default)s"
-        , type    = int
-        , default = 12
-        )
-    cmd.add_argument \
-        ( "-O", "--output-file"
-        , help    = "Output file for progress information"
         )
     cmd.add_argument \
         ( "-t", "--transpose"
