@@ -34,7 +34,7 @@ description     = "Experimenting with automatic musical composition"
 readme          = "README.rst"
 license         = {text = "GNU General Public License v2 or later (GPLv2+)"}
 dependencies    = ['pgapy', 'rsclib']
-requires-python = '>=3.7'
+requires-python = '>=3.10'
 classifiers     = [
           'Development Status :: 3 - Alpha'
         , 'Intended Audience :: Education'

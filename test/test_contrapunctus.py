@@ -268,6 +268,33 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert b == 0
     # end def test_check_harmony_interval_first_last
 
+    def test_check_harmony_history (self):
+        check = Check_Harmony_History \
+            ( 'Parallel fifth'
+            , interval    = (7,) # fifth
+            , badness     = 9
+            )
+        b_cf1 = Bar (8, 8)
+        b_cf1.add (Tone (halftone ('C'), 8))
+        b_cf2 = Bar (8, 8)
+        b_cf2.add (Tone (halftone ('D'), 8))
+        b_cf3 = Bar (8, 8)
+        b_cf3.add (Tone (halftone ('F'), 8))
+        b_cp1 = Bar (8, 8)
+        b_cp1.add (Tone (halftone ('G'), 8))
+        b_cp2 = Bar (8, 8)
+        b_cp2.add (Tone (halftone ('A'), 8))
+        b_cp3 = Bar (8, 8)
+        b_cp3.add (Tone (halftone ('B'), 8))
+        b_cp = Bar (8, 8)
+        b, u = check.check (b_cf1.objects [0], b_cp1.objects [0])
+        assert b == 0
+        b, u = check.check (b_cf2.objects [0], b_cp2.objects [0])
+        assert b == 9
+        b, u = check.check (b_cf3.objects [0], b_cp3.objects [0])
+        assert b == 0
+    # end def test_check_harmony_history
+
     def test_check_harmony_melody_direction_same (self):
         check = Check_Harmony_Melody_Direction \
             ( 'Opposite direction'
@@ -345,6 +372,42 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         b, u = check.check (t4)
         assert b == 10
     # end def test_check_melody_interval
+
+    def test_get_by_offset (self):
+        v1 = Voice (id = 'V1')
+        b  = Bar (8, 8)
+        b.add (Tone (halftone ('B'), 2))
+        b.add (Tone (halftone ('c'), 2))
+        b.add (Tone (halftone ('d'), 2))
+        b.add (Tone (halftone ('g'), 2))
+        v1.add (b)
+        b = Bar (8, 8)
+        b.add (Tone (halftone ('f'), 6))
+        b.add (Tone (halftone ('e'), 2))
+        v1.add (b)
+        v2 = Voice (id = 'V2')
+        b  = Bar (8, 8)
+        b.add (Tone (halftone ('B'), 4))
+        b.add (Tone (halftone ('g'), 4))
+        v2.add (b)
+        b = Bar (8, 8)
+        b.add (Tone (halftone ('f'), 2))
+        b.add (Tone (halftone ('e'), 6))
+        v2.add (b)
+
+        b2 = v2.bars [0]
+        offsets = [0, 0, 4, 4, 0, 2]
+        idxs    = [0, 0, 1, 1, 0, 1]
+        i = 0
+        for b in v1.bars:
+            for t in b.objects:
+                other = b2.get_by_offset (t)
+                assert other.bar.idx == b.idx
+                assert other.offset <= t.offset
+                assert other.offset == offsets [i]
+                assert other.idx    == idxs [i]
+                i += 1
+    # end def test_get_by_offset
 
 #    def test_gentune (self):
 #        gentune_main (self.out_options)

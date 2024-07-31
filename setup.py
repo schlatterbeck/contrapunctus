@@ -70,7 +70,7 @@ setup \
         , 'Topic :: Multimedia :: Sound/Audio :: Sound Synthesis'
         ]
     , install_requires = ['rsclib', 'pgapy']
-    , python_requires  = '>=3.7'
+    , python_requires  = '>=3.10'
     , entry_points     = dict
         ( console_scripts =
             ['contrapunctus=contrapunctus.gentune:main']

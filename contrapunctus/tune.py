@@ -21,9 +21,8 @@
 # 02110-1301, USA.
 # ****************************************************************************
 
-from __future__ import division
-from rsclib.Rational  import Rational
-from rsclib.autosuper import autosuper
+from bisect import bisect_right
+from rsclib.Rational import Rational
 
 def sgn (i):
     if i > 0:
@@ -56,7 +55,7 @@ def transpose_steps_to_fifth (steps):
     return nfifth
 # end def transpose_steps_to_fifth
 
-class Halftone (autosuper):
+class Halftone:
     """ Model a halftone with abc notation
         We have a table of the first two octaves and extrapolate the
         rest.
@@ -449,12 +448,12 @@ def halftone (name):
     return Halftone.get (name)
 # end def halftone
 
-class Bar_Object (autosuper):
+class Bar_Object:
     """ Base class of all objects that go into a Bar
     """
 
     def __init__ (self, duration, unit = 8):
-        self.__super.__init__ ()
+        super ().__init__ ()
         self.duration = duration
         # offset in Bar (parent), filled when inserting into Bar
         self.offset   = None
@@ -465,6 +464,15 @@ class Bar_Object (autosuper):
         self._prev    = None
         self._next    = None
     # end def __init__
+
+    def __str__ (self):
+        name = self.__class__.__name__
+        return \
+            ( '%s (bar=%s, idx=%s, offset=%s, unit=%s, dur=%s)'
+            % (name, self.bar, self.idx, self.offset, self.unit, self.duration)
+            )
+    # end def __str__
+    __repr__ = __str__
 
     @property
     def next (self):
@@ -509,7 +517,7 @@ class Tone (Bar_Object):
 
     def __init__ (self, halftone, duration, unit = 8):
         self.halftone = halftone
-        self.__super.__init__ (duration, unit)
+        super ().__init__ (duration, unit)
     # end def __init__
 
     def as_abc (self, unit = None):
@@ -538,7 +546,7 @@ class Pause (Bar_Object):
 
 # end class Pause
 
-class Meter (autosuper):
+class Meter:
     """ Represent the meter of a tune, e.g. 4/4, 3/4 or similar
     """
 
@@ -546,6 +554,11 @@ class Meter (autosuper):
         self.measure = measure
         self.beats   = beats
     # end def __init__
+
+    def __str__ (self):
+        return '%s/%s' % (self.measure, self.beats)
+    # end def __str__
+    __repr__ = __str__
 
     @property
     def duration (self):
@@ -559,10 +572,6 @@ class Meter (autosuper):
     def length (self):
         return Rational (self.measure, self.beats)
     # end def length
-
-    def __str__ (self):
-        return '%s/%s' % (self.measure, self.beats)
-    # end def __str__
 
 # end class Meter
 
@@ -716,7 +725,7 @@ for m in Key.modes:
     for n, name in enumerate (getattr (Key, m)):
         Key.table [name] = (m, n - 7)
 
-class Bar (autosuper):
+class Bar:
 
     def __init__ (self, duration, unit = 8, *bar_object):
         assert isinstance (duration, int)
@@ -731,6 +740,11 @@ class Bar (autosuper):
         for b in bar_object:
             self.add (b)
     # end def __init__
+
+    def __str__ (self):
+        return ('Bar (voice=%s, idx=%s)' % (self.voice, self.idx))
+    # end def __str__
+    __repr__ = __str__
 
     def add (self, bar_object):
         if self.dur_sum + bar_object.length () > self.duration:
@@ -755,6 +769,20 @@ class Bar (autosuper):
         return ' '.join (r)
     # end def as_abc
 
+    def get_by_offset (self, bar_object):
+        """ Get a bar object matching another bar_object
+            The intended use is for locating the bar_object which occurs
+            at the same time as the bar_object in another voice.
+        """
+        bar = self
+        if bar_object.bar.idx != self.idx:
+            bar = self.voice.bars [bar_object.bar.idx]
+        offset = bar_object.offset
+        pos = bisect_right (bar.objects, offset, key = lambda x: x.offset) - 1
+        assert pos >= 0
+        return bar.objects [pos]
+    # end def get_by_offset
+
     def transpose (self, steps, key = 'C'):
         b = self.__class__ (self.duration, self.unit)
         for o in self.objects:
@@ -764,7 +792,7 @@ class Bar (autosuper):
 
 # end class Bar
 
-class Voice (autosuper):
+class Voice:
     """ A single voice of a complex tune
     """
     def __init__ (self, id = None, *bars, **properties):
@@ -781,6 +809,11 @@ class Voice (autosuper):
         except KeyError as err:
             raise AttributeError (err)
     # end def __getattr__
+
+    def __str__ (self):
+        return 'Voice ("%s")' % self.id
+    # end def __str__
+    __repr__ = __str__
 
     def add (self, bar):
         assert bar.next is None
@@ -824,7 +857,7 @@ class Voice (autosuper):
 
 # end class Voice
 
-class Tune (autosuper):
+class Tune:
 
     def __init__ \
         ( self, meter, key

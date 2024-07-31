@@ -39,7 +39,7 @@ class Check:
     def __str__ (self):
         """ Describes a failed check
             This interpolates the parameters of the last check into the
-            desc attribute.
+            desc attribute and into the suffix.
         """
         if not self.result:
             return ''
@@ -70,6 +70,31 @@ class Check:
     # end def compute_description
 
 # end class Check
+
+class History_Mixin:
+    """ This does the same checks as its class but matches only on the
+        *second* occasion when the check matches will it raise an error
+        condition.
+    """
+
+    def __init__ (self, *args, **kw):
+        super ().__init__ (*args, **kw)
+        self.reset ()
+    # end def __init__
+
+    def _check (self, *args, **kw):
+        result = super ()._check (*args, **kw)
+        if self.prev_match and result:
+            return True
+        self.prev_match = result
+        return False
+    # end def _check
+
+    def reset (self):
+        self.prev_match = False
+    # end def reset
+
+# end class History_Mixin
 
 class Check_Melody (Check):
     """ Common base class for melody checks
@@ -321,43 +346,48 @@ class Check_Melody_Jump_2 (Check_Harmony):
 
 # end class Check_Melody_Jump_2
 
+class Check_Harmony_History (History_Mixin, Check_Harmony_Interval):
+    pass
+
 class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
 
     def __init__ \
         ( self, desc, interval
         , badness = 0, ugliness = 0
-        , octave = False
-        , dir    = 'same'
+        , octave      = False
+        , dir         = 'same'
+        , only_repeat = False
         ):
         super ().__init__ \
             (desc, interval, badness, ugliness, octave, signed = True)
-        self.dir = dir
-        self.p_cf_obj = self.p_cp_obj = None
+        self.dir         = dir
+        self.only_repeat = only_repeat
+        self.reset ()
+        assert self.dir in ['same', 'zero', 'different']
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        if not self.p_cf_obj:
-            self.p_cf_obj = self.cf_obj = cf_obj
-            self.p_cp_obj = self.cp_obj = cp_obj
+        p_cp_obj = cp_obj.prev
+        if not p_cp_obj:
             return False
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
         d = self.compute_interval (cf_obj, cp_obj)
-        self.p_cf_obj = cf_obj
-        self.p_cp_obj = cp_obj
         # An empty interval matches everything
         if  (   (not self.interval or d in self.interval)
             and self.direction_check ()
             ):
-            return True
+            if not self.only_repeat or self.prev_match:
+                self.prev_match = True
+                return True
         return False
     # end def _check
 
     def compute_interval (self, cf_obj, cp_obj):
-        self.dir_cf = sgn \
-            (cf_obj.halftone.offset - self.p_cf_obj.halftone.offset)
-        self.dir_cp = sgn \
-            (cp_obj.halftone.offset - self.p_cp_obj.halftone.offset)
+        p_cp_obj = cp_obj.prev
+        p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+        self.dir_cf = sgn (cf_obj.halftone.offset - p_cf_obj.halftone.offset)
+        self.dir_cp = sgn (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
         return super ().compute_interval (cf_obj, cp_obj)
     # end def compute_interval
 
@@ -374,14 +404,14 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
     # end def direction_check
 
     def reset (self):
-        self.p_cf_obj = None
-        self.p_cp_obj = None
+        self.prev_match = False
     # end def reset
 
-# end class Check_Interval_Direction
+# end class Check_Harmony_Melody_Direction
 
 __all__ = [ 'Check_Melody_Interval', 'Check_Melody_Jump'
           , 'Check_Harmony_Interval', 'Check_Harmony_First_Interval'
           , 'Check_Harmony_Interval_Max', 'Check_Harmony_Interval_Min'
           , 'Check_Melody_Jump_2', 'Check_Harmony_Melody_Direction'
+          , 'Check_Harmony_History'
           ]

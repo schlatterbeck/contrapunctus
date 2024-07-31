@@ -21,8 +21,6 @@
 # 02110-1301, USA.
 # ****************************************************************************
 
-from   __future__ import print_function
-
 import sys
 import pga
 from   .tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
@@ -180,21 +178,44 @@ class Create_Contrapunctus (pga.PGA):
         # the *last* was already a fifth or octave. And switching from
         # fifth to octave ore vice-versa might still be allowed, in
         # which case we would need *two* checks.
-        , Check_Harmony_Melody_Direction
-            ( "Magdalena: Avoid parallel fifth or octaves: Ensure that"
-              " the last direction (from where is the fifth or octave"
-              " approached) is different."
-            , interval = (7, 12)
-            , dir      = 'same'
+        #, Check_Harmony_Melody_Direction
+        #    ( "Magdalena: Avoid parallel fifth or octaves: Ensure that"
+        #      " the last direction (from where is the fifth or octave"
+        #      " approached) is different."
+        #    , interval = (7, 12)
+        #    , dir      = 'same'
+        #    , badness  = 9.0
+        #    )
+        # This implements the spec above
+        , Check_Harmony_History
+            ( "Magdalena: Avoid parallel fifth"
+            , interval = (7,)
             , badness  = 9.0
             )
+        , Check_Harmony_History
+            ( "Magdalena: Avoid parallel octaves"
+            , interval = (12,)
+            , badness  = 9.0
+            )
+
         # This only checks for two of the *same*. Not if we have several
         # sixth in a row with different CF. This might need changes to
         # the underlying check implementation.
-        , Check_Harmony_Melody_Direction
-            ( "For sext (sixth) or terz (third) don't allow several in a row"
-            , interval = (3, 4, 8, 9)
-            , dir      = 'zero'
+        #, Check_Harmony_Melody_Direction
+        #    ( "For sext (sixth) or terz (third) don't allow several in a row"
+        #    , interval = (3, 4, 8, 9)
+        #    , dir      = 'zero'
+        #    , ugliness = 3
+        #    )
+        # This doesn't allow several (unrelated) sixth or thirds in a row
+        , Check_Harmony_History
+            ( "For sext (sixth) don't allow several in a row"
+            , interval = (8, 9)
+            , ugliness = 3
+            )
+        , Check_Harmony_History
+            ( "For terz (third) don't allow several in a row"
+            , interval = (3, 4)
             , ugliness = 3
             )
         , Check_Harmony_Melody_Direction
