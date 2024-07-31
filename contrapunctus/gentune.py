@@ -267,36 +267,60 @@ class Create_Contrapunctus (pga.PGA):
 
         self.cflength   = self.tunelength - 3
         self.cplength   = self.tunelength - 2
-        init            = [(0,7)] * self.cflength
+        init            = [(0, 7 + args.use_de)] * self.cflength
         for i in range (self.cplength):
-            init.append ((1,  3)) # duration heavy
-            init.append ((0,  7)) # pitch
-            init.append ((0,  1)) # duration light 1/4
-            init.append ((0,  7)) # pitch
-            init.append ((0,  7)) # pitch light 1/8
-            init.append ((1,  2)) # duration half-heavy 1/4 or 1/2
-            init.append ((0,  7)) # pitch
-            init.append ((0,  7)) # pitch light 1/8
-            init.append ((0,  1)) # duration light 1/4
-            init.append ((0,  7)) # pitch
-            init.append ((0,  7)) # pitch light 1/8
+            init.append ((1,  3 + args.use_de)) # duration heavy
+            init.append ((0,  7 + args.use_de)) # pitch
+            init.append ((0,  1 + args.use_de)) # duration light 1/4
+            init.append ((0,  7 + args.use_de)) # pitch
+            init.append ((0,  7 + args.use_de)) # pitch light 1/8
+            init.append ((1,  2 + args.use_de)) # duration half-heavy 1/4 or 1/2
+            init.append ((0,  7 + args.use_de)) # pitch
+            init.append ((0,  7 + args.use_de)) # pitch light 1/8
+            init.append ((0,  1 + args.use_de)) # duration light 1/4
+            init.append ((0,  7 + args.use_de)) # pitch
+            init.append ((0,  7 + args.use_de)) # pitch light 1/8
+        self.init = init
         stop_on = \
             [ pga.PGA_STOP_NOCHANGE
             , pga.PGA_STOP_MAXITER
             , pga.PGA_STOP_TOOSIMILAR
             ]
+        if not args.pop_size:
+            if args.use_de:
+                args.pop_size = 50
+            else:
+                args.pop_size = 500
         d = dict \
             ( maximize      = False
             , init          = init
             , random_seed   = self.args.random_seed
-            , pop_size      = 500
-            , num_replace   = 450
+            , pop_size      = args.pop_size
+            , num_replace   = args.pop_size * 9 // 10
             , print_options = [pga.PGA_REPORT_STRING]
             , stopping_rule_types = stop_on
             )
+        typ = int
+        if args.use_de:
+            typ = float
+            variant = args.de_variant.upper ().replace ('-', '_')
+            variant = getattr (pga, 'PGA_DE_VARIANT_' + variant)
+            d.update \
+                ( num_replace          = args.pop_size
+                , pop_replace_type     = pga.PGA_POPREPL_PAIRWISE_BEST
+                , select_type          = pga.PGA_SELECT_LINEAR
+                , mutation_only        = True
+                , mutation_bounce_back = True
+                , mutation_type        = pga.PGA_MUTATION_DE
+                , DE_variant           = variant
+                , DE_crossover_prob    = args.de_crossover_prob
+                , DE_jitter            = args.de_jitter
+                , DE_scale_factor      = args.de_scale_factor
+                , DE_crossover_type    = pga.PGA_DE_CROSSOVER_BIN
+                )
         if self.args.output_file:
-            d ['output_file'] = args.output_file
-        super ().__init__ (type (2), len (init), **d)
+            d.update (output_file = args.output_file)
+        super ().__init__ (typ, len (init), **d)
     # end def __init__
 
     def evaluate (self, p, pop):
@@ -374,6 +398,13 @@ class Create_Contrapunctus (pga.PGA):
                 self.explanation.append (ex)
     # end def explain
 
+    def from_allele (self, v, i):
+        v = int (v)
+        if v > self.init [i][1]:
+            return self.init [i][1]
+        return v
+    # end def from_allele
+
     def from_gene_lines (self, iter):
         idx = 0
         c   = 0
@@ -420,7 +451,7 @@ class Create_Contrapunctus (pga.PGA):
         b.add (Tone (dorian.finalis, 8, unit = 8))
         cf.add (b)
         for i in range (self.cflength):
-            a = self.get_allele (p, pop, i)
+            a = self.from_allele (self.get_allele (p, pop, i), i)
             b = Bar (8, 8)
             b.add (Tone (hypodorian [a], 8, unit = 8))
             cf.add (b)
@@ -454,7 +485,8 @@ class Create_Contrapunctus (pga.PGA):
             boff = 0 # offset in bar
             v = []
             for j in range (11):
-                v.append (self.get_allele (p, pop, j + off))
+                idx = j + off
+                v.append (self.from_allele (self.get_allele (p, pop, idx), idx))
             off += 11
             b = Bar (8, 8)
             l = 1 << v [0]
@@ -516,6 +548,7 @@ class Create_Contrapunctus (pga.PGA):
 # end class Create_Contrapunctus
 
 def main (argv = None):
+    de_variants = ['best', 'rand', 'either-or']
     cmd = ArgumentParser ()
     cmd.add_argument \
         ( "-b", "--best-eval"
@@ -523,8 +556,43 @@ def main (argv = None):
         , action  = 'store_true'
         )
     cmd.add_argument \
+        ( "-d", "--use-differential-evolution"
+        , dest    = 'use_de'
+        , help    = "Use Differential Evolution"
+        , action  = 'store_true'
+        )
+    cmd.add_argument \
+        ( "--de-crossover-prob"
+        , help    = "Differential Evolution crossover probability,"
+                    " default=%(default)s"
+        , default = 0.05
+        , type    = float
+        )
+    cmd.add_argument \
+        ( "--de-jitter"
+        , help    = "Differential Evolution jitter, default=%(default)s"
+        , default = 0.001
+        , type    = float
+        )
+    cmd.add_argument \
+        ( "--de-variant"
+        , help    = "Differential Evolution variant, default=%(default)s"
+        , default = 'best'
+        )
+    cmd.add_argument \
+        ( "--de-scale-factor"
+        , help    = "Differential Evolution scale factor, default=%(default)s"
+        , default = 0.85
+        , type    = float
+        )
+    cmd.add_argument \
         ( "-g", "--gene-file"
         , help    = "Read gene-file and output phenotype, no searching"
+        )
+    cmd.add_argument \
+        ( "-p", "--pop-size"
+        , help    = "Population size default for DE: 50 for GA: 500"
+        , type    = int
         )
     cmd.add_argument \
         ( "-R", "--random-seed"
@@ -555,6 +623,9 @@ def main (argv = None):
         , action  = 'store_true'
         )
     args = cmd.parse_args (argv)
+    if args.de_variant not in de_variants:
+        print ('Invalid --de-variant, use one of %s' % ', '.join (de_variants))
+        return
     cp = Create_Contrapunctus (args)
     if args.gene_file:
         cp.from_gene ()
