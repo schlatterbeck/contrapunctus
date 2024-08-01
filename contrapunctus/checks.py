@@ -399,9 +399,189 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
 
 # end class Check_Harmony_Melody_Direction
 
+# 0.1.2: "Permitted melodic intervals are the perfect fourth, fifth,
+# and octave, as well as the major and minor second, major and minor
+# third, and ascending minor sixth. The ascending minor sixth must
+# be immediately followed by motion downwards." This means we allow
+# the following halftone intervals: 1, 2, 3, 4, 5, 7, 8, 9, 12 and
+# forbid the following: 0, 6, 10, 11
+# We currently allow sixth in both directions
+# We allow unison in the second voice but not several in a series.
+melody_checks_cf = \
+    [ Check_Melody_Interval
+        ( "0.1.2: no seventh (Septime)"
+        , interval = (10, 11)
+        , badness  = 10.0
+        )
+    , Check_Melody_Interval
+        ( "0.1.2: no Devils interval"
+        , interval = (6,)
+        , badness  = 10.0
+        )
+    , Check_Melody_Interval
+        ("0.1.2: No unison (Prim) allowed"
+        , interval =  (0,)
+        , badness  = 10.0
+        , octave   = False
+        )
+    , Check_Melody_Interval
+        ( "5 or 7"
+        , interval =  (5, 7)
+        , ugliness = 1.0
+        , octave   = False
+        )
+    , Check_Melody_Interval
+        ( "8 or 9"
+        , interval =  (8, 9)
+        , ugliness = 10.0
+        , octave   = False
+        )
+    , Check_Melody_Interval
+        ( "Octave"
+        , interval =  (12,)
+        , ugliness = 2.0
+        , octave   = False
+        )
+    , Check_Melody_Jump
+        ( "Jump"
+        , badness = 10.0
+        )
+    ]
+melody_checks_cp = \
+    [ Check_Melody_Interval
+        ( "0.1.2: no seventh (Septime)"
+        , interval = (10, 11)
+        , badness  = 10.0
+        )
+    , Check_Melody_Interval
+        ( "0.1.2: no Devils interval"
+        , interval = (6,)
+        , badness  = 10.0
+        )
+    , Check_Melody_History
+        ("0.1.2: No consecutive unison (Prim) allowed"
+        , interval    = (0,)
+        , badness     = 10.0
+        , octave      = False
+        )
+    , Check_Melody_Jump
+        ( "Jump"
+        , badness = 10.0
+        )
+    ]
+harmony_checks = \
+    [ Check_Harmony_Interval
+        ( "1.2: Use no unisons except at the beginning or end"
+        , interval  = (0,)
+        , badness   = 10.0
+        , octave    = False
+        , not_first = True
+        , not_last  = True
+        )
+    , Check_Harmony_Interval
+        ( "No Sekund"
+        , interval = (1, 2)
+        , badness  = 10.0
+        , octave   = True
+        )
+    , Check_Harmony_Interval
+        ( "Magdalena: 5/6 verboten"
+        , interval = (5, 6)
+        , badness  = 10.0
+        , octave   = True
+        )
+    , Check_Harmony_Interval
+        ( "Magdalena: 10/11 verboten"
+        , interval = (10, 11)
+        , badness  = 10.0
+        , octave   = True
+        )
+    # 1.6: Attempt to keep any two adjacent parts within a tenth
+    # of each other, unless an exceptionally pleasing line can
+    # be written by moving outside of that range.
+    , Check_Harmony_Interval_Max
+        ( "max. 16"
+        , maximum  = 16
+        , badness  = 10.0
+        )
+    , Check_Harmony_Interval_Max
+        ( "Magdalena: intervals above octave should be avoided"
+        , maximum  = 12
+        , ugliness = 1.0
+        )
+    , Check_Harmony_Interval_Min
+        ( "Contrapunctus voice must be *up*"
+        , minimum  = 0
+        , badness  = 10.0
+        )
+    , Check_Harmony_First_Interval
+        ( "1.1. Begin and end on either unison, octave, fifth,"
+          " unless the added part is underneath [it isn't here],"
+          " in which case begin and end only on unison or octave."
+        , interval = (0, 7, 12)
+        , badness  = 100.
+        )
+    , Check_Melody_Jump_2
+        ( "Not both voices may jump"
+        , badness  = 10.0
+        )
+    # This might need more history, should probably only trigger if
+    # the *last* was already a fifth or octave. And switching from
+    # fifth to octave ore vice-versa might still be allowed, in
+    # which case we would need *two* checks.
+    #, Check_Harmony_Melody_Direction
+    #    ( "Magdalena: Avoid parallel fifth or octaves: Ensure that"
+    #      " the last direction (from where is the fifth or octave"
+    #      " approached) is different."
+    #    , interval = (7, 12)
+    #    , dir      = 'same'
+    #    , badness  = 9.0
+    #    )
+    # This implements the spec above
+    , Check_Harmony_History
+        ( "Magdalena: Avoid parallel fifth"
+        , interval = (7,)
+        , badness  = 9.0
+        )
+    , Check_Harmony_History
+        ( "Magdalena: Avoid parallel octaves"
+        , interval = (12,)
+        , badness  = 9.0
+        )
+
+    # This only checks for two of the *same*. Not if we have several
+    # sixth in a row with different CF. This might need changes to
+    # the underlying check implementation.
+    #, Check_Harmony_Melody_Direction
+    #    ( "For sext (sixth) or terz (third) don't allow several in a row"
+    #    , interval = (3, 4, 8, 9)
+    #    , dir      = 'zero'
+    #    , ugliness = 3
+    #    )
+    # This doesn't allow several (unrelated) sixth or thirds in a row
+    , Check_Harmony_History
+        ( "For sext (sixth) don't allow several in a row"
+        , interval = (8, 9)
+        , ugliness = 3
+        )
+    , Check_Harmony_History
+        ( "For terz (third) don't allow several in a row"
+        , interval = (3, 4)
+        , ugliness = 3
+        )
+    , Check_Harmony_Melody_Direction
+        ( "Generally it's better that voices move in opposite"
+          " direction (or one stays the same if allowed)"
+        , interval = () # All
+        , dir      = 'same'
+        , ugliness = 0.1
+        )
+    ]
+
 __all__ = [ 'Check_Melody_Interval', 'Check_Melody_Jump'
           , 'Check_Harmony_Interval', 'Check_Harmony_First_Interval'
           , 'Check_Harmony_Interval_Max', 'Check_Harmony_Interval_Min'
           , 'Check_Melody_Jump_2', 'Check_Harmony_Melody_Direction'
           , 'Check_Harmony_History', 'Check_Melody_History'
+          , 'melody_checks_cf', 'melody_checks_cp', 'harmony_checks'
           ]
