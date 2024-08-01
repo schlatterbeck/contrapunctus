@@ -228,6 +228,8 @@ class Create_Contrapunctus (pga.PGA):
         ]
     harmony_history_checks = [c for c in harmony_checks if hasattr (c, 'reset')]
 
+    pop_default = (10, 500)
+
     def __init__ (self, args):
         self.do_explain  = False
         self.explanation = []
@@ -284,9 +286,9 @@ class Create_Contrapunctus (pga.PGA):
         stop_on = [ pga.PGA_STOP_MAXITER ]
         if not args.pop_size:
             if args.use_de:
-                args.pop_size = 50
+                args.pop_size = self.pop_default [0]
             else:
-                args.pop_size = 500
+                args.pop_size = self.pop_default [1]
         d = dict \
             ( maximize      = False
             , init          = init
@@ -564,7 +566,7 @@ def main (argv = None):
         , action  = 'store_true'
         )
     cmd.add_argument \
-        ( "-d", "--use-differential-evolution"
+        ( "-d", "--use-differential-evolution", "--use-de"
         , dest    = 'use_de'
         , help    = "Use Differential Evolution"
         , action  = 'store_true'
@@ -583,15 +585,15 @@ def main (argv = None):
         , type    = float
         )
     cmd.add_argument \
-        ( "--de-variant"
-        , help    = "Differential Evolution variant, default=%(default)s"
-        , default = 'best'
-        )
-    cmd.add_argument \
         ( "--de-scale-factor"
         , help    = "Differential Evolution scale factor, default=%(default)s"
         , default = 0.85
         , type    = float
+        )
+    cmd.add_argument \
+        ( "--de-variant"
+        , help    = "Differential Evolution variant, default=%(default)s"
+        , default = 'best'
         )
     cmd.add_argument \
         ( "-g", "--gene-file"
@@ -621,7 +623,8 @@ def main (argv = None):
         )
     cmd.add_argument \
         ( "-p", "--pop-size"
-        , help    = "Population size default for DE: 50 for GA: 500"
+        , help    = "Population size default for DE: %d for GA: %d"
+                  % Create_Contrapunctus.pop_default
         , type    = int
         )
     cmd.add_argument \
