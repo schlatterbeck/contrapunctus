@@ -84,16 +84,16 @@ class Contrapunctus:
         - pitch for each note
         Thats 7 pairs of genes (where the length is sometimes left out):
         - 1-3 (8, 4, 2)/8, the heavy position has at least 1/4
-        - pitch 0-16
+        - pitch 0-7
         - 0-1 (2 or 1)/8 for first 1/4 light position
-        - pitch 0-16
-        - pitch 0-16 (1/8 light can only be 1/8, so no length)
+        - pitch 0-7
+        - pitch 0-7 (1/8 light can only be 1/8, so no length)
         - 1-2 (4, 2)/8, the half-heavy position has at least 1/4
-        - pitch 0-16
-        - pitch 0-16 (1/8 light can only be 1/8)
+        - pitch 0-7
+        - UNUSED pitch 0-7 (1/8 light can only be 1/8)
         - 0-1 (2 or 1)/8
-        - pitch 0-16
-        - pitch 0-16 (1/8 light can only be 1/8)
+        - pitch 0-7
+        - pitch 0-7 (1/8 light can only be 1/8)
         if the previous note is longer some of the genes are not used
     """
 

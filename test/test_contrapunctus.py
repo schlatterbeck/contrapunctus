@@ -51,6 +51,11 @@ K: Gm
 
 class Test_Contrapunctus (PGA_Test_Instrumentation):
 
+    abcheader = \
+        ( "X: 1\nM: 4/4\nQ: 1/4=200\n"
+          "%%score (Contrapunctus) (CantusFirmus)\n"
+          "L: 1/8\nV:CantusFirmus \nV:Contrapunctus \nK: DDor\n"
+        )
     def test_tune (self):
         if pytest.mpi_rank != 0:
             return
@@ -428,6 +433,115 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         txt  = cp.from_gene ()
         assert txt.strip () == abc.strip ()
     # end def test_logparse
+
+    def test_gene_decode_8_44 (self):
+        header = self.abcheader + '[V:CantusFirmus] D8 |F8 |E8 |D8 |\n'
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-l', '4'])
+        cpl  = 11
+        fake = contrapunctus.gentune.Contrapunctus_Fake (args)
+        fake.set_allele (1, 1, 0, 5) # CF
+
+        # First bar CP is hardcoded
+        # Second bar CP
+        fake.set_allele (1, 1, 1 + 0, 3) # Len 1<<3 = 8 first tone CP
+        fake.set_allele (1, 1, 1 + 1, 3) # CP pitch (G)
+        # Rest is don't care
+        for k in range (3, cpl):
+            fake.set_allele (1, 1, k, 42)
+        # Third bar CP
+        fake.set_allele (1, 1, 1 + cpl + 0,  2) # Len 1<<2 = 4 first tone CP
+        fake.set_allele (1, 1, 1 + cpl + 1,  4) # CP pitch (A)
+        fake.set_allele (1, 1, 1 + cpl + 2, 42) # Don't care len first light
+        fake.set_allele (1, 1, 1 + cpl + 3, 42) # Don't care pitch first light
+        fake.set_allele (1, 1, 1 + cpl + 4, 42) # Don't care pitch 1/8
+        fake.set_allele (1, 1, 1 + cpl + 5,  2) # Len 1<<2 = 4 2nd tone CP
+        fake.set_allele (1, 1, 1 + cpl + 6,  5) # CP pitch (B)
+        # Rest is don't care
+        for k in range (3, cpl):
+            fake.set_allele (1, 1, k, 42)
+        t = fake.as_tune (1, 1)
+        result = header + '[V:Contrapunctus] G8 |A4 B4 |^c8 |d8 |'
+        assert t == result
+    # end def test_gene_decode_8_44
+
+    def test_gene_decode_422_4211 (self):
+        header = self.abcheader + '[V:CantusFirmus] D8 |F8 |E8 |D8 |\n'
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-l', '4'])
+        cpl  = 11
+        fake = contrapunctus.gentune.Contrapunctus_Fake (args)
+        fake.set_allele (1, 1, 0, 5) # CF
+
+        # First bar CP is hardcoded
+        # Second bar CP
+        fake.set_allele (1, 1, 1 +  0,  2) # Len 1<<2 = 4 first tone CP
+        fake.set_allele (1, 1, 1 +  1,  3) # CP pitch (G)
+        fake.set_allele (1, 1, 1 +  2, 42) # Don't care len first light
+        fake.set_allele (1, 1, 1 +  3, 42) # Don't care pitch first light
+        fake.set_allele (1, 1, 1 +  4, 42) # Don't care pitch 1/8
+        fake.set_allele (1, 1, 1 +  5,  1) # Len 1<<1 = 2 2nd tone CP
+        fake.set_allele (1, 1, 1 +  6,  4) # CP pitch (A)
+        fake.set_allele (1, 1, 1 +  7, 42) # Don't care pitch 1/8
+        fake.set_allele (1, 1, 1 +  8,  1) # Len 1<<1 = 2 3rd tone CP
+        fake.set_allele (1, 1, 1 +  9,  2) # CP pitch (F)
+        fake.set_allele (1, 1, 1 + 10, 42) # Don't care pitch 1/8
+        # Third bar CP
+        fake.set_allele (1, 1, 1 + cpl +  0,  2) # Len 1<<2 = 4 first tone CP
+        fake.set_allele (1, 1, 1 + cpl +  1,  3) # CP pitch (G)
+        fake.set_allele (1, 1, 1 + cpl +  2, 42) # Don't care len first light
+        fake.set_allele (1, 1, 1 + cpl +  3, 42) # Don't care pitch first light
+        fake.set_allele (1, 1, 1 + cpl +  4, 42) # Don't care pitch 1/8
+        fake.set_allele (1, 1, 1 + cpl +  5,  1) # Len 1<<1 = 2 2nd tone CP
+        fake.set_allele (1, 1, 1 + cpl +  6,  4) # CP pitch (A)
+        fake.set_allele (1, 1, 1 + cpl +  7, 42) # Don't care pitch 1/8
+        fake.set_allele (1, 1, 1 + cpl +  8,  0) # Len 1<<0 = 1 3rd tone CP
+        fake.set_allele (1, 1, 1 + cpl +  9,  2) # CP pitch (F)
+        fake.set_allele (1, 1, 1 + cpl + 10,  3) # CP pitch (G)
+        t = fake.as_tune (1, 1)
+        result = header + '[V:Contrapunctus] G4 A2 F2 |G4 A2 F1 G1 |^c8 |d8 |'
+        assert t == result
+    # end def test_gene_decode_422_4211
+
+    def test_gene_decode_22211_211211 (self):
+        header = self.abcheader + '[V:CantusFirmus] D8 |F8 |E8 |D8 |\n'
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-l', '4'])
+        cpl  = 11
+        fake = contrapunctus.gentune.Contrapunctus_Fake (args)
+        fake.set_allele (1, 1, 0, 5) # CF
+
+        # First bar CP is hardcoded
+        # Second bar CP
+        fake.set_allele (1, 1, 1 +  0,  1) # Len 1<<2 = 2 first tone CP
+        fake.set_allele (1, 1, 1 +  1,  3) # CP pitch (G)
+        fake.set_allele (1, 1, 1 +  2,  1) # Len 1<<2 = 2 2nd tone CP
+        fake.set_allele (1, 1, 1 +  3,  4) # CP pitch (A)
+        fake.set_allele (1, 1, 1 +  4, 42) # Don't care pitch 1/8
+        fake.set_allele (1, 1, 1 +  5,  1) # Len 1<<1 = 2 3rd tone CP
+        fake.set_allele (1, 1, 1 +  6,  4) # CP pitch (A)
+        fake.set_allele (1, 1, 1 +  7, 42) # Don't care pitch 1/8
+        fake.set_allele (1, 1, 1 +  8,  0) # Len 1<<0 = 1 3rd tone CP
+        fake.set_allele (1, 1, 1 +  9,  2) # CP pitch (F)
+        fake.set_allele (1, 1, 1 + 10,  2) # CP pitch (F)
+        # Third bar CP
+        fake.set_allele (1, 1, 1 + cpl +  0,  1) # Len 1<<1 = 2 first tone CP
+        fake.set_allele (1, 1, 1 + cpl +  1,  3) # CP pitch (G)
+        fake.set_allele (1, 1, 1 + cpl +  2,  0) # Len 1<<0 = 1 2nd tone CP
+        fake.set_allele (1, 1, 1 + cpl +  3,  4) # CP pitch (A)
+        fake.set_allele (1, 1, 1 + cpl +  4,  4) # CP pitch (A)
+        fake.set_allele (1, 1, 1 + cpl +  5,  1) # Len 1<<1 = 2 2nd tone CP
+        fake.set_allele (1, 1, 1 + cpl +  6,  3) # CP pitch (G)
+        fake.set_allele (1, 1, 1 + cpl +  7, 42) # Don't care pitch 1/8
+        fake.set_allele (1, 1, 1 + cpl +  8,  0) # Len 1<<0 = 1 3rd tone CP
+        fake.set_allele (1, 1, 1 + cpl +  9,  4) # CP pitch (A)
+        fake.set_allele (1, 1, 1 + cpl + 10,  4) # CP pitch (A)
+        t = fake.as_tune (1, 1)
+        result = header + '[V:Contrapunctus] G2 A2 A2 F1 F1 |' \
+                          'G2 A1 A1 G2 A1 A1 |^c8 |d8 |'
+        assert t == result
+    # end def test_gene_decode_22211_211211
+
 
 # end class Test_Contrapunctus
 
