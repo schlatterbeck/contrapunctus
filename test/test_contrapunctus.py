@@ -414,6 +414,21 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert check.prev_match is False
     # end def test_reset_upcall
 
+    def test_logparse (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v', '-b', '-g' 'test/example.log'])
+        cp   = contrapunctus.gentune.Contrapunctus_Fake (args)
+        txt  = cp.from_gene ()
+        with open ('test/example.abc') as f:
+            abc = f.read ()
+        assert txt.strip () == abc.strip ()
+        # roundtrip test, note the missing -b ('best') option
+        args = cmd.parse_args (['-v', '-v', '-g' 'test/example.abc'])
+        cp   = contrapunctus.gentune.Contrapunctus_Fake (args)
+        txt  = cp.from_gene ()
+        assert txt.strip () == abc.strip ()
+    # end def test_logparse
+
 # end class Test_Contrapunctus
 
 class Test_Doctest:

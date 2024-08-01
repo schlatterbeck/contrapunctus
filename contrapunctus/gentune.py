@@ -28,9 +28,30 @@ from   .gregorian import dorian, hypodorian
 from   .checks    import *
 from   argparse   import ArgumentParser
 from   copy       import deepcopy
+# Backwards compatibility:
+from   rsclib.iter_recipes import batched
 
-class Create_Contrapunctus (pga.PGA):
+class Fake_PGA:
+    """ This just has a single gene copy and emulates the allele
+        accessor methods.
+    """
+    def __init__ (self):
+        self.gene = []
+        for i in self.init:
+            self.gene.append (0)
+    # end def __init__
 
+    def get_allele (self, p, pop, i):
+        return self.gene [i]
+    # end def get_allele
+
+    def set_allele (self, p, pop, i, v):
+        self.gene [i] = v
+    # end def set_allele
+
+# end class Fake_PGA
+
+class Contrapunctus:
     """ The rules for counterpoint are taken partly from wikipedia
         "Counterpoint" article (in particular "species counterpoint"),
         partly from Magdalenas notes on counterpoint.
@@ -43,6 +64,37 @@ class Create_Contrapunctus (pga.PGA):
           0.1.1--0.1.7, the second 0.2.1--0.2.6.
         - Wikipedia section "First species" has an enumeration with 9
           points, they are numbered 1.1--1.9 in the following.
+
+        The first voice in the gene is the cantus firmus, the second
+        voice is the contrapunctus.
+        Length of the automatically-generated voices
+        Now that we allow up to 1/8 notes the gene for the first voice
+        is longer.
+        A bar can contain at most 14 notes:
+        - A 'heavy' position must not contain 1/8
+        - so we have at least 2*1/4 for the heavy position
+        - and the rest 1/8 makes 16/8 - 2*1/4 = 12/8
+        We have for each note in a bar:
+        - length of note (or pause, for now we do not generate a pause)
+        - the length can only be 16, 12, 8, 6, 4, 3, 2, 1
+        But we only use one bar (8/8) and we bind the second note if
+        it is the same pitch (maybe with some probability). The gene
+        coding is:
+        - log_2 of the length (left out if there is only 1 possibility)
+        - pitch for each note
+        Thats 7 pairs of genes (where the length is sometimes left out):
+        - 1-3 (8, 4, 2)/8, the heavy position has at least 1/4
+        - pitch 0-16
+        - 0-1 (2 or 1)/8 for first 1/4 light position
+        - pitch 0-16
+        - pitch 0-16 (1/8 light can only be 1/8, so no length)
+        - 1-2 (4, 2)/8, the half-heavy position has at least 1/4
+        - pitch 0-16
+        - pitch 0-16 (1/8 light can only be 1/8)
+        - 0-1 (2 or 1)/8
+        - pitch 0-16
+        - pitch 0-16 (1/8 light can only be 1/8)
+        if the previous note is longer some of the genes are not used
     """
 
     # These need to call reset before each eval:
@@ -50,98 +102,32 @@ class Create_Contrapunctus (pga.PGA):
         [c for c in melody_checks_cp + melody_checks_cf if hasattr (c, 'reset')]
     harmony_history_checks = [c for c in harmony_checks if hasattr (c, 'reset')]
 
-    pop_default = (10, 500)
-
     def __init__ (self, args):
         self.do_explain  = False
         self.explanation = []
         self.args        = args
         self.tunelength  = args.tune_length
         assert args.tune_length > 3
-        # The first voice in the gene is the cantus firmus, the second
-        # voice is the contrapunctus.
-        # Length of the automatically-generated voices
-        # Now that we allow up to 1/8 notes the gene for the first voice
-        # is longer.
-        # A bar can contain at most 14 notes:
-        # - A 'heavy' position must not contain 1/8
-        # - so we have at least 2*1/4 for the heavy position
-        # - and the rest 1/8 makes 16/8 - 2*1/4 = 12/8
-        # We have for each note in a bar:
-        # - length of note (or pause, for now we do not generate a pause)
-        # - the length can only be 16, 12, 8, 6, 4, 3, 2, 1
-        # But we only use one bar (8/8) and we bind the second note if
-        # it is the same pitch (maybe with some probability). The gene
-        # coding is:
-        # - log_2 of the length (left out if there is only 1 possibility)
-        # - pitch for each note
-        # Thats 7 pairs of genes (where the length is sometimes left out):
-        # - 1-3 (8, 4, 2)/8, the heavy position has at least 1/4
-        # - pitch 0-16
-        # - 0-1 (2 or 1)/8 for first 1/4 light position
-        # - pitch 0-16
-        # - pitch 0-16 (1/8 light can only be 1/8, so no length)
-        # - 1-2 (4, 2)/8, the half-heavy position has at least 1/4
-        # - pitch 0-16
-        # - pitch 0-16 (1/8 light can only be 1/8)
-        # - 0-1 (2 or 1)/8
-        # - pitch 0-16
-        # - pitch 0-16 (1/8 light can only be 1/8)
-        # if the previous note is longer some of the genes are not used
 
         self.cflength   = self.tunelength - 3
         self.cplength   = self.tunelength - 2
-        init            = [(0, 7 + args.use_de)] * self.cflength
+        init            = []
+        # Can't use '[[0, 7]] * cflength' due to aliasing
+        for i in range (self.cflength):
+            init.append ([0, 7])
         for i in range (self.cplength):
-            init.append ((1,  3 + args.use_de)) # duration heavy
-            init.append ((0,  7 + args.use_de)) # pitch
-            init.append ((0,  1 + args.use_de)) # duration light 1/4
-            init.append ((0,  7 + args.use_de)) # pitch
-            init.append ((0,  7 + args.use_de)) # pitch light 1/8
-            init.append ((1,  2 + args.use_de)) # duration half-heavy 1/4 or 1/2
-            init.append ((0,  7 + args.use_de)) # pitch
-            init.append ((0,  7 + args.use_de)) # pitch light 1/8
-            init.append ((0,  1 + args.use_de)) # duration light 1/4
-            init.append ((0,  7 + args.use_de)) # pitch
-            init.append ((0,  7 + args.use_de)) # pitch light 1/8
+            init.append ([1,  3]) # duration heavy
+            init.append ([0,  7]) # pitch
+            init.append ([0,  1]) # duration light 1/4
+            init.append ([0,  7]) # pitch
+            init.append ([0,  7]) # pitch light 1/8
+            init.append ([1,  2]) # duration half-heavy 1/4 or 1/2
+            init.append ([0,  7]) # pitch
+            init.append ([0,  7]) # pitch light 1/8
+            init.append ([0,  1]) # duration light 1/4
+            init.append ([0,  7]) # pitch
+            init.append ([0,  7]) # pitch light 1/8
         self.init = init
-        stop_on = [ pga.PGA_STOP_MAXITER ]
-        if not args.pop_size:
-            if args.use_de:
-                args.pop_size = self.pop_default [0]
-            else:
-                args.pop_size = self.pop_default [1]
-        d = dict \
-            ( maximize      = False
-            , init          = init
-            , random_seed   = self.args.random_seed
-            , pop_size      = args.pop_size
-            , num_replace   = args.pop_size * 9 // 10
-            , print_options = [pga.PGA_REPORT_STRING]
-            , stopping_rule_types = stop_on
-            , max_GA_iter   = args.max_generations
-            )
-        typ = int
-        if args.use_de:
-            typ = float
-            variant = args.de_variant.upper ().replace ('-', '_')
-            variant = getattr (pga, 'PGA_DE_VARIANT_' + variant)
-            d.update \
-                ( num_replace          = args.pop_size
-                , pop_replace_type     = pga.PGA_POPREPL_PAIRWISE_BEST
-                , select_type          = pga.PGA_SELECT_LINEAR
-                , mutation_only        = True
-                , mutation_bounce_back = True
-                , mutation_type        = pga.PGA_MUTATION_DE
-                , DE_variant           = variant
-                , DE_crossover_prob    = args.de_crossover_prob
-                , DE_jitter            = args.de_jitter
-                , DE_scale_factor      = args.de_scale_factor
-                , DE_crossover_type    = pga.PGA_DE_CROSSOVER_BIN
-                )
-        if self.args.output_file:
-            d.update (output_file = args.output_file)
-        super ().__init__ (typ, len (init), **d)
     # end def __init__
 
     def evaluate (self, p, pop):
@@ -236,19 +222,20 @@ class Create_Contrapunctus (pga.PGA):
                     break
         for n, line in enumerate (iter):
             ln = n + 1 + c
-            if not line.startswith ('#'):
+            if not line.startswith ('#') and not line.startswith ('%#'):
                 continue
-            i, l = line [1:].split (':')
+            i, l = line.split ('#', 1)[-1].split (':')
             i = int (i)
             if i != idx:
                 raise ValueError ("Line %s: Invalid gene-file format" % ln)
             for offs, i in enumerate (l.split (',')):
-                if idx + offs + 1 > len (self):
+                if idx + offs + 1 > len (self.init):
                     raise ValueError ("Line %s: Gene too long" % ln)
-                i = int (i.strip ().lstrip ('[').rstrip (']').strip ())
+                v = float (i.strip ().lstrip ('[').rstrip (']').strip ())
+                i = self.from_allele (v, idx + offs)
                 self.set_allele (1, pga.PGA_NEWPOP, idx + offs, i)
             idx += offs + 1
-            if idx + 1 > len (self):
+            if idx + 1 > len (self.init):
                 idx = 0
                 yield True
         else:
@@ -257,13 +244,21 @@ class Create_Contrapunctus (pga.PGA):
     # end def from_gene_lines
 
     def from_gene (self):
+        r = []
         with open (self.args.gene_file, 'r') as f:
             for k in self.from_gene_lines (f):
-                self.print_string (sys.stdout, 1, pga.PGA_NEWPOP)
+                r.append (self.as_tune (1, pga.PGA_NEWPOP))
                 if self.args.verbose:
                     self.do_explain = True
-                    print ('Eval: %g' % self.evaluate (1, pga.PGA_NEWPOP))
-                    print ('\n'.join (self.explanation))
+                    r.append ('%% Eval: %g' % self.evaluate (1, pga.PGA_NEWPOP))
+                    exp = '\n'.join (self.explanation)
+                    r.append ('% '+ exp.replace ('\n', '\n% '))
+                if self.args.verbose > 1:
+                    al = lambda x: self.get_allele (1, pga.PGA_NEWPOP, x)
+                    g  = ['[%d]' % al (i) for i in range (len (self.init))]
+                    for i, b in enumerate (batched (g, 16)):
+                        r.append ('%%# %4d: %s' % ((i * 16), ','.join (b)))
+        return '\n'.join (r)
     # end def from_gene
 
     def phenotype (self, p, pop):
@@ -357,12 +352,67 @@ class Create_Contrapunctus (pga.PGA):
         return tune
     # end def phenotype
 
-    def print_string (self, file, p, pop):
+    def as_tune (self, p, pop):
         tune = self.phenotype (p, pop)
         if self.args.transpose:
             tune = tune.transpose (self.args.transpose)
+        return str (tune)
+    # end def as_tune
+
+# end class Contrapunctus
+
+class Contrapunctus_PGA (Contrapunctus, pga.PGA):
+
+    pop_default = (10, 500)
+
+    def __init__ (self, args):
+        Contrapunctus.__init__ (self, args)
+        stop_on = [ pga.PGA_STOP_MAXITER ]
+        if not args.pop_size:
+            if args.use_de:
+                args.pop_size = self.pop_default [0]
+            else:
+                args.pop_size = self.pop_default [1]
+        init = deepcopy (self.init)
+        if args.use_de:
+            for item in init:
+                item [-1] += 1
+        d = dict \
+            ( maximize      = False
+            , init          = init
+            , random_seed   = self.args.random_seed
+            , pop_size      = args.pop_size
+            , num_replace   = args.pop_size * 9 // 10
+            , print_options = [pga.PGA_REPORT_STRING]
+            , stopping_rule_types = stop_on
+            , max_GA_iter   = args.max_generations
+            )
+        typ = int
+        if args.use_de:
+            typ = float
+            variant = args.de_variant.upper ().replace ('-', '_')
+            variant = getattr (pga, 'PGA_DE_VARIANT_' + variant)
+            d.update \
+                ( num_replace          = args.pop_size
+                , pop_replace_type     = pga.PGA_POPREPL_PAIRWISE_BEST
+                , select_type          = pga.PGA_SELECT_LINEAR
+                , mutation_only        = True
+                , mutation_bounce_back = True
+                , mutation_type        = pga.PGA_MUTATION_DE
+                , DE_variant           = variant
+                , DE_crossover_prob    = args.de_crossover_prob
+                , DE_jitter            = args.de_jitter
+                , DE_scale_factor      = args.de_scale_factor
+                , DE_crossover_type    = pga.PGA_DE_CROSSOVER_BIN
+                )
+        if self.args.output_file:
+            d.update (output_file = args.output_file)
+        pga.PGA.__init__ (self, typ, len (init), **d)
+    # end def __init__
+
+    def print_string (self, file, p, pop):
         print ('Iter: %s Evals: %s' % (self.GA_iter, self.eval_count))
-        print (tune, file = file)
+        print (self.as_tune (p, pop), file = file)
         file.flush ()
         super ().print_string (file, p, pop)
     # end def print_string
@@ -377,10 +427,18 @@ class Create_Contrapunctus (pga.PGA):
         return self.check_stopping_conditions ()
     # end def stop_cond
 
-# end class Create_Contrapunctus
+# end class Contrapunctus_PGA
 
-def main (argv = None):
-    de_variants = ['best', 'rand', 'either-or']
+class Contrapunctus_Fake (Fake_PGA, Contrapunctus):
+
+    def __init__ (self, args):
+        Contrapunctus.__init__ (self, args)
+        Fake_PGA.__init__ (self)
+    # end def __init__
+
+# end class Contrapunctus_Fake
+
+def contrapunctus_cmd (argv = None):
     cmd = ArgumentParser ()
     cmd.add_argument \
         ( "-b", "--best-eval"
@@ -446,7 +504,7 @@ def main (argv = None):
     cmd.add_argument \
         ( "-p", "--pop-size"
         , help    = "Population size default for DE: %d for GA: %d"
-                  % Create_Contrapunctus.pop_default
+                  % Contrapunctus_PGA.pop_default
         , type    = int
         )
     cmd.add_argument \
@@ -465,16 +523,25 @@ def main (argv = None):
     cmd.add_argument \
         ( "-v", "--verbose"
         , help    = "Verbose output of gene string with -g"
-        , action  = 'store_true'
+        , action  = 'count'
+        , default = 0
         )
+    return cmd
+# end def contrapunctus_cmd
+
+def main (argv = None):
+    de_variants = ['best', 'rand', 'either-or']
+    cmd  = contrapunctus_cmd ()
     args = cmd.parse_args (argv)
     if args.de_variant not in de_variants:
         print ('Invalid --de-variant, use one of %s' % ', '.join (de_variants))
         return
-    cp = Create_Contrapunctus (args)
     if args.gene_file:
-        cp.from_gene ()
+        cp = Contrapunctus_Fake (args)
+        txt = cp.from_gene ()
+        print (txt)
     else:
+        cp = Contrapunctus_PGA (args)
         cp.run ()
 # end def main
 
