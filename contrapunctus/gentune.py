@@ -107,29 +107,21 @@ class Contrapunctus:
         self.do_explain  = False
         self.explanation = []
         self.args        = args
-        self.tunelength  = args.tune_length
+        self._tunelength = args.tune_length
         assert args.tune_length > 3
-
-        self.cflength   = self.tunelength - 3
-        self.cplength   = self.tunelength - 2
-        init            = []
-        # Can't use '[[0, 7]] * cflength' due to aliasing
-        for i in range (self.cflength):
-            init.append ([0, 7])
-        for i in range (self.cplength):
-            init.append ([1,  3]) # duration heavy
-            init.append ([0,  7]) # pitch
-            init.append ([0,  1]) # duration light 1/4
-            init.append ([0,  7]) # pitch
-            init.append ([0,  7]) # pitch light 1/8
-            init.append ([1,  2]) # duration half-heavy 1/4 or 1/2
-            init.append ([0,  7]) # pitch
-            init.append ([0,  7]) # pitch light 1/8
-            init.append ([0,  1]) # duration light 1/4
-            init.append ([0,  7]) # pitch
-            init.append ([0,  7]) # pitch light 1/8
-        self.init = init
+        self.set_init ()
     # end def __init__
+
+    @property
+    def tunelength (self):
+        return self._tunelength
+    # end def tunelength
+
+    @tunelength.setter
+    def tunelength (self, tl):
+        self._tunelength = tl
+        self.set_init ()
+    # end def tunelength
 
     def as_complete_tune (self, p, pop):
         r = []
@@ -250,6 +242,7 @@ class Contrapunctus:
                 if line.startswith ('The Best String:'):
                     c = n
                     break
+        started = False
         for n, line in enumerate (iter):
             ln = n + 1 + c
             start = '#', '%#', 'Text: #'
@@ -257,29 +250,47 @@ class Contrapunctus:
                 if line.startswith (s):
                     break
             else:
-                continue
+                if not started:
+                    continue
+                else:
+                    yield idx
             i, l = line.split ('#', 1)[-1].split (':')
             i = int (i)
             if i != idx:
                 raise ValueError ("Line %s: Invalid gene-file format" % ln)
-            for offs, i in enumerate (l.split (',')):
-                if idx + offs + 1 > len (self.init):
-                    raise ValueError ("Line %s: Gene too long" % ln)
-                v = float (i.strip ().lstrip ('[').rstrip (']').strip ())
-                i = self.from_allele (v, idx + offs)
-                self.set_allele (1, pga.PGA_NEWPOP, idx + offs, i)
+            for offs, a in enumerate (l.split (',')):
+                #if idx + offs + 1 > len (self.init):
+                #    raise ValueError ("Line %s: Gene too long" % ln)
+                a = float (a.strip ().lstrip ('[').rstrip (']').strip ())
+                a = int (a)
+                if idx + offs >= len (self.init):
+                    self.tunelength = 2 * (idx + offs)
+                self.set_allele (1, pga.PGA_NEWPOP, idx + offs, a)
             idx += offs + 1
-            if idx + 1 > len (self.init):
-                idx = 0
-                yield True
-        else:
-            if idx > 0:
-                raise ValueError ("Line %s: Gene too short" % ln)
+            #if idx + 1 > len (self.init):
+            #    idx = 0
+            #    yield True
+        if idx > 0:
+            yield idx
     # end def from_gene_lines
+
+    def _fix_gene (self):
+        for i in range (len (self.init)):
+            a = self.get_allele (1, pga.PGA_NEWPOP, i)
+            v = self.from_allele (a, i)
+            self.set_allele (1, pga.PGA_NEWPOP, i, v)
+    # end def _fix_gene
 
     def _from_gene (self, f):
         r = []
-        for k in self.from_gene_lines (f):
+        for genelength in self.from_gene_lines (f):
+            tunelength = (genelength + 25) / 12
+            assert int (tunelength) == tunelength
+            tunelength = int (tunelength)
+            if genelength != len (self.init):
+                self.tunelength = tunelength
+            if self.args.fix_gene:
+                self._fix_gene ()
             r.append (self.as_complete_tune (1, pga.PGA_NEWPOP))
         return r
     # end def _from_gene
@@ -310,7 +321,9 @@ class Contrapunctus:
         for i in range (self.cflength):
             if maxidx is not None and i > maxidx:
                 return tune
-            a = self.from_allele (self.get_allele (p, pop, i), i)
+            a = self.get_allele (p, pop, i)
+            if self.args.fix_gene:
+                a = self.from_allele (a, i)
             b = Bar (8, 8)
             b.add (Tone (hypodorian [a], 8, unit = 8))
             cf.add (b)
@@ -337,7 +350,10 @@ class Contrapunctus:
             v = []
             for j in range (11):
                 idx = j + off
-                v.append (self.from_allele (self.get_allele (p, pop, idx), idx))
+                a = self.get_allele (p, pop, idx)
+                if self.args.fix_gene:
+                    a = self.from_allele (a, idx)
+                v.append (a)
             off += 11
             b = Bar (8, 8)
             cp.add (b)
@@ -400,6 +416,34 @@ class Contrapunctus:
         return tune
     # end def phenotype
 
+    def set_init (self):
+        old_init        = getattr (self, 'init', None)
+        self.cflength   = self.tunelength - 3
+        self.cplength   = self.tunelength - 2
+        init            = []
+        # Can't use '[[0, 7]] * cflength' due to aliasing
+        for i in range (self.cflength):
+            init.append ([0, 7])
+        for i in range (self.cplength):
+            init.append ([1,  3]) # duration heavy
+            init.append ([0,  7]) # pitch
+            init.append ([0,  1]) # duration light 1/4
+            init.append ([0,  7]) # pitch
+            init.append ([0,  7]) # pitch light 1/8
+            init.append ([1,  2]) # duration half-heavy 1/4 or 1/2
+            init.append ([0,  7]) # pitch
+            init.append ([0,  7]) # pitch light 1/8
+            init.append ([0,  1]) # duration light 1/4
+            init.append ([0,  7]) # pitch
+            init.append ([0,  7]) # pitch light 1/8
+        self.init = init
+        if old_init:
+            for n, v in enumerate (old_init):
+                if n >= len (self.init):
+                    break
+                self.init [n] = v
+    # end def set_init
+
 # end class Contrapunctus
 
 class Contrapunctus_PGA (Contrapunctus, pga.PGA):
@@ -450,6 +494,15 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
             d.update (output_file = args.output_file)
         pga.PGA.__init__ (self, typ, len (init), **d)
     # end def __init__
+
+    tunelength = Contrapunctus.tunelength
+
+    @tunelength.setter
+    def tunelength (self, tl):
+        if getattr (self, 'init', None):
+            raise ValueError ('Not possible to set tunelength after init')
+        self._tunelength = tl
+    # end def tunelength
 
     def print_string (self, file, p, pop):
         print ('Iter: %s Evals: %s' % (self.GA_iter, self.eval_count))
@@ -634,6 +687,13 @@ def contrapunctus_cmd (argv = None):
         ( "--de-variant"
         , help    = "Differential Evolution variant, default=%(default)s"
         , default = 'best'
+        )
+    cmd.add_argument \
+        ( "--do-not-fix-gene"
+        , help    = "During gene reading do limit maximum of read values"
+        , dest    = 'fix_gene'
+        , action  = 'store_false'
+        , default = True
         )
     cmd.add_argument \
         ( "-g", "--gene-file"
