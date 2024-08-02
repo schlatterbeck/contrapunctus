@@ -252,7 +252,11 @@ class Contrapunctus:
                     break
         for n, line in enumerate (iter):
             ln = n + 1 + c
-            if not line.startswith ('#') and not line.startswith ('%#'):
+            start = '#', '%#', 'Text: #'
+            for s in start:
+                if line.startswith (s):
+                    break
+            else:
                 continue
             i, l = line.split ('#', 1)[-1].split (':')
             i = int (i)
@@ -273,11 +277,19 @@ class Contrapunctus:
                 raise ValueError ("Line %s: Gene too short" % ln)
     # end def from_gene_lines
 
-    def from_gene (self):
+    def _from_gene (self, f):
         r = []
-        with open (self.args.gene_file, 'r') as f:
-            for k in self.from_gene_lines (f):
-                r.append (self.as_complete_tune (1, pga.PGA_NEWPOP))
+        for k in self.from_gene_lines (f):
+            r.append (self.as_complete_tune (1, pga.PGA_NEWPOP))
+        return r
+    # end def _from_gene
+
+    def from_gene (self):
+        if self.args.gene_file == '-':
+            r = self._from_gene (sys.stdin)
+        else:
+            with open (self.args.gene_file, 'r') as f:
+                r = self._from_gene (f)
         return '\n'.join (r)
     # end def from_gene
 
