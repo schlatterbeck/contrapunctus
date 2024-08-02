@@ -23,6 +23,7 @@
 
 import sys
 import pga
+import random
 from   .tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
 from   .gregorian import dorian, hypodorian
 from   .checks    import *
@@ -129,6 +130,35 @@ class Contrapunctus:
             init.append ([0,  7]) # pitch light 1/8
         self.init = init
     # end def __init__
+
+    def as_complete_tune (self, p, pop):
+        r = []
+        r.append (self.as_tune (p, pop))
+        if self.args.verbose:
+            self.do_explain = True
+            r.append ('%% Eval: %g' % self.evaluate (p, pop))
+            exp = '\n'.join (self.explanation)
+            r.append ('% '+ exp.replace ('\n', '\n% '))
+        if self.args.verbose > 1:
+            r.append (self.as_tune_gene (p, pop))
+        return '\n'.join (r)
+    # end def as_complete_tune
+
+    def as_tune (self, p, pop):
+        tune = self.phenotype (p, pop)
+        if self.args.transpose:
+            tune = tune.transpose (self.args.transpose)
+        return str (tune)
+    # end def as_tune
+
+    def as_tune_gene (self, p, pop):
+        r = []
+        al = lambda x: self.get_allele (p, pop, x)
+        g  = ['[%d]' % al (i) for i in range (len (self.init))]
+        for i, b in enumerate (batched (g, 16)):
+            r.append ('%%# %4d: %s' % ((i * 16), ','.join (b)))
+        return '\n'.join (r)
+    # end def as_tune_gene
 
     def evaluate (self, p, pop):
         tune       = self.phenotype (p, pop)
@@ -247,26 +277,27 @@ class Contrapunctus:
         r = []
         with open (self.args.gene_file, 'r') as f:
             for k in self.from_gene_lines (f):
-                r.append (self.as_tune (1, pga.PGA_NEWPOP))
-                if self.args.verbose:
-                    self.do_explain = True
-                    r.append ('%% Eval: %g' % self.evaluate (1, pga.PGA_NEWPOP))
-                    exp = '\n'.join (self.explanation)
-                    r.append ('% '+ exp.replace ('\n', '\n% '))
-                if self.args.verbose > 1:
-                    al = lambda x: self.get_allele (1, pga.PGA_NEWPOP, x)
-                    g  = ['[%d]' % al (i) for i in range (len (self.init))]
-                    for i, b in enumerate (batched (g, 16)):
-                        r.append ('%%# %4d: %s' % ((i * 16), ','.join (b)))
+                r.append (self.as_complete_tune (1, pga.PGA_NEWPOP))
         return '\n'.join (r)
     # end def from_gene
 
-    def phenotype (self, p, pop):
+    def phenotype (self, p, pop, maxidx = None):
+        tune = Tune \
+            ( number = 1
+            , meter  = Meter (4, 4)
+            , Q      = '1/4=200'
+            , key    = 'DDor'
+            , unit   = 8
+            , score  = '(Contrapunctus) (CantusFirmus)'
+            )
         cf = Voice (id = 'CantusFirmus')
+        tune.add (cf)
         b  = Bar (8, 8)
         b.add (Tone (dorian.finalis, 8, unit = 8))
         cf.add (b)
         for i in range (self.cflength):
+            if maxidx is not None and i > maxidx:
+                return tune
             a = self.from_allele (self.get_allele (p, pop, i), i)
             b = Bar (8, 8)
             b.add (Tone (hypodorian [a], 8, unit = 8))
@@ -286,16 +317,8 @@ class Contrapunctus:
         b  = Bar (8, 8)
         b.add (Tone (dorian.finalis, 8, unit = 8))
         cf.add (b)
-        tune = Tune \
-            ( number = 1
-            , meter  = Meter (4, 4)
-            , Q      = '1/4=200'
-            , key    = 'DDor'
-            , unit   = 8
-            , score  = '(Contrapunctus) (CantusFirmus)'
-            )
-        tune.add (cf)
         cp  = Voice (id = 'Contrapunctus')
+        tune.add (cp)
         off = self.cflength
         for i in range (self.cplength):
             boff = 0 # offset in bar
@@ -305,36 +328,50 @@ class Contrapunctus:
                 v.append (self.from_allele (self.get_allele (p, pop, idx), idx))
             off += 11
             b = Bar (8, 8)
+            cp.add (b)
+            if maxidx is not None and off - 11 + 1 > maxidx:
+                return tune
             l = 1 << v [0]
             assert 2 <= l <= 8
             b.add (Tone (dorian [v [1]], l, unit = 8))
             boff += l
             if boff == 2:
+                if maxidx is not None and off - 11 + 3 > maxidx:
+                    return tune
                 l = 1 << v [2]
                 assert 1 <= l <= 2
                 b.add (Tone (dorian [v [3]], l, unit = 8))
                 boff += l
             if boff == 3:
+                if maxidx is not None and off - 11 + 4 > maxidx:
+                    return tune
                 b.add (Tone (dorian [v [4]], 1, unit = 8))
                 boff += 1
             if boff == 4:
+                if maxidx is not None and off - 11 + 6 > maxidx:
+                    return tune
                 l = 1 << v [5]
                 assert 2 <= l <= 4
                 b.add (Tone (dorian [v [6]], l, unit = 8))
                 boff += l
             if boff == 5:
                 # Probably never reached, prev tone may not be len 1
+                if maxidx is not None and off - 11 + 7 > maxidx:
+                    return tune
                 b.add (Tone (dorian [v [7]], 1, unit = 8))
                 boff += 1
             if boff == 6:
+                if maxidx is not None and off - 11 + 9 > maxidx:
+                    return tune
                 l = 1 << v [8]
                 assert 1 <= l <= 2
                 b.add (Tone (dorian [v [9]], l, unit = 8))
                 boff += l
             if boff == 7:
+                if maxidx is not None and off - 11 + 10 > maxidx:
+                    return tune
                 b.add (Tone (dorian [v [10]], 1, unit = 8))
                 boff += 1
-            cp.add (b)
         b  = Bar (8, 8)
         # 0.1.1: "The final must be approached by step. If the final is
         # approached from below, then the leading tone must be raised in
@@ -348,16 +385,8 @@ class Contrapunctus:
         b  = Bar (8, 8)
         b.add (Tone (dorian [7], 8, unit = 8))
         cp.add (b)
-        tune.add (cp)
         return tune
     # end def phenotype
-
-    def as_tune (self, p, pop):
-        tune = self.phenotype (p, pop)
-        if self.args.transpose:
-            tune = tune.transpose (self.args.transpose)
-        return str (tune)
-    # end def as_tune
 
 # end class Contrapunctus
 
@@ -429,14 +458,133 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
 
 # end class Contrapunctus_PGA
 
-class Contrapunctus_Fake (Fake_PGA, Contrapunctus):
+class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
 
     def __init__ (self, args):
         Contrapunctus.__init__ (self, args)
         Fake_PGA.__init__ (self)
+        random.seed (self.args.random_seed)
     # end def __init__
 
-# end class Contrapunctus_Fake
+    def find_cantus_firmus (self, idx):
+        if idx == self.cflength:
+            return True
+        for a in self.randrange (idx):
+            self.set_allele (1, 1, idx, a)
+            tune  = self.phenotype (1, 1, idx)
+            if not self.run_cf_checks (tune, idx):
+                continue
+            r = self.find_cantus_firmus (idx + 1)
+            if r:
+                return True
+        return False
+    # end def find_cantus_firmus
+
+    boff_lut = (0, None, 2, 4, 5, None, 8, 10)
+
+    def find_contrapunctus (self, off, boff):
+        if off >= self.cplength:
+            return True
+        aidx = self.cflength + 11 * off + self.boff_lut [boff]
+        if boff in (0, 2, 4, 6):
+            for a1 in self.randrange (aidx):
+                self.set_allele (1, 1, aidx, a1)
+                for a2 in self.randrange (aidx + 1):
+                    self.set_allele (1, 1, aidx + 1, a2)
+                    tune = self.phenotype (1, 1, aidx + 1)
+                    if not self.run_cp_checks (tune, off):
+                        continue
+                    noff  = off
+                    nboff = boff + (1 << a1)
+                    assert nboff <= 8
+                    if nboff > 7:
+                        noff += 1
+                        nboff = 0
+                    r = self.find_contrapunctus (noff, nboff)
+                    if r:
+                        return True
+        elif boff in (3, 5, 7):
+            for a in self.randrange (aidx):
+                self.set_allele (1, 1, aidx, a)
+                tune = self.phenotype (1, 1, aidx)
+                if not self.run_cp_checks (tune, off):
+                    continue
+                noff  = off
+                nboff = boff + 1
+                if nboff > 7:
+                    noff += 1
+                    nboff = 0
+                r = self.find_contrapunctus (noff, nboff)
+                if r:
+                    return True
+        else:
+            assert 0
+        return False
+    # end def find_contrapunctus
+
+    def randrange (self, idx):
+        rn = list (range (self.init [idx][0], self.init [idx][1] + 1))
+        random.shuffle (rn)
+        return rn
+    # end def randrange
+
+    def run (self):
+        result = self.find_cantus_firmus (0)
+        assert result
+        result = self.find_contrapunctus (0, 0)
+        assert result
+        r = []
+        if self.args.output_file:
+            with open (self.args.output_file, 'w') as f:
+                print (self.as_complete_tune (1, 1), file = f)
+        else:
+            print (self.as_complete_tune (1, 1))
+    # end def run
+
+    def run_cf_checks (self, tune, idx):
+        for c in melody_checks_cf:
+            if hasattr (c, 'reset'):
+                c.reset ()
+            # Check up to idx + 1 because first bar is hardcoded
+            end = idx + 2
+            # Check last two hardcoded bars if at end
+            if idx >= self.cflength - 1:
+                end = 3 + self.cflength
+            for bar in tune.voices [0].bars [max (idx - 1, 0):end]:
+                assert len (bar.objects) == 1
+                b, u = c.check (bar.objects [0])
+                if b or u:
+                    return False
+        return True
+    # end def run_cf_checks
+
+    def run_cp_checks (self, tune, idx):
+        start = max (idx - 2, 0)
+        end   = idx + 1
+        # Check last two hardcoded bars if at end
+        if idx >= self.cplength - 1:
+            end = 2 + self.cplength
+        for c in melody_checks_cp:
+            if hasattr (c, 'reset'):
+                c.reset ()
+            for bcp in tune.voices [1].bars [start:end]:
+                for cp_obj in bcp.objects:
+                    b, u = c.check (cp_obj)
+                    if b or u:
+                        return False
+        for c in harmony_checks:
+            if hasattr (c, 'reset'):
+                c.reset ()
+            for bcf, bcp in zip (*(v.bars [start:end] for v in tune.voices)):
+                assert len (bcf.objects) == 1
+                for cp_obj in bcp.objects:
+                    b, u = c.check (bcf.objects [0], cp_obj)
+                    if b or u:
+                        return False
+        return True
+    # end def run_cp_checks
+
+# end class Contrapunctus_Depth_First
 
 def contrapunctus_cmd (argv = None):
     cmd = ArgumentParser ()
@@ -498,6 +646,11 @@ def contrapunctus_cmd (argv = None):
         , default = 10000
         )
     cmd.add_argument \
+        ( "--optimize-depth-first", "--df"
+        , help    = "Optimize using depth first search"
+        , action  = 'store_true'
+        )
+    cmd.add_argument \
         ( "-O", "--output-file"
         , help    = "Output file for progress information"
         )
@@ -536,10 +689,13 @@ def main (argv = None):
     if args.de_variant not in de_variants:
         print ('Invalid --de-variant, use one of %s' % ', '.join (de_variants))
         return
-    if args.gene_file:
-        cp = Contrapunctus_Fake (args)
-        txt = cp.from_gene ()
-        print (txt)
+    if args.gene_file or args.optimize_depth_first:
+        cp = Contrapunctus_Depth_First (args)
+        if args.gene_file:
+            txt = cp.from_gene ()
+            print (txt)
+        else:
+            cp.run ()
     else:
         cp = Contrapunctus_PGA (args)
         cp.run ()
