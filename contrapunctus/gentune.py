@@ -98,17 +98,30 @@ class Contrapunctus:
         if the previous note is longer some of the genes are not used
     """
 
+    pop_default = (10, 500)
+
     # These need to call reset before each eval:
     melody_history_checks = \
         [c for c in melody_checks_cp + melody_checks_cf if hasattr (c, 'reset')]
     harmony_history_checks = [c for c in harmony_checks if hasattr (c, 'reset')]
 
-    def __init__ (self, args):
+    def __init__ (self, cmd, args):
+        self.cmd         = cmd
+        self.args        = args
+        self.orig_args   = None
         self.do_explain  = False
         self.explanation = []
-        self.args        = args
         self._tunelength = args.tune_length
         assert args.tune_length > 3
+        if not args.pop_size and not args.optimize_depth_first:
+            if args.use_de:
+                args.pop_size = self.pop_default [0]
+            else:
+                args.pop_size = self.pop_default [1]
+        # Force verbose when searching
+        if args.optimize_depth_first or not args.gene_file:
+            if args.verbose < 2:
+                args.verbose = 2
         self.set_init ()
     # end def __init__
 
@@ -123,9 +136,107 @@ class Contrapunctus:
         self.set_init ()
     # end def tunelength
 
-    def as_complete_tune (self, p, pop):
+    def args_from_gene (self, iter):
+        argv = []
+        for line in iter:
+            line = line.strip ()
+            line = line.split ('%') [-1]
+            if not line:
+                break
+            argv.extend (line.split ())
+        self.orig_args = self.cmd.parse_args (argv)
+        # Set tune length accordingly
+        if self.orig_args.tune_length == self.args.tune_length:
+            self.tunelength = self.orig_args.tune_length
+    # end def args_from_gene
+
+    def as_args (self, prefix = None, force = False):
+        """ Output command line arguments
+        """
+        r = []
+        r.append ('Command-line options:')
+        # For formatting, longest value
+        max_argval_len = 6
+        dest_dict = dict ((x.dest, x) for x in self.cmd._actions)
+        args  = self.args
+        if self.orig_args:
+            args = self.orig_args
+        if not self.orig_args and not force:
+            return ''
+        by_dest = {}
+        for k in args.__dict__:
+            minopt = None
+            opts   = dest_dict [k].option_strings
+            for opt in opts:
+                if  ( opt.startswith ('--')
+                    and (minopt is None or len (opt) < len (minopt))
+                    ):
+                    minopt = opt
+            if minopt is None:
+                opt = opts [0]
+            by_dest [k] = opt
+
+        # Determine options that need printing
+        maxl  = 0
+        valid = []
+        for k in args.__dict__:
+            opt = by_dest [k]
+            v   = args.__dict__ [k]
+            act = dest_dict [k]
+            if act.nargs and act.nargs > 1:
+                raise NotImplementedError ('nargs>1 not supported')
+            if act.nargs == 0:
+                # can also be None, explicitly check for True/False
+                if act.const is True and not v:
+                    continue
+                if act.const is False and v:
+                    continue
+            else:
+                if act.type is None and not v:
+                    continue
+            if act.default is not None and v == act.default:
+                continue
+            if act.default is None and v is None:
+                continue
+            if act.__class__.__name__ == '_CountAction':
+                for i in range (v):
+                    valid.append (k)
+            else:
+                valid.append (k)
+            if len (opt) > maxl:
+                maxl = len (opt)
+
+        maxl += max_argval_len +  1 # + delimiting space
+        cols = 77 // maxl or 1
+        for b in batched (sorted (valid), cols):
+            rb = []
+            for k in b:
+                v   = args.__dict__ [k]
+                opt = by_dest [k]
+                act = dest_dict [k]
+                c   = '='
+                if not opt.startswith ('--'):
+                    c = ' '
+                if act.nargs == 0:
+                    s = opt
+                else:
+                    s = '%s=%s' % (opt, v)
+                rb.append (('%%-%ds' % maxl) % s)
+            if rb:
+                r.append (' '.join (rb))
+        # empty line at end
+        r.append ('')
+        if prefix is not None:
+            r = [prefix + x for x in r]
+        return '\n'.join (r)
+    # end def as_args
+
+    def as_complete_tune (self, p, pop, force = False):
         r = []
         r.append (self.as_tune (p, pop))
+        a = self.as_args ('% ', force = force)
+        if a:
+            r.append (a)
         if self.args.verbose:
             self.do_explain = True
             r.append ('%% Eval: %g' % self.evaluate (p, pop))
@@ -239,11 +350,17 @@ class Contrapunctus:
         c   = 0
         if self.args.best_eval:
             for n, line in enumerate (iter):
+                if ('Command-line options:' in line):
+                    self.args_from_gene (iter)
+                    continue
                 if line.startswith ('The Best String:'):
                     c = n
                     break
         started = False
         for n, line in enumerate (iter):
+            if ('Command-line options:' in line):
+                self.args_from_gene (iter)
+                continue
             ln = n + 1 + c
             start = '#', '%#', 'Text: #'
             for s in start:
@@ -448,16 +565,9 @@ class Contrapunctus:
 
 class Contrapunctus_PGA (Contrapunctus, pga.PGA):
 
-    pop_default = (10, 500)
-
-    def __init__ (self, args):
-        Contrapunctus.__init__ (self, args)
-        stop_on = [ pga.PGA_STOP_MAXITER ]
-        if not args.pop_size:
-            if args.use_de:
-                args.pop_size = self.pop_default [0]
-            else:
-                args.pop_size = self.pop_default [1]
+    def __init__ (self, cmd, args):
+        Contrapunctus.__init__ (self, cmd, args)
+        self.prefix_printed = False
         init = deepcopy (self.init)
         if args.use_de:
             for item in init:
@@ -469,7 +579,7 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
             , pop_size      = args.pop_size
             , num_replace   = args.pop_size * 9 // 10
             , print_options = [pga.PGA_REPORT_STRING]
-            , stopping_rule_types = stop_on
+            , stopping_rule_types = [pga.PGA_STOP_MAXITER]
             , max_GA_iter   = args.max_generations
             )
         typ = int
@@ -505,6 +615,9 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
     # end def tunelength
 
     def print_string (self, file, p, pop):
+        if not self.prefix_printed:
+            print (self.as_args (force = True), file = file)
+            self.prefix_printed = True
         print ('Iter: %s Evals: %s' % (self.GA_iter, self.eval_count))
         print (self.as_tune (p, pop), file = file)
         file.flush ()
@@ -525,8 +638,8 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
 
 class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
 
-    def __init__ (self, args):
-        Contrapunctus.__init__ (self, args)
+    def __init__ (self, cmd, args):
+        Contrapunctus.__init__ (self, cmd, args)
         Fake_PGA.__init__ (self)
         random.seed (self.args.random_seed)
     # end def __init__
@@ -601,9 +714,9 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
         r = []
         if self.args.output_file:
             with open (self.args.output_file, 'w') as f:
-                print (self.as_complete_tune (1, 1), file = f)
+                print (self.as_complete_tune (1, 1, force = True), file = f)
         else:
-            print (self.as_complete_tune (1, 1))
+            print (self.as_complete_tune (1, 1, force = True))
     # end def run
 
     def run_cf_checks (self, tune, idx):
@@ -729,7 +842,7 @@ def contrapunctus_cmd (argv = None):
     cmd.add_argument \
         ( "-p", "--pop-size"
         , help    = "Population size default for DE: %d for GA: %d"
-                  % Contrapunctus_PGA.pop_default
+                  % Contrapunctus.pop_default
         , type    = int
         )
     cmd.add_argument \
@@ -762,14 +875,14 @@ def main (argv = None):
         print ('Invalid --de-variant, use one of %s' % ', '.join (de_variants))
         return
     if args.gene_file or args.optimize_depth_first:
-        cp = Contrapunctus_Depth_First (args)
+        cp = Contrapunctus_Depth_First (cmd, args)
         if args.gene_file:
             txt = cp.from_gene ()
             print (txt)
         else:
             cp.run ()
     else:
-        cp = Contrapunctus_PGA (args)
+        cp = Contrapunctus_PGA (cmd, args)
         cp.run ()
 # end def main
 
