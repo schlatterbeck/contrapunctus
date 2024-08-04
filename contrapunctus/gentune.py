@@ -764,9 +764,10 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
             tsum = sum (bd.tone_idx (b, x) for x in range (t))
             assert nbar.objects [-1].offset == tsum
             sidx = cp.bars [bd.bar_idx (0)].idx
-            eidx = cp.bars [b].idx + 1
+            eidx = cp.bars [bd.bar_idx (b)].idx + 1
             if eidx == self.cplength and t == bd.tone_idx_len (b) - 1:
                 eidx = self.tunelength
+            assert sidx < eidx
             #print ('CHECK RANGE %d to %d' % (sidx, eidx))
             # Beware, sidx is optional and is *last*
             if not self.run_cp_checks (bd.tune, eidx, sidx):
