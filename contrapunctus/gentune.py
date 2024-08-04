@@ -99,6 +99,8 @@ class Contrapunctus:
     """
 
     pop_default = (10, 500)
+    # These should always be printed when printing options:
+    necessary_options = ['--random-seed']
 
     # These need to call reset before each eval:
     melody_history_checks = \
@@ -195,7 +197,8 @@ class Contrapunctus:
                 if act.type is None and not v:
                     continue
             if act.default is not None and v == act.default:
-                continue
+                if k not in self.necessary_options:
+                    continue
             if act.default is None and v is None:
                 continue
             if act.__class__.__name__ == '_CountAction':
@@ -720,6 +723,7 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
     # end def run
 
     def run_cf_checks (self, tune, idx):
+        self.explanation = []
         for c in melody_checks_cf:
             if hasattr (c, 'reset'):
                 c.reset ()
@@ -732,11 +736,13 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
                 assert len (bar.objects) == 1
                 b, u = c.check (bar.objects [0])
                 if b or u:
+                    self.explain (c)
                     return False
         return True
     # end def run_cf_checks
 
     def run_cp_checks (self, tune, idx):
+        self.explanation = []
         start = max (idx - 2, 0)
         end   = idx + 1
         # Check last two hardcoded bars if at end
@@ -749,6 +755,7 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
                 for cp_obj in bcp.objects:
                     b, u = c.check (cp_obj)
                     if b or u:
+                        self.explain (c)
                         return False
         for c in harmony_checks:
             if hasattr (c, 'reset'):
@@ -758,6 +765,7 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
                 for cp_obj in bcp.objects:
                     b, u = c.check (bcf.objects [0], cp_obj)
                     if b or u:
+                        self.explain (c)
                         return False
         return True
     # end def run_cp_checks
