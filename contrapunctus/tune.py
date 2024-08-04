@@ -487,12 +487,17 @@ class Bar_Object:
     @property
     def prev (self):
         if self.offset == 0:
-            if self.bar.prev is None:
+            # An empty prev bar may exist during testing/searching
+            if self.bar.prev is None or not self.bar.prev.objects:
                 return None
             return self.bar.prev.objects [-1]
         else:
             return self._prev
     # end def prev
+
+    def copy (self):
+        return self.__class__ (self.duration, self.unit)
+    # end def copy
 
     def length (self, unit = None):
         unit = unit or self.unit
@@ -523,6 +528,11 @@ class Tone (Bar_Object):
     def as_abc (self, unit = None):
         return "%s%s" % (self.halftone.name, self.length (unit))
     # end def as_abc
+
+    def copy (self):
+        # self.halftone is a singleton
+        return self.__class__ (self.halftone, self.duration, self.unit)
+    # end def copy
 
     def transpose (self, steps, key = 'C'):
         return self.__class__ \
@@ -733,8 +743,6 @@ class Bar:
         self.dur_sum  = 0
         self.objects  = []
         self.unit     = unit
-        self.prev     = None
-        self.next     = None
         self.voice    = None
         self.idx      = None
         for b in bar_object:
@@ -745,6 +753,22 @@ class Bar:
         return ('Bar (voice=%s, idx=%s)' % (self.voice, self.idx))
     # end def __str__
     __repr__ = __str__
+
+    @property
+    def prev (self):
+        if not self.idx:
+            return None
+        return self.voice.bars [self.idx - 1]
+    # end def prev
+
+    @property
+    def next (self):
+        if not self.idx:
+            return None
+        if len (self.voice.bars) <= self.idx + 1:
+            return None
+        return self.voice.bars [self.idx + 1]
+    # end def next
 
     def add (self, bar_object):
         if self.dur_sum + bar_object.length () > self.duration:
@@ -769,15 +793,26 @@ class Bar:
         return ' '.join (r)
     # end def as_abc
 
+    def copy (self):
+        other = self.__class__ (self.duration, self.unit)
+        for obj in self.objects:
+            other.add (obj.copy ())
+        return other
+    # end def copy
+
     def get_by_offset (self, bar_object):
         """ Get a bar object matching another bar_object
             The intended use is for locating the bar_object which occurs
             at the same time as the bar_object in another voice.
+            This may return None if the previous bar is empty (can occur
+            during searching/testing).
         """
         bar = self
         if bar_object.bar.idx != self.idx:
             bar = self.voice.bars [bar_object.bar.idx]
         offset = bar_object.offset
+        if not len (bar.objects):
+            return None
         pos = bisect_right (bar.objects, offset, key = lambda x: x.offset) - 1
         assert pos >= 0
         return bar.objects [pos]
@@ -816,13 +851,7 @@ class Voice:
     __repr__ = __str__
 
     def add (self, bar):
-        assert bar.next is None
-        assert bar.prev is None
         assert bar.idx  is None
-        if self.bars:
-            assert self.bars [-1].next is None
-            self.bars [-1].next = bar
-            bar.prev = self.bars [-1]
         bar.idx = len (self.bars)
         self.bars.append (bar)
         bar.voice = self
@@ -847,6 +876,19 @@ class Voice:
         prp = ('%s=%s' % (k, tq (self.properties [k])) for k in self.properties)
         return 'V:%s %s' % (self.id, ' '.join (prp))
     # end def as_abc_header
+
+    def replace (self, idx, bar):
+        """ Replace bar at position idx
+        """
+        assert bar.idx is None
+        # raise IndexError if idx is wrong:
+        oldbar = self.bars [idx]
+        idx = oldbar.idx
+        assert self.bars [idx] is oldbar
+        bar.idx = idx
+        self.bars [idx] = bar
+        bar.voice = self
+    # end def replace
 
     def transpose (self, steps, key = 'C'):
         v = self.__class__ (self.id, **self.properties)

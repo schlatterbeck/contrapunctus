@@ -360,6 +360,9 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
         p_cp_obj = cp_obj.prev
         if not p_cp_obj:
             return False
+        p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+        if not p_cf_obj:
+            return False
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
         d = self.compute_interval (cf_obj, cp_obj)

@@ -422,14 +422,14 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
     def test_logparse (self):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         args = cmd.parse_args (['-v', '-v', '-b', '-g' 'test/example.log'])
-        cp   = contrapunctus.gentune.Contrapunctus_Fake (args)
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         txt  = cp.from_gene ()
         with open ('test/example.abc') as f:
             abc = f.read ()
         assert txt.strip () == abc.strip ()
         # roundtrip test, note the missing -b ('best') option
         args = cmd.parse_args (['-v', '-v', '-g' 'test/example.abc'])
-        cp   = contrapunctus.gentune.Contrapunctus_Fake (args)
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         txt  = cp.from_gene ()
         assert txt.strip () == abc.strip ()
     # end def test_logparse
@@ -439,7 +439,7 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         args = cmd.parse_args (['-l', '4'])
         cpl  = 11
-        fake = contrapunctus.gentune.Contrapunctus_Fake (args)
+        fake = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         fake.set_allele (1, 1, 0, 5) # CF
 
         # First bar CP is hardcoded
@@ -470,7 +470,7 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         args = cmd.parse_args (['-l', '4'])
         cpl  = 11
-        fake = contrapunctus.gentune.Contrapunctus_Fake (args)
+        fake = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         fake.set_allele (1, 1, 0, 5) # CF
 
         # First bar CP is hardcoded
@@ -508,7 +508,7 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         args = cmd.parse_args (['-l', '4'])
         cpl  = 11
-        fake = contrapunctus.gentune.Contrapunctus_Fake (args)
+        fake = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         fake.set_allele (1, 1, 0, 5) # CF
 
         # First bar CP is hardcoded
@@ -542,6 +542,52 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert t == result
     # end def test_gene_decode_22211_211211
 
+    def test_empty_prev_bar (self):
+        """ Some of the searches have an empty bar *before* a valid one.
+            This tests that nothing breaks.
+        """
+        check = Check_Harmony_Melody_Direction \
+            ( 'better same direction'
+            , interval = () # All
+            , dir      = 'same'
+            , ugliness = 0.1
+            )
+        v1 = Voice (id = 'V1')
+        b  = Bar (8, 8)
+        v1.add (b)
+        b = Bar (8, 8)
+        b.add (Tone (halftone ('f'), 8))
+        v1.add (b)
+        assert b.objects [0].prev is None
+        v2 = Voice (id = 'V2')
+        b  = Bar (8, 8)
+        b.add (Tone (halftone ('f'), 8))
+        v2.add (b)
+        b = Bar (8, 8)
+        b.add (Tone (halftone ('f'), 8))
+        v2.add (b)
+        b, u = check.check (v1.bars [-1].objects [0], v2.bars [-1].objects [0])
+        assert u == 0
+    # end def test_empty_prev_bar
+
+    def test_copy_bar (self):
+        v = Voice (id = 'V1')
+        b = Bar (8, 8)
+        b.add (Tone (halftone ('f'), 4))
+        b.add (Tone (halftone ('g'), 4))
+        v.add (b)
+        b2 = b.copy ()
+        assert b2.voice is None
+        assert b2.idx   is None
+        assert len (b.objects) == len (b2.objects)
+        v = Voice (id = 'V1')
+        v.add (b2)
+        assert str (b) == str (b2)
+        for o1, o2 in zip (b.objects, b2.objects):
+            assert id (o1) != id (o2)
+            # This works because voices are named identically:
+            assert str (o1) == str (o2)
+    # end def test_copy_bar
 
 # end class Test_Contrapunctus
 

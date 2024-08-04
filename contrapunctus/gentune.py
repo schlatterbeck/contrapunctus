@@ -639,6 +639,33 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
 
 # end class Contrapunctus_PGA
 
+class Bardata:
+    """ Data structures for recursive bar checking
+    """
+    def __init__ (self, tune, seq):
+        self.tune = tune
+        self.seq  = seq
+        self.bars = []
+    # end def __init__
+
+    def add_bar (self, bar_idx, tone_lengths):
+        self.bars.append ((bar_idx, tone_lengths))
+    # end def add_bar
+
+    def bar_idx (self, idx):
+        return self.bars [idx][0]
+    # end def bar_idx
+
+    def tone_idx (self, bidx, tidx):
+        return self.bars [bidx][1][tidx]
+    # end def tone_idx
+
+    def tone_idx_len (self, idx):
+        return len (self.bars [idx][1])
+    # end def tone_idx_len
+
+# end class Bardata
+
 class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
 
     def __init__ (self, cmd, args):
@@ -722,6 +749,66 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
             print (self.as_complete_tune (1, 1, force = True))
     # end def run
 
+    def _run_cf_end_check (self, bd, bar = None, b = 0, t = 0):
+        if b >= len (bd.bars):
+            return True
+        cp = bd.tune.voices [-1]
+        for a in bd.seq:
+            if bar is None:
+                nbar = Bar (8, 8)
+            else:
+                nbar = bar.copy ()
+            cp.replace (bd.bar_idx (b), nbar)
+            nbar.add (Tone (dorian [a], bd.tone_idx (b, t), unit = 8))
+            #print (bd.tune)
+            tsum = sum (bd.tone_idx (b, x) for x in range (t))
+            assert nbar.objects [-1].offset == tsum
+            sidx = cp.bars [bd.bar_idx (0)].idx
+            eidx = cp.bars [b].idx + 1
+            if eidx == self.cplength and t == bd.tone_idx_len (b) - 1:
+                eidx = self.tunelength
+            #print ('CHECK RANGE %d to %d' % (sidx, eidx))
+            # Beware, sidx is optional and is *last*
+            if not self.run_cp_checks (bd.tune, eidx, sidx):
+                #print ('\n'.join (self.explanation))
+                continue
+            n_t = t + 1
+            n_b = b
+            if n_t >= bd.tone_idx_len (b):
+                n_t   = 0
+                n_b  += 1
+                nbar = None
+            if self._run_cf_end_check (bd, nbar, n_b, n_t):
+                return True
+        return False
+    # end def _run_cf_end_check
+
+    def run_cf_end_checks (self, tune):
+        """ Here we check if for the last 4 bars for the given CF we can
+            find a valid CP.
+            This asumes an empty Contrapunctus voice in tune.
+        """
+        self.explanation = []
+        assert len (tune.voices) == 2
+        assert len (tune.voices [1].bars) == 1
+        assert len (tune.voices [1].bars [0].objects) == 0
+        # Preparation
+        cp = tune.voices [1]
+        for k in range (self.tunelength - 1):
+            b  = Bar (8, 8)
+            cp.add (b)
+        cp.bars [-2].add (Tone (dorian.subsemitonium, 8, unit = 8))
+        cp.bars [-1].add (Tone (dorian [7], 8, unit = 8))
+        off = self.cplength - 1
+        pos = -22 + 1
+        seq = range (self.init [pos][0], self.init [pos][1] + 1)
+
+        bd = Bardata (tune, seq)
+        bd.add_bar (-4, (8,))
+        bd.add_bar (-3, (4, 2, 2))
+        return self._run_cf_end_check (bd)
+    # end def run_cf_end_checks
+
     def run_cf_checks (self, tune, idx):
         self.explanation = []
         for c in melody_checks_cf:
@@ -738,16 +825,27 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
                 if b or u:
                     self.explain (c)
                     return False
+        if idx >= self.cflength - 1:
+            return self.run_cf_end_checks (tune)
         return True
     # end def run_cf_checks
 
-    def run_cp_checks (self, tune, idx):
+    def run_cp_checks (self, tune, idx, startidx = None):
+        """ Run Contrapunctus checks
+            Note that if the startidx is given the caller asumes
+            responsibility for start = startidx / end = idx.
+        """
         self.explanation = []
-        start = max (idx - 2, 0)
-        end   = idx + 1
-        # Check last two hardcoded bars if at end
-        if idx >= self.cplength - 1:
-            end = 2 + self.cplength
+        if startidx is None:
+            start = max (idx - 2, 0)
+            end   = idx + 1
+            # Check last two hardcoded bars if at end
+            if idx >= self.cplength - 1:
+                end = self.tunelength
+        else:
+            # Explicit specification of start/end
+            start = startidx
+            end   = idx
         for c in melody_checks_cp:
             if hasattr (c, 'reset'):
                 c.reset ()
