@@ -258,17 +258,43 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
             , not_first = True
             , not_last  = True
             )
+        v_cf  = Voice ()
+        v_cp  = Voice ()
+        bcf0  = Bar (8, 8)
+        v_cf.add (bcf0)
         b_cf  = Bar (8, 8)
+        v_cf.add (b_cf)
+        bcp0  = Bar (8, 8)
+        v_cp.add (bcp0)
         b_cp  = Bar (8, 8)
+        v_cp.add (b_cp)
         t_cf  = Tone (halftone ('e'), 8)
         b_cf.add (t_cf)
         t_cp1 = Tone (halftone ('f'), 4)
         t_cp2 = Tone (halftone ('f'), 4)
         b_cp.add (t_cp1)
         b_cp.add (t_cp2)
+        bcfe  = Bar (8, 8)
+        v_cf.add (bcfe)
+        bcpe  = Bar (8, 8)
+        v_cp.add (bcpe)
         b, u = check.check (t_cf, t_cp1)
-        assert b == 0
+        assert b == 1
         b, u = check.check (t_cf, t_cp2)
+        assert b == 1
+        bcf0.add (Tone (halftone ('e'), 8))
+        bcp0.add (Tone (halftone ('f'), 4))
+        bcp0.add (Tone (halftone ('f'), 4))
+        b, u = check.check (bcf0.objects [0], bcp0.objects [0])
+        assert b == 0
+        b, u = check.check (bcf0.objects [0], bcp0.objects [1])
+        assert b == 1
+        bcfe.add (Tone (halftone ('e'), 8))
+        bcpe.add (Tone (halftone ('f'), 4))
+        bcpe.add (Tone (halftone ('f'), 4))
+        b, u = check.check (bcfe.objects [0], bcpe.objects [0])
+        assert b == 1
+        b, u = check.check (bcfe.objects [0], bcpe.objects [1])
         assert b == 0
     # end def test_check_harmony_interval_first_last
 
@@ -588,6 +614,36 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
             # This works because voices are named identically:
             assert str (o1) == str (o2)
     # end def test_copy_bar
+
+    def test_check_harmony_first_interval (self):
+        check = Check_Harmony_First_Interval \
+            ( 'unison, octave, fifth'
+            , interval = (0, 7, 12)
+            , badness  = 100
+            )
+        v1  = Voice (id = 'CF')
+        b11 = Bar (8, 8)
+        v1.add (b11)
+        b12 = Bar (8, 8)
+        b12.add (Tone (halftone ('f'), 4))
+        b12.add (Tone (halftone ('g'), 4))
+        v1.add (b12)
+        v2 = Voice (id = 'CP')
+        b21 = Bar (8, 8)
+        v2.add (b21)
+        b22 = Bar (8, 8)
+        b22.add (Tone (halftone ('g'), 4))
+        b22.add (Tone (halftone ('f'), 4))
+        v2.add (b22)
+        b, u = check.check (b12.objects [0], b22.objects [0])
+        assert b == 0
+        b11.add (Tone (halftone ('g'), 8))
+        b21.add (Tone (halftone ('f'), 8))
+        b, u = check.check (b12.objects [0], b22.objects [0])
+        assert b == 0
+        b, u = check.check (b11.objects [0], b21.objects [0])
+        assert b == 100
+    # end def test_check_harmony_first_interval
 
 # end class Test_Contrapunctus
 

@@ -477,7 +477,8 @@ class Bar_Object:
     @property
     def next (self):
         if self.bar.objects [-1] is self:
-            if self.bar.next is None:
+            # An empty next bar may exist during testing/searching
+            if self.bar.next is None or not self.bar.next.objects:
                 return None
             return self.bar.next.objects [0]
         else:
@@ -494,6 +495,21 @@ class Bar_Object:
         else:
             return self._prev
     # end def prev
+
+    @property
+    def is_first (self):
+        if self.prev is None and self.bar.idx == 0:
+            return True
+        return False
+    # end def is_first
+
+    @property
+    def is_last (self):
+        l = len (self.bar.voice.bars)
+        if self.next is None and self.bar.idx == l - 1:
+            return True
+        return False
+    # end def is_last
 
     def copy (self):
         return self.__class__ (self.duration, self.unit)

@@ -225,9 +225,9 @@ class Check_Harmony_Interval (Check_Harmony):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        if self.not_first and not cf_obj.prev and not cp_obj.prev:
+        if self.not_first and (cf_obj.is_first and cp_obj.is_first):
             return False
-        if self.not_last  and not cf_obj.next and not cp_obj.next:
+        if self.not_last  and (cf_obj.is_last  and cp_obj.is_last):
             return False
         d = self.compute_interval (cf_obj, cp_obj)
         if d in self.interval:
@@ -258,7 +258,7 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
         # Only check for the very first object
         # Not sure if this holds for *all* cp_objects in the first bar,
         # if this should be the case we need to use cf_obj below.
-        if cp_obj.prev:
+        if not cp_obj.is_first:
             return False
         d = self.compute_interval (cf_obj, cp_obj)
         if d not in self.interval:
