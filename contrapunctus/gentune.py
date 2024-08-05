@@ -436,7 +436,7 @@ class Contrapunctus:
         cf = Voice (id = 'CantusFirmus')
         tune.add (cf)
         b  = Bar (8, 8)
-        b.add (Tone (dorian.finalis, 8, unit = 8))
+        b.add (Tone (hypodorian.finalis, 8, unit = 8))
         cf.add (b)
         for i in range (self.cflength):
             if maxidx is not None and i > maxidx:
@@ -457,10 +457,10 @@ class Contrapunctus:
         # 1.1: "The counterpoint must begin and end on a perfect
         # consonance" is also achived by hard-coding the last tone.
         b  = Bar (8, 8)
-        b.add (Tone (dorian.step2, 8, unit = 8))
+        b.add (Tone (hypodorian.step2, 8, unit = 8))
         cf.add (b)
         b  = Bar (8, 8)
-        b.add (Tone (dorian.finalis, 8, unit = 8))
+        b.add (Tone (hypodorian.finalis, 8, unit = 8))
         cf.add (b)
         cp  = Voice (id = 'Contrapunctus')
         tune.add (cp)
@@ -995,4 +995,3 @@ def main (argv = None):
 
 if __name__ == '__main__':
     main (sys.argv [1:])
-

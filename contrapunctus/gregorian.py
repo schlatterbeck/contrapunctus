@@ -46,9 +46,10 @@ class Gregorian (object):
     ^c
     """
 
-    def __init__ (self, ambitus):
+    def __init__ (self, ambitus, offset = 0):
         assert len (ambitus) == 7
         self.ambitus = [halftone (x) for x in ambitus]
+        self.offset  = offset
     # end def __init__
 
     @property
@@ -65,20 +66,29 @@ class Gregorian (object):
 
     @property
     def step2 (self):
-        return self [1]
+        return self.ambitus [1]
     # end def step2
 
     def __getitem__ (self, idx):
         """ Get halftone with index idx from our tones, note that we
             synthesize tones outside the given ambitus dynamically.
         """
-        if 0 <= idx < len (self.ambitus):
-            return self.ambitus [idx]
-        d, m = divmod (idx, 7)
+        index = idx + self.offset
+        if 0 <= index < len (self.ambitus):
+            return self.ambitus [index]
+        d, m = divmod (index, 7)
         return self.ambitus [m].transpose_octaves (d)
     # end def __getitem__
 
 # end class Gregorian
 
-dorian     = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'c'])
-hypodorian = Gregorian (['A,', 'B,', 'C', 'D', 'E', 'F', 'G'])
+dorian         = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'c'])
+hypodorian     = Gregorian (dorian.ambitus, offset = -3)
+phrygian       = Gregorian (['E', 'F', 'G', 'A', 'B', 'c', 'd'])
+hypophrygian   = Gregorian (phrygian.ambitus, offset = -3)
+lydian         = Gregorian (['F', 'G', 'A', 'B', 'c', 'd', 'e'])
+hypolydian     = Gregorian (lydian.ambitus, offset = -3)
+mixolydian     = Gregorian (['G', 'A', 'B', 'c', 'd', 'e', 'f'])
+hypomixolydian = Gregorian (mixolydian.ambitus, offset = -3)
+
+__all__ = ['dorian', 'hypodorian']

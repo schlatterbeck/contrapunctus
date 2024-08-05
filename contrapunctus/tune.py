@@ -443,9 +443,11 @@ class Halftone:
 
 # end class Halftone
 
-def halftone (name):
+def halftone (tone):
     """ Return singleton tone """
-    return Halftone.get (name)
+    if isinstance (tone, Halftone):
+        return tone
+    return Halftone.get (tone)
 # end def halftone
 
 class Bar_Object:

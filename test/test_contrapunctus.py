@@ -645,6 +645,77 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert b == 100
     # end def test_check_harmony_first_interval
 
+    def test_dorian_hypodorian (self):
+        dorian = ['D', 'E', 'F', 'G', 'A', 'B', 'c']
+        for k, d in enumerate (dorian):
+            assert str (contrapunctus.gregorian.dorian [k]) == d
+        assert str (contrapunctus.gregorian.dorian.finalis)       == 'D'
+        assert str (contrapunctus.gregorian.dorian.step2)         == 'E'
+        assert str (contrapunctus.gregorian.dorian.subsemitonium) == '^c'
+        hypodorian = ['A,', 'B,', 'C', 'D', 'E', 'F', 'G']
+        for k, d in enumerate (hypodorian):
+            assert str (contrapunctus.gregorian.hypodorian [k]) == d
+        assert str (contrapunctus.gregorian.hypodorian.finalis)       == 'D'
+        assert str (contrapunctus.gregorian.hypodorian.step2)         == 'E'
+        # Check if this is correct, subsemitonium is not currently used
+        # for hypodorian:
+        assert str (contrapunctus.gregorian.hypodorian.subsemitonium) == '^G'
+    # end def test_dorian_hypodorian
+
+    def test_phrygian_hypophrygian (self):
+        phrygian = ['E', 'F', 'G', 'A', 'B', 'c', 'd']
+        for k, d in enumerate (phrygian):
+            assert str (contrapunctus.gregorian.phrygian [k]) == d
+        assert str (contrapunctus.gregorian.phrygian.finalis)       == 'E'
+        assert str (contrapunctus.gregorian.phrygian.step2)         == 'F'
+        assert str (contrapunctus.gregorian.phrygian.subsemitonium) == '^d'
+        hypophrygian = ['B,', 'C', 'D', 'E', 'F', 'G', 'A']
+        for k, d in enumerate (hypophrygian):
+            assert str (contrapunctus.gregorian.hypophrygian [k]) == d
+        assert str (contrapunctus.gregorian.hypophrygian.finalis)       == 'E'
+        assert str (contrapunctus.gregorian.hypophrygian.step2)         == 'F'
+        # Check if this is correct, subsemitonium is not currently used
+        # for hypophrygian:
+        assert str (contrapunctus.gregorian.hypophrygian.subsemitonium) == '^A'
+    # end def test_phrygian_hypophrygian
+
+    def test_lydian_hypolydian (self):
+        lydian = ['F', 'G', 'A', 'B', 'c', 'd', 'e']
+        for k, d in enumerate (lydian):
+            assert str (contrapunctus.gregorian.lydian [k]) == d
+        assert str (contrapunctus.gregorian.lydian.finalis)       == 'F'
+        assert str (contrapunctus.gregorian.lydian.step2)         == 'G'
+        # Really e for subsemitonium???
+        assert str (contrapunctus.gregorian.lydian.subsemitonium) == 'e'
+        hypolydian = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+        for k, d in enumerate (hypolydian):
+            assert str (contrapunctus.gregorian.hypolydian [k]) == d
+        assert str (contrapunctus.gregorian.hypolydian.finalis)       == 'F'
+        assert str (contrapunctus.gregorian.hypolydian.step2)         == 'G'
+        # Check if this is correct, subsemitonium is not currently used
+        # for hypolydian:
+        # Really B for subsemitonium???
+        assert str (contrapunctus.gregorian.hypolydian.subsemitonium) == 'B'
+    # end def test_lydian_hypolydian
+
+    def test_mixolydian_hypomixolydian (self):
+        mixolydian = ['G', 'A', 'B', 'c', 'd', 'e', 'f']
+        for k, d in enumerate (mixolydian):
+            assert str (contrapunctus.gregorian.mixolydian [k]) == d
+        assert str (contrapunctus.gregorian.mixolydian.finalis)       == 'G'
+        assert str (contrapunctus.gregorian.mixolydian.step2)         == 'A'
+        assert str (contrapunctus.gregorian.mixolydian.subsemitonium) == '^f'
+        hypomixolydian = ['D', 'E', 'F', 'G', 'A', 'B', 'c']
+        for k, d in enumerate (hypomixolydian):
+            assert str (contrapunctus.gregorian.hypomixolydian [k]) == d
+        assert str (contrapunctus.gregorian.hypomixolydian.finalis)       == 'G'
+        assert str (contrapunctus.gregorian.hypomixolydian.step2)         == 'A'
+        # Check if this is correct, subsemitonium is not currently used
+        # for hypomixolydian:
+        subs = contrapunctus.gregorian.hypomixolydian.subsemitonium
+        assert str (subs) == '^c'
+    # end def test_mixolydian_hypolydian
+
 # end class Test_Contrapunctus
 
 class Test_Doctest:
