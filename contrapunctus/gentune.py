@@ -42,6 +42,10 @@ class Fake_PGA:
             self.gene.append (0)
     # end def __init__
 
+    def __len__ (self):
+        return len (self.gene)
+    # end def len
+
     def get_allele (self, p, pop, i):
         return self.gene [i]
     # end def get_allele
@@ -49,6 +53,16 @@ class Fake_PGA:
     def set_allele (self, p, pop, i, v):
         self.gene [i] = v
     # end def set_allele
+
+    def fix_gene_length (self):
+        li = len (self.init)
+        lg = len (self.gene)
+        if li != lg:
+            if lg > li:
+                self.gene = self.gene [:li]
+            else:
+                self.gene.extend ([0] * (li - lg))
+    # end def fix_gene_length
 
 # end class Fake_PGA
 
@@ -136,6 +150,7 @@ class Contrapunctus:
     def tunelength (self, tl):
         self._tunelength = tl
         self.set_init ()
+        self.fix_gene_length ()
     # end def tunelength
 
     def args_from_gene (self, iter):
@@ -379,17 +394,13 @@ class Contrapunctus:
             if i != idx:
                 raise ValueError ("Line %s: Invalid gene-file format" % ln)
             for offs, a in enumerate (l.split (',')):
-                #if idx + offs + 1 > len (self.init):
-                #    raise ValueError ("Line %s: Gene too long" % ln)
                 a = float (a.strip ().lstrip ('[').rstrip (']').strip ())
                 a = int (a)
-                if idx + offs >= len (self.init):
-                    self.tunelength = 2 * (idx + offs)
+                if idx + offs >= len (self):
+                    self.tunelength = 2 * self.tunelength
+                    assert len (self) > idx + offs
                 self.set_allele (1, pga.PGA_NEWPOP, idx + offs, a)
             idx += offs + 1
-            #if idx + 1 > len (self.init):
-            #    idx = 0
-            #    yield True
         if idx > 0:
             yield idx
     # end def from_gene_lines
@@ -536,7 +547,6 @@ class Contrapunctus:
     # end def phenotype
 
     def set_init (self):
-        old_init        = getattr (self, 'init', None)
         self.cflength   = self.tunelength - 3
         self.cplength   = self.tunelength - 2
         init            = []
@@ -556,11 +566,6 @@ class Contrapunctus:
             init.append ([0,  7]) # pitch
             init.append ([0,  7]) # pitch light 1/8
         self.init = init
-        if old_init:
-            for n, v in enumerate (old_init):
-                if n >= len (self.init):
-                    break
-                self.init [n] = v
     # end def set_init
 
 # end class Contrapunctus
@@ -983,7 +988,8 @@ def main (argv = None):
     if args.gene_file or args.optimize_depth_first:
         cp = Contrapunctus_Depth_First (cmd, args)
         if args.gene_file:
-            txt = cp.from_gene ()
+            cp.from_gene ()
+            txt = cp.as_complete_tune ()
             print (txt)
         else:
             cp.run ()

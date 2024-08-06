@@ -838,6 +838,20 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert txt == abc
     # end def test_parse_gene_with_args
 
+    def test_guess_tune_length (self):
+        """ Read a gene file without arguments that has a tune length
+            longer than the default.
+            This file also is from the early stages of a run having a
+            bad evaluation which should add to test coverage.
+        """
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v', '-g' 'test/bad.log'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        cp.from_gene ()
+        abc  = cp.as_complete_tune ()
+        assert len (abc.split ('\n')) > 100
+    # end def test_guess_tune_length
+
 # end class Test_Contrapunctus
 
 class Test_Doctest:
