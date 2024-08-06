@@ -30,9 +30,10 @@ import contrapunctus.gentune
 import contrapunctus.gregorian
 from pga.testsupport import PGA_Test_Instrumentation
 from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
+from contrapunctus.tune import Key
 from contrapunctus.checks import *
 
-tune_output = """\
+tune_output = """
 X: 1
 T: Zocharti Loch
 M: 4/4
@@ -42,12 +43,24 @@ Q: 1/4=76
 L: 1/8
 V:T1 clef=treble-8 name="Tenore I" snm=T.I
 V:T2 clef=treble-8 name="Tenore II" snm=T.II
-V:B1 clef=bass name="Basso I" snm=B.I transpose=-24 middle=d
+V:B1 clef=bass name="Basso I" snm=B.I transpose=-24
 K: Gm
+""".strip ()
+
+tune_voices = """
 [V:T1] B2 c2 d2 g2 |f6 e2 |d2 c2 d2 e2 |d4 c2 z2 |
 [V:T2] G2 A2 B2 e2 |d6 c2 |B2 A2 B2 c2 |B4 A2 z2 |
 [V:B1] z8 |z2 f2 g2 a2 |b2 z2 z2 e2 |f4 f2 z2 |
-"""
+""".strip ()
+transposed_voices = """
+[V:T1] A2 B2 c2 f2 |e6 d2 |c2 B2 c2 d2 |c4 B2 z2 |
+[V:T2] F2 G2 A2 d2 |c6 B2 |A2 G2 A2 B2 |A4 G2 z2 |
+[V:B1] z8 |z2 e2 f2 g2 |a2 z2 z2 d2 |e4 e2 z2 |
+""".strip ()
+
+tune_transposed  = tune_output.replace ('K: Gm', 'K: F#m')
+tune_output     += '\n' + tune_voices
+tune_transposed += '\n' + transposed_voices
 
 class Test_Contrapunctus (PGA_Test_Instrumentation):
 
@@ -56,25 +69,24 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
           "%%score (Contrapunctus) (CantusFirmus)\n"
           "L: 1/8\nV:CantusFirmus \nV:Contrapunctus \nK: DDor\n"
         )
-    def test_tune (self):
-        if pytest.mpi_rank != 0:
-            return
+
+    def build_tune (self):
         v1 = Voice (id = 'T1', clef='treble-8', name='Tenore I', snm='T.I')
         b1 = Bar (8, 8)
-        b1.add (Tone (halftone ('B'), 2))
+        b1.add (Tone (halftone ('_B'), 2))
         b1.add (Tone (halftone ('c'), 2))
         b1.add (Tone (halftone ('d'), 2))
         b1.add (Tone (halftone ('g'), 2))
         v1.add (b1)
         b1 = Bar (8, 8)
         b1.add (Tone (halftone ('f'), 6))
-        b1.add (Tone (halftone ('e'), 2))
+        b1.add (Tone (halftone ('_e'), 2))
         v1.add (b1)
         b1 = Bar (8, 8)
         b1.add (Tone (halftone ('d'), 2))
         b1.add (Tone (halftone ('c'), 2))
         b1.add (Tone (halftone ('d'), 2))
-        b1.add (Tone (halftone ('e'), 2))
+        b1.add (Tone (halftone ('_e'), 2))
         v1.add (b1)
         b1 = Bar (8, 8)
         b1.add (Tone (halftone ('d'), 4))
@@ -86,21 +98,21 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         b2 = Bar (8, 8)
         b2.add (Tone (halftone ('G'), 2))
         b2.add (Tone (halftone ('A'), 2))
-        b2.add (Tone (halftone ('B'), 2))
-        b2.add (Tone (halftone ('e'), 2))
+        b2.add (Tone (halftone ('_B'), 2))
+        b2.add (Tone (halftone ('_e'), 2))
         v2.add (b2)
         b2 = Bar (8, 8)
         b2.add (Tone (halftone ('d'), 6))
         b2.add (Tone (halftone ('c'), 2))
         v2.add (b2)
         b2 = Bar (8, 8)
-        b2.add (Tone (halftone ('B'), 2))
+        b2.add (Tone (halftone ('_B'), 2))
         b2.add (Tone (halftone ('A'), 2))
-        b2.add (Tone (halftone ('B'), 2))
+        b2.add (Tone (halftone ('_B'), 2))
         b2.add (Tone (halftone ('c'), 2))
         v2.add (b2)
         b2 = Bar (8, 8)
-        b2.add (Tone (halftone ('B'), 4))
+        b2.add (Tone (halftone ('_B'), 4))
         b2.add (Tone (halftone ('A'), 2))
         b2.add (Pause (2))
         v2.add (b2)
@@ -111,7 +123,6 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
             , name      = 'Basso I'
             , snm       = 'B.I'
             , transpose = '-24'
-            , middle    = 'd'
             )
         b3 = Bar (8, 8)
         b3.add (Pause (8))
@@ -123,10 +134,10 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         b3.add (Tone (halftone ('a'), 2))
         v3.add (b3)
         b3 = Bar (8, 8)
-        b3.add (Tone (halftone ('b'), 2))
+        b3.add (Tone (halftone ('_b'), 2))
         b3.add (Pause (2))
         b3.add (Pause (2))
-        b3.add (Tone (halftone ('e'), 2))
+        b3.add (Tone (halftone ('_e'), 2))
         v3.add (b3)
         b3 = Bar (8, 8)
         b3.add (Tone (halftone ('f'), 4))
@@ -146,8 +157,24 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         t.add (v1)
         t.add (v2)
         t.add (v3)
-        assert t.as_abc ().strip () == tune_output.strip ()
+        return t
+    # end def build_tune
+
+    def test_tune (self):
+        if pytest.mpi_rank != 0:
+            return
+        tune = self.build_tune ()
+        assert tune.as_abc ().strip () == tune_output
     # end def test_tune
+
+    def test_transpose_tune (self):
+        if pytest.mpi_rank != 0:
+            return
+        tune = self.build_tune ()
+        # Transpose by a half tone down
+        tune = tune.transpose (-1)
+        assert tune.as_abc ().strip () == tune_transposed
+    # end def test_transpose_tune
 
     def test_prev (self):
         v1 = Voice (id = 'V1')
@@ -716,6 +743,44 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert str (subs) == '^c'
     # end def test_mixolydian_hypolydian
 
+    def test_halftone_register (self):
+        e1 = halftone ('e')
+        e2 = halftone ('e')
+        e3 = halftone (e2)
+        assert id (e1) == id (e2)
+        assert id (e2) == id (e3)
+    # end def test_halftone_register
+
+    def test_key_register (self):
+        k1 = Key.get ('C')
+        k2 = Key.get ('C')
+        k3 = Key.get (k2)
+        assert id (k1) == id (k2)
+        assert id (k2) == id (k3)
+    # end def test_key_register
+
+    def test_key_transposition (self):
+        k1 = Key.get ('C')
+        assert not k1.accidentals
+        for fifth in range (-6, 7):
+            k = k1.transpose (fifth)
+            assert k.offset == fifth
+            assert len (k.accidentals) == abs (fifth)
+            if fifth < 0:
+                assert ''.join (k.accidentals.values ()) == '_' * -fifth
+            else:
+                assert ''.join (k.accidentals.values ()) == '^' * fifth
+        # -7 and 7 are not generated by transpose:
+        k = Key.get ('Cb')
+        assert k.offset == -7
+        assert len (k.accidentals) == 7
+        assert ''.join (k.accidentals.values ()) == '_' * 7
+        k = Key.get ('C#')
+        assert k.offset == 7
+        assert len (k.accidentals) == 7
+        assert ''.join (k.accidentals.values ()) == '^' * 7
+    # end def test_key_transposition
+
 # end class Test_Contrapunctus
 
 class Test_Doctest:
@@ -726,7 +791,7 @@ class Test_Doctest:
         ( circle    =  2
         , gentune   =  0
         , gregorian = 10
-        , tune      = 99
+        , tune      = 103
         )
 
     def test_doctest (self):

@@ -22,6 +22,7 @@
 # ****************************************************************************
 
 from bisect import bisect_right
+from functools import cached_property
 from rsclib.Rational import Rational
 
 def sgn (i):
@@ -200,6 +201,11 @@ class Halftone:
         self.register ()
     # end def __init__
 
+    def __str__ (self):
+        return self.name
+    # end def __str__
+    __repr__ = __str__
+
     @classmethod
     def get (cls, name):
         """ Implement sort-of singleton
@@ -208,6 +214,50 @@ class Halftone:
             return cls.reg [name]
         return cls (name)
     # end def get
+
+    @property
+    def prefix (self):
+        """ Optional prefix ^ or _
+        """
+        n = self.name
+        if n.startswith ('^') or n.startswith ('_'):
+            return n [0]
+        return ''
+    # end def prefix
+
+    @property
+    def stem (self):
+        """ The tone without the (optional) prefix and without trailing
+            comma or primes.
+        >>> halftone ('a').stem
+        'a'
+        >>> halftone ('^a').stem
+        'a'
+        >>> halftone ('^A,,,,').stem
+        'A'
+        >>> halftone ('_a').stem
+        'a'
+        """
+        if self.prefix:
+            return self.name [1]
+        return self.name [0]
+    # end def stem
+
+    def as_abc (self, key = None):
+        if key is None:
+            return self.name
+        ustem = self.stem.upper ()
+        if ustem in key.accidentals:
+            prefix = key.accidentals [ustem]
+            if self.prefix == prefix:
+                return self.name [1:]
+            elif not self.prefix:
+                return '=' + self.name [1:]
+            else:
+                return self.name
+        else:
+            return self.name
+    # end def as_abc
 
     def enharmonic_equivalent (self):
         """ We return the enharmonic equivalent of the current Halftone.
@@ -436,11 +486,6 @@ class Halftone:
         return ht
     # end def transpose
 
-    def __str__ (self):
-        return self.name
-    # end def __str__
-    __repr__ = __str__
-
 # end class Halftone
 
 def halftone (tone):
@@ -534,6 +579,10 @@ class Bar_Object:
         self.idx    = idx
     # end def register
 
+    def transpose (self, steps, key = 'C'):
+        return self.copy ()
+    # end def transpose
+
 # end class Bar_Object
 
 class Tone (Bar_Object):
@@ -544,7 +593,11 @@ class Tone (Bar_Object):
     # end def __init__
 
     def as_abc (self, unit = None):
-        return "%s%s" % (self.halftone.name, self.length (unit))
+        try:
+            key = self.bar.voice.tune.key
+        except AttributeError:
+            key = None
+        return "%s%s" % (self.halftone.as_abc (key), self.length (unit))
     # end def as_abc
 
     def copy (self):
@@ -567,10 +620,6 @@ class Pause (Bar_Object):
     def as_abc (self, unit = None):
         return "z%s" % (self.length (unit))
     # end def as_abc
-
-    def transpose (self, steps, key = 'C'):
-        return self
-    # end def transpose
 
 # end class Pause
 
@@ -720,10 +769,25 @@ class Key (object):
         """
         if isinstance (name, cls):
             return name
-        if name in cls.reg:
-            return cls.reg [name]
-        return cls (name)
+        if name not in cls.reg:
+            cls.reg [name] = cls (name)
+        return cls.reg [name]
     # end def get
+
+    @cached_property
+    def accidentals (self):
+        assert -7 <= self.offset <= 7
+        alltones = 'CDEFGAB'
+        tones = [halftone (x) for x in alltones]
+        # transposition doesn't generate 7 flats or sharps:
+        if self.offset == -7:
+            tt = [halftone ('_' + x) for x in alltones]
+        elif self.offset == 7:
+            tt = [halftone ('^' + x) for x in alltones]
+        else:
+            tt = [x.transpose_fifth (self.offset) for x in tones]
+        return dict ((t.stem.upper (), t.prefix) for t in tt if t.prefix)
+    # end def accidentals
 
     def transpose (self, n_fifth):
         """ Note that on transposition we never return something with
@@ -851,6 +915,7 @@ class Voice:
     def __init__ (self, id = None, *bars, **properties):
         self.bars = []
         self.id   = id
+        self.tune = None
         for b in bars:
             self.add (b)
         self.properties = properties
@@ -939,6 +1004,8 @@ class Tune:
 
     def add (self, voice):
         self.voices.append (voice)
+        assert voice.tune is None
+        voice.tune = self
     # end def add
 
     def as_abc (self):
