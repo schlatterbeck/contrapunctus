@@ -67,7 +67,8 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
     abcheader = \
         ( "X: 1\nM: 4/4\nQ: 1/4=200\n"
           "%%score (Contrapunctus) (CantusFirmus)\n"
-          "L: 1/8\nV:CantusFirmus \nV:Contrapunctus \nK: DDor\n"
+          'L: 1/8\nV:CantusFirmus name="Cantus Firmus"\n'
+          'V:Contrapunctus name=Contrapunctus\nK: DDor\n'
         )
 
     def build_tune (self):
@@ -780,6 +781,46 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert len (k.accidentals) == 7
         assert ''.join (k.accidentals.values ()) == '^' * 7
     # end def test_key_transposition
+
+    def test_parse_tune (self):
+        tune = Tune.from_iterator (tune_output.split ('\n'))
+        assert tune.number == '1'
+        assert tune.title  == 'Zocharti Loch'
+        assert tune.C      == 'Louis Lewandowski (1821-1894)'
+        assert tune.Q      == '1/4=76'
+        assert tune.score  == '(T1 T2) (B1)'
+        assert str (tune.meter) == '4/4'
+        assert str (tune.key)   == 'Gm'
+        voice_data = \
+            ( dict (clef = 'treble-8', name = 'Tenore I',  snm = 'T.I')
+            , dict (clef = 'treble-8', name = 'Tenore II', snm = 'T.II')
+            , dict (clef = 'bass',     name = 'Basso I')
+            )
+        for voice, vd in zip (tune.voices, voice_data):
+            for k in vd:
+                assert vd [k] == getattr (voice , k)
+        # Cannot get this via getattr because we have a transpose method:
+        assert voice.properties ['transpose'] == '-24'
+        bars = \
+            ( ( 'B2 c2 d2 g2', 'f6 e2', 'd2 c2 d2 e2', 'd4 c2 z2')
+            , ( 'G2 A2 B2 e2', 'd6 c2', 'B2 A2 B2 c2', 'B4 A2 z2')
+            , ( 'z8', 'z2 f2 g2 a2', 'b2 z2 z2 e2', 'f4 f2 z2')
+            )
+        for voice, b in zip (tune.voices, bars):
+            assert len (voice.bars) == len (b)
+            for bar, bstr in zip (voice.bars, b):
+                bs = ' '.join (obj.as_abc () for obj in bar.objects)
+                assert bs == bstr
+        # Finally test that it roundtrips:
+        assert tune.as_abc ().strip () == tune_output
+    # end def test_parse_tune
+
+    def test_parse_tune_from_file (self):
+        tune = Tune.from_file ('test/example.abc')
+        with open ('test/example.abc') as f:
+            tunestr = f.read ().strip ()
+        assert tune.as_abc ().strip () == tunestr
+    # end def test_parse_tune_from_file
 
 # end class Test_Contrapunctus
 

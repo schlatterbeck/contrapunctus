@@ -433,10 +433,10 @@ class Contrapunctus:
             , unit   = 8
             , score  = '(Contrapunctus) (CantusFirmus)'
             )
-        cf = Voice (id = 'CantusFirmus')
+        cf = Voice (id = 'CantusFirmus', name = 'Cantus Firmus')
         tune.add (cf)
         b  = Bar (8, 8)
-        b.add (Tone (hypodorian.finalis, 8, unit = 8))
+        b.add (Tone (hypodorian.finalis, 8))
         cf.add (b)
         for i in range (self.cflength):
             if maxidx is not None and i > maxidx:
@@ -445,7 +445,7 @@ class Contrapunctus:
             if self.args.fix_gene:
                 a = self.from_allele (a, i)
             b = Bar (8, 8)
-            b.add (Tone (hypodorian [a], 8, unit = 8))
+            b.add (Tone (hypodorian [a], 8))
             cf.add (b)
         # 0.1.1: "The final must be approached by step. If the final is
         # approached from below, then the leading tone must be raised in
@@ -457,12 +457,12 @@ class Contrapunctus:
         # 1.1: "The counterpoint must begin and end on a perfect
         # consonance" is also achived by hard-coding the last tone.
         b  = Bar (8, 8)
-        b.add (Tone (hypodorian.step2, 8, unit = 8))
+        b.add (Tone (hypodorian.step2, 8))
         cf.add (b)
         b  = Bar (8, 8)
-        b.add (Tone (hypodorian.finalis, 8, unit = 8))
+        b.add (Tone (hypodorian.finalis, 8))
         cf.add (b)
-        cp  = Voice (id = 'Contrapunctus')
+        cp  = Voice (id = 'Contrapunctus', name = 'Contrapunctus')
         tune.add (cp)
         off = self.cflength
         for i in range (self.cplength):
@@ -481,44 +481,44 @@ class Contrapunctus:
                 return tune
             l = 1 << v [0]
             assert 2 <= l <= 8
-            b.add (Tone (dorian [v [1]], l, unit = 8))
+            b.add (Tone (dorian [v [1]], l))
             boff += l
             if boff == 2:
                 if maxidx is not None and off - 11 + 3 > maxidx:
                     return tune
                 l = 1 << v [2]
                 assert 1 <= l <= 2
-                b.add (Tone (dorian [v [3]], l, unit = 8))
+                b.add (Tone (dorian [v [3]], l))
                 boff += l
             if boff == 3:
                 if maxidx is not None and off - 11 + 4 > maxidx:
                     return tune
-                b.add (Tone (dorian [v [4]], 1, unit = 8))
+                b.add (Tone (dorian [v [4]], 1))
                 boff += 1
             if boff == 4:
                 if maxidx is not None and off - 11 + 6 > maxidx:
                     return tune
                 l = 1 << v [5]
                 assert 2 <= l <= 4
-                b.add (Tone (dorian [v [6]], l, unit = 8))
+                b.add (Tone (dorian [v [6]], l))
                 boff += l
             if boff == 5:
                 # Probably never reached, prev tone may not be len 1
                 if maxidx is not None and off - 11 + 7 > maxidx:
                     return tune
-                b.add (Tone (dorian [v [7]], 1, unit = 8))
+                b.add (Tone (dorian [v [7]], 1))
                 boff += 1
             if boff == 6:
                 if maxidx is not None and off - 11 + 9 > maxidx:
                     return tune
                 l = 1 << v [8]
                 assert 1 <= l <= 2
-                b.add (Tone (dorian [v [9]], l, unit = 8))
+                b.add (Tone (dorian [v [9]], l))
                 boff += l
             if boff == 7:
                 if maxidx is not None and off - 11 + 10 > maxidx:
                     return tune
-                b.add (Tone (dorian [v [10]], 1, unit = 8))
+                b.add (Tone (dorian [v [10]], 1))
                 boff += 1
         b  = Bar (8, 8)
         # 0.1.1: "The final must be approached by step. If the final is
@@ -528,10 +528,10 @@ class Contrapunctus:
         # on D a C# is necessary at the cadence." We achieve this by
         # hard-coding the tone prior to the final to be the
         # subsemitonium for the contrapunctus.
-        b.add (Tone (dorian.subsemitonium, 8, unit = 8))
+        b.add (Tone (dorian.subsemitonium, 8))
         cp.add (b)
         b  = Bar (8, 8)
-        b.add (Tone (dorian [7], 8, unit = 8))
+        b.add (Tone (dorian [7], 8))
         cp.add (b)
         return tune
     # end def phenotype
@@ -759,7 +759,7 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
             else:
                 nbar = bar.copy ()
             cp.replace (bd.bar_idx (b), nbar)
-            nbar.add (Tone (dorian [a], bd.tone_idx (b, t), unit = 8))
+            nbar.add (Tone (dorian [a], bd.tone_idx (b, t)))
             #print (bd.tune)
             tsum = sum (bd.tone_idx (b, x) for x in range (t))
             assert nbar.objects [-1].offset == tsum
@@ -798,8 +798,8 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
         for k in range (self.tunelength - 1):
             b  = Bar (8, 8)
             cp.add (b)
-        cp.bars [-2].add (Tone (dorian.subsemitonium, 8, unit = 8))
-        cp.bars [-1].add (Tone (dorian [7], 8, unit = 8))
+        cp.bars [-2].add (Tone (dorian.subsemitonium, 8))
+        cp.bars [-1].add (Tone (dorian [7], 8))
         off = self.cplength - 1
         pos = -22 + 1
         seq = range (self.init [pos][0], self.init [pos][1] + 1)

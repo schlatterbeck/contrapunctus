@@ -23,7 +23,7 @@
 
 from bisect import bisect_right
 from functools import cached_property
-from rsclib.Rational import Rational
+from rsclib.rational import Rational
 
 def sgn (i):
     if i > 0:
@@ -499,7 +499,7 @@ class Bar_Object:
     """ Base class of all objects that go into a Bar
     """
 
-    def __init__ (self, duration, unit = 8):
+    def __init__ (self, duration):
         super ().__init__ ()
         self.duration = duration
         # offset in Bar (parent), filled when inserting into Bar
@@ -507,16 +507,22 @@ class Bar_Object:
         # Index into Bar (parent)
         self.idx      = None
         self.bar      = None
-        self.unit     = unit
         self._prev    = None
         self._next    = None
     # end def __init__
 
+    @classmethod
+    def from_string (cls, accidentals, s):
+        if s.startswith ('z'):
+            return Pause.from_string (s)
+        return Tone.from_string (accidentals, s)
+    # end def from_string
+
     def __str__ (self):
         name = self.__class__.__name__
         return \
-            ( '%s (bar=%s, idx=%s, offset=%s, unit=%s, dur=%s)'
-            % (name, self.bar, self.idx, self.offset, self.unit, self.duration)
+            ( '%s (bar=%s, idx=%s, offset=%s, dur=%s)'
+            % (name, self.bar, self.idx, self.offset, self.duration)
             )
     # end def __str__
     __repr__ = __str__
@@ -559,14 +565,12 @@ class Bar_Object:
     # end def is_last
 
     def copy (self):
-        return self.__class__ (self.duration, self.unit)
+        return self.__class__ (self.duration)
     # end def copy
 
     def length (self, unit = None):
-        unit = unit or self.unit
-        l = Rational (self.duration, self.unit) * Rational (unit)
-        assert int (l) == l
-        return int (l)
+        assert isinstance (self.duration, int)
+        return self.duration
     # end def length
     __len__ = length
 
@@ -587,29 +591,46 @@ class Bar_Object:
 
 class Tone (Bar_Object):
 
-    def __init__ (self, halftone, duration, unit = 8):
+    def __init__ (self, halftone, duration):
         self.halftone = halftone
-        super ().__init__ (duration, unit)
+        super ().__init__ (duration)
     # end def __init__
 
-    def as_abc (self, unit = None):
+    @classmethod
+    def from_string (cls, accidentals, s):
+        for n, x in enumerate (reversed (s)):
+            if not x.isdigit ():
+                break
+        dur = int (s [-n:])
+        ht  = s [:-n]
+        if ht.startswith ('^') or ht.startswith ('_'):
+            ht = halftone (ht)
+        else:
+            h0 = ht [0].upper ()
+            if h0 in accidentals:
+                ht = halftone (accidentals [h0] + ht)
+            else:
+                ht = halftone (ht)
+        return cls (ht, dur)
+    # end def from_string
+
+    def as_abc (self):
         try:
             key = self.bar.voice.tune.key
         except AttributeError:
             key = None
-        return "%s%s" % (self.halftone.as_abc (key), self.length (unit))
+        return "%s%s" % (self.halftone.as_abc (key), self.length ())
     # end def as_abc
 
     def copy (self):
         # self.halftone is a singleton
-        return self.__class__ (self.halftone, self.duration, self.unit)
+        return self.__class__ (self.halftone, self.duration)
     # end def copy
 
     def transpose (self, steps, key = 'C'):
         return self.__class__ \
             ( self.halftone.transpose (steps, key)
             , duration = self.duration
-            , unit     = self.unit
             )
     # end def transpose
 
@@ -617,8 +638,15 @@ class Tone (Bar_Object):
 
 class Pause (Bar_Object):
 
-    def as_abc (self, unit = None):
-        return "z%s" % (self.length (unit))
+    @classmethod
+    def from_string (cls, s):
+        assert s.startswith ('z')
+        duration = int (s [1:])
+        return cls (duration)
+    # end def from_string
+
+    def as_abc (self):
+        return "z%s" % (self.length ())
     # end def as_abc
 
 # end class Pause
@@ -631,6 +659,17 @@ class Meter:
         self.measure = measure
         self.beats   = beats
     # end def __init__
+
+    @classmethod
+    def from_string (cls, s):
+        if s == 'C':
+            m, b = 4, 4
+        elif s == 'C|':
+            m, b = 2, 2
+        else:
+            m, b = (int (x) for x in s.split ('/'))
+        return cls (m, b)
+    # end def from_string
 
     def __str__ (self):
         return '%s/%s' % (self.measure, self.beats)
@@ -820,8 +859,8 @@ for m in Key.modes:
 class Bar:
 
     def __init__ (self, duration, unit = 8, *bar_object):
-        assert isinstance (duration, int)
-        self.duration = duration
+        assert int (duration) == duration
+        self.duration = int (duration)
         self.dur_sum  = 0
         self.objects  = []
         self.unit     = unit
@@ -830,6 +869,14 @@ class Bar:
         for b in bar_object:
             self.add (b)
     # end def __init__
+
+    @classmethod
+    def from_string (cls, key, unit, s):
+        bar = cls (unit, unit)
+        for t in s.strip ().split ():
+            bar.add (Bar_Object.from_string (key.accidentals, t))
+        return bar
+    # end def from_string
 
     def __str__ (self):
         return ('Bar (voice=%s, idx=%s)' % (self.voice, self.idx))
@@ -926,6 +973,7 @@ class Voice:
             v = self.properties [prop]
         except KeyError as err:
             raise AttributeError (err)
+        return v
     # end def __getattr__
 
     def __str__ (self):
@@ -957,8 +1005,19 @@ class Voice:
                 return '"%s"' % p
             return p
         prp = ('%s=%s' % (k, tq (self.properties [k])) for k in self.properties)
-        return 'V:%s %s' % (self.id, ' '.join (prp))
+        prp = ' '.join (prp)
+        if prp:
+            prp = ' ' + prp
+        return 'V:%s%s' % (self.id, prp)
     # end def as_abc_header
+
+    def bars_from_string (self, key, unit, s):
+        """ Parse (and append) bars from string.
+            Can be called multiple times to append multiple lines.
+        """
+        for b in s.split ('|'):
+            self.add (Bar.from_string (key, unit, b))
+    # end def bars_from_string
 
     def replace (self, idx, bar):
         """ Replace bar at position idx
@@ -986,21 +1045,130 @@ class Tune:
 
     def __init__ \
         ( self, meter, key
-        , title  = None
-        , number = 1
-        , unit   = None
+        , title   = None
+        , number  = 1
+        , unit    = None
+        , comment = None
         , *voices, **kw
         ):
-        self.voices = []
-        self.meter  = meter
-        self.key    = Key.get (key)
-        self.title  = title
-        self.number = number
-        self.kw     = kw
-        self.unit   = unit or Rational (8)
+        self.voices  = []
+        self.meter   = meter
+        self.key     = Key.get (key)
+        self.title   = title
+        self.number  = number
+        self.kw      = kw
+        self.unit    = unit or Rational (8)
+        self.comment = comment or []
         for v in voices:
             self.add (v)
     # end def __init__
+
+    @classmethod
+    def from_iterator (self, iter):
+        """ The iterator will usually be a file
+        """
+        kw = {}
+        voices = {}
+        barlen = None
+        for line in iter:
+            line = line.strip ()
+            if line.startswith ('%%'):
+                k, v = (line.lstrip ('%').split (None, 1))
+                kw [k] = v
+            elif line.startswith ('%'):
+                if 'comment' not in kw:
+                    kw ['comment'] = []
+                kw ['comment'].append (line [1:])
+            elif line.startswith ('['):
+                if 'unit' not in kw:
+                    if 'meter' in kw:
+                        kw ['unit'] = kw ['meter'].beats
+                    else:
+                        raise ValueError ('No unit note length')
+                unit = kw ['unit']
+                vinfo, rest = line.split (None, 1)
+                if not rest.endswith ('|'):
+                    raise NotImplementedError ('Incomplete bar in "%s" % line')
+                # Strip bar for later split
+                rest = rest [:-1]
+                if not vinfo.endswith (']'):
+                    raise ValueError ('Invalid voice format: "%s"' % vinfo)
+                vinfo = vinfo [1:-1]
+                a, b = vinfo.split (':', 1)
+                if a != 'V':
+                    raise NotImplementedError \
+                        ('Unknown voice format "%s in "%s"' % (a, line))
+                if b not in voices:
+                    print ('Warning: Undeclared voice "%s"' % b)
+                    voices [b] = Voice (b)
+                voice = voices [b]
+                key   = kw.get ('key')
+                if not key:
+                    raise ValueError ('No key (K) definition')
+                voice.bars_from_string (key, unit, rest)
+            else:
+                k, v = line.split (':', 1)
+                v = v.lstrip ()
+                if k == 'K':
+                    kw ['key'] = Key.get (v)
+                elif k == 'L':
+                    if 'unit' in kw:
+                        raise ValueError \
+                            ('Duplicate unit note length: %s' % line)
+                    n, d = (int (x) for x in v.split ('/', 1))
+                    unit = Rational (1) / Rational (n, d)
+                    if int (unit) != unit:
+                        raise NotImplementedError ('Non integral unit')
+                    kw ['unit'] = unit
+                elif k == 'M':
+                    kw ['meter'] = Meter.from_string (v)
+                elif k == 'T':
+                    kw ['title'] = v
+                elif k == 'V':
+                    vkw  = {}
+                    id, rest = v.split (None, 1)
+                    while rest:
+                        k, rest = rest.split ('=', 1)
+                        if rest.startswith ('"'):
+                            vv, rest = rest [1:].split ('"', 1)
+                            vkw [k] = vv
+                            rest = rest.lstrip ()
+                        else:
+                            try:
+                                vv, rest = rest.split (None, 1)
+                            except ValueError:
+                                vv = rest
+                                rest = ''
+                            vkw [k] = vv
+                    voices [id] = Voice (id, **vkw)
+                elif k == 'X':
+                    kw ['number'] = v
+                else:
+                    if len (k) != 1:
+                        raise NotImplementedError ('Unknown field "%s"' % k)
+                    if k in kw:
+                        if not isinstance (kw [k], list):
+                            kw [k] = [kw [k]]
+                        kw [k].append (v)
+                    else:
+                        kw [k] = v
+        tune = Tune (**kw)
+        for v in voices:
+            tune.add (voices [v])
+        return tune
+    # end def from_iterator
+
+    def __str__ (self):
+        return self.as_abc ()
+    # end def __str__
+    __repr__ = __str__
+
+    def __getattr__ (self, k):
+        try:
+            return self.kw [k]
+        except KeyError as err:
+            raise AttributeError (err)
+    # end def __getattr__
 
     def add (self, voice):
         self.voices.append (voice)
@@ -1015,11 +1183,16 @@ class Tune:
             r.append ('T: %s' % self.title)
         r.append (self.meter.as_abc ())
         for k in self.kw:
+            l = self.kw [k]
+            if not isinstance (l, list):
+                l = [l]
             if len (k) == 1:
-                r.append ('%s: %s' % (k, self.kw [k]))
+                for v in l:
+                    r.append ('%s: %s' % (k, v))
             else:
-                r.append ('%%%%%s %s' % (k, self.kw [k]))
-        r.append ("L: %s" % (Rational (1) // self.unit))
+                for v in l:
+                    r.append ('%%%%%s %s' % (k, v))
+        r.append ("L: %s" % (Rational (1) / self.unit))
         for v in self.voices:
             h = v.as_abc_header ()
             if h:
@@ -1027,25 +1200,15 @@ class Tune:
         r.append ("K: %s" % self.key)
         for v in self.voices:
             r.append (v.as_abc ())
+        for c in self.comment:
+            r.append ('%' + c)
         return '\n'.join (r)
     # end def as_abc
 
     @classmethod
     def from_file (cls, fn):
-        """ Unfinished """
-        version   = None
-        in_header = True
-        kw        = {}
         with open (fn, 'r') as f:
-            for n, line in enumerate (f):
-                if n == 0 and line.startswith ('%abc'):
-                    version = line [4:].strip ()
-                if in_header:
-                    if line [1] == ':':
-                        k = line [0]
-                        if k not in kw:
-                            kw [k] = []
-                        kw [k].append (line [2:].strip ())
+            return cls.from_iterator (f)
     # end def from_file
 
     def iter (self, voice_idx):
@@ -1062,10 +1225,5 @@ class Tune:
             t.add (v.transpose (steps, self.key))
         return t
     # end def transpose
-
-    def __str__ (self):
-        return self.as_abc ()
-    # end def __str__
-    __repr__ = __str__
 
 # end class Tune
