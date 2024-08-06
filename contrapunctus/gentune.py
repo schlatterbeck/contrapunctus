@@ -100,7 +100,7 @@ class Contrapunctus:
 
     pop_default = (10, 500)
     # These should always be printed when printing options:
-    necessary_options = ['--random-seed']
+    necessary_options = ['--random-seed', '--tune-length']
 
     # These need to call reset before each eval:
     melody_history_checks = \
@@ -197,7 +197,7 @@ class Contrapunctus:
                 if act.type is None and not v:
                     continue
             if act.default is not None and v == act.default:
-                if k not in self.necessary_options:
+                if opt not in self.necessary_options:
                     continue
             if act.default is None and v is None:
                 continue
@@ -226,15 +226,15 @@ class Contrapunctus:
                     s = '%s=%s' % (opt, v)
                 rb.append (('%%-%ds' % maxl) % s)
             if rb:
-                r.append (' '.join (rb))
+                r.append (' '.join (rb).rstrip ())
         # empty line at end
         r.append ('')
         if prefix is not None:
-            r = [prefix + x for x in r]
+            r = [(prefix + x).rstrip () for x in r]
         return '\n'.join (r)
     # end def as_args
 
-    def as_complete_tune (self, p, pop, force = False):
+    def as_complete_tune (self, p = 1, pop = pga.PGA_NEWPOP, force = False):
         r = []
         r.append (self.as_tune (p, pop))
         a = self.as_args ('% ', force = force)
@@ -250,14 +250,14 @@ class Contrapunctus:
         return '\n'.join (r)
     # end def as_complete_tune
 
-    def as_tune (self, p, pop):
+    def as_tune (self, p = 1, pop = pga.PGA_NEWPOP):
         tune = self.phenotype (p, pop)
         if self.args.transpose:
             tune = tune.transpose (self.args.transpose)
         return str (tune)
     # end def as_tune
 
-    def as_tune_gene (self, p, pop):
+    def as_tune_gene (self, p = 1, pop = pga.PGA_NEWPOP):
         r = []
         al = lambda x: self.get_allele (p, pop, x)
         g  = ['[%d]' % al (i) for i in range (len (self.init))]
@@ -402,26 +402,25 @@ class Contrapunctus:
     # end def _fix_gene
 
     def _from_gene (self, f):
-        r = []
         for genelength in self.from_gene_lines (f):
-            tunelength = (genelength + 25) / 12
-            assert int (tunelength) == tunelength
-            tunelength = int (tunelength)
+            if not self.orig_args or not self.orig_args.tune_length:
+                tunelength = (genelength + 25) / 12
+                assert int (tunelength) == tunelength
+                tunelength = int (tunelength)
+            else:
+                tunelength = self.orig_args.tune_length
             if genelength != len (self.init):
                 self.tunelength = tunelength
             if self.args.fix_gene:
                 self._fix_gene ()
-            r.append (self.as_complete_tune (1, pga.PGA_NEWPOP))
-        return r
     # end def _from_gene
 
     def from_gene (self):
         if self.args.gene_file == '-':
-            r = self._from_gene (sys.stdin)
+            self._from_gene (sys.stdin)
         else:
             with open (self.args.gene_file, 'r') as f:
-                r = self._from_gene (f)
-        return '\n'.join (r)
+                self._from_gene (f)
     # end def from_gene
 
     def phenotype (self, p, pop, maxidx = None):
@@ -744,9 +743,9 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
         r = []
         if self.args.output_file:
             with open (self.args.output_file, 'w') as f:
-                print (self.as_complete_tune (1, 1, force = True), file = f)
+                print (self.as_complete_tune (force = True), file = f)
         else:
-            print (self.as_complete_tune (1, 1, force = True))
+            print (self.as_complete_tune (force = True))
     # end def run
 
     def _run_cf_end_check (self, bd, bar = None, b = 0, t = 0):

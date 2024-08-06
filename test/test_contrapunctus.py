@@ -477,14 +477,16 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         args = cmd.parse_args (['-v', '-v', '-b', '-g' 'test/example.log'])
         cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
-        txt  = cp.from_gene ()
+        cp.from_gene ()
+        txt  = cp.as_complete_tune ()
         with open ('test/example.abc') as f:
             abc = f.read ()
         assert txt.strip () == abc.strip ()
         # roundtrip test, note the missing -b ('best') option
         args = cmd.parse_args (['-v', '-v', '-g' 'test/example.abc'])
         cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
-        txt  = cp.from_gene ()
+        cp.from_gene ()
+        txt = cp.as_complete_tune ()
         assert txt.strip () == abc.strip ()
     # end def test_logparse
 
@@ -514,7 +516,7 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         # Rest is don't care
         for k in range (3, cpl):
             fake.set_allele (1, 1, k, 42)
-        t = fake.as_tune (1, 1)
+        t = fake.as_tune ()
         result = header + '[V:Contrapunctus] G8 |A4 B4 |^c8 |d8 |'
         assert t == result
     # end def test_gene_decode_8_44
@@ -552,7 +554,7 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         fake.set_allele (1, 1, 1 + cpl +  8,  0) # Len 1<<0 = 1 3rd tone CP
         fake.set_allele (1, 1, 1 + cpl +  9,  2) # CP pitch (F)
         fake.set_allele (1, 1, 1 + cpl + 10,  3) # CP pitch (G)
-        t = fake.as_tune (1, 1)
+        t = fake.as_tune ()
         result = header + '[V:Contrapunctus] G4 A2 F2 |G4 A2 F1 G1 |^c8 |d8 |'
         assert t == result
     # end def test_gene_decode_422_4211
@@ -590,7 +592,7 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         fake.set_allele (1, 1, 1 + cpl +  8,  0) # Len 1<<0 = 1 3rd tone CP
         fake.set_allele (1, 1, 1 + cpl +  9,  4) # CP pitch (A)
         fake.set_allele (1, 1, 1 + cpl + 10,  4) # CP pitch (A)
-        t = fake.as_tune (1, 1)
+        t = fake.as_tune ()
         result = header + '[V:Contrapunctus] G2 A2 A2 F1 F1 |' \
                           'G2 A1 A1 G2 A1 A1 |^c8 |d8 |'
         assert t == result
@@ -821,6 +823,20 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
             tunestr = f.read ().strip ()
         assert tune.as_abc ().strip () == tunestr
     # end def test_parse_tune_from_file
+
+    def test_parse_gene_with_args (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v', '-g' 'test/example.log'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        with open ('test/df.abc') as f:
+            next (cp.from_gene_lines (f))
+            f.seek (0)
+            abc = f.read ().strip ()
+        txt = cp.as_complete_tune ().strip ()
+        assert txt
+        assert abc
+        assert txt == abc
+    # end def test_parse_gene_with_args
 
 # end class Test_Contrapunctus
 
