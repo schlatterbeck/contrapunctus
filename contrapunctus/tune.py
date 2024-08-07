@@ -851,7 +851,7 @@ for m in Key.modes:
 
 class Bar:
 
-    def __init__ (self, duration, unit = 8, *bar_object):
+    def __init__ (self, duration, unit = 8):
         assert int (duration) == duration
         self.duration = int (duration)
         self.dur_sum  = 0
@@ -859,8 +859,6 @@ class Bar:
         self.unit     = unit
         self.voice    = None
         self.idx      = None
-        for b in bar_object:
-            self.add (b)
     # end def __init__
 
     @classmethod
@@ -1049,7 +1047,7 @@ class Tune:
         , number  = 1
         , unit    = None
         , comment = None
-        , *voices, **kw
+        , **kw
         ):
         self.voices  = []
         self.meter   = meter
@@ -1059,8 +1057,6 @@ class Tune:
         self.kw      = kw
         self.unit    = unit or Rational (8)
         self.comment = comment or []
-        for v in voices:
-            self.add (v)
     # end def __init__
 
     @classmethod

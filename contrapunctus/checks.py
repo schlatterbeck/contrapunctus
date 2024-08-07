@@ -66,7 +66,8 @@ class Check:
     # end def check
 
     def compute_description (self):
-        raise NotImplementedError ('Need compute_description method')
+        raise NotImplementedError ('Need compute_description method') \
+            # pragma: no cover
     # end def compute_description
 
 # end class Check
@@ -389,11 +390,12 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
             # Sign must be positive or negative not 0 (no direction)
             return self.dir_cf and self.dir_cf == self.dir_cp
         elif self.dir == 'different':
+            # currently unused
             return self.dir_cf == self.dir_cp
         elif self.dir == 'zero':
             return self.dir_cf == self.dir_cp == 0
         else:
-            assert 0
+            assert 0 # pragma: no cover
     # end def direction_check
 
     def reset (self):

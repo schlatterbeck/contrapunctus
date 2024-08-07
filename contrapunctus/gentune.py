@@ -250,7 +250,8 @@ class Contrapunctus:
             v   = args.__dict__ [k]
             act = dest_dict [k]
             if act.nargs and act.nargs > 1:
-                raise NotImplementedError ('nargs>1 not supported')
+                raise NotImplementedError ('nargs>1 not supported') \
+                    # pragma: no cover
             if act.nargs == 0:
                 # can also be None, explicitly check for True/False
                 if act.const is True and not v:
@@ -441,7 +442,8 @@ class Contrapunctus:
             i, l = line.split ('#', 1)[-1].split (':')
             i = int (i)
             if i != idx:
-                raise ValueError ("Line %s: Invalid gene-file format" % ln)
+                raise ValueError ("Line %s: Invalid gene-file format" % ln) \
+                    # pragma: no cover
             for offs, a in enumerate (l.split (',')):
                 a = float (a.strip ().lstrip ('[').rstrip (']').strip ())
                 a = int (a)
@@ -566,7 +568,7 @@ class Contrapunctus:
                 assert 2 <= l <= 4
                 b.add (Tone (dorian [v [6]], l))
                 boff += l
-            if boff == 5:
+            if boff == 5: # pragma: no cover
                 # Probably never reached, prev tone may not be len 1
                 if maxidx is not None and off + 7 > maxidx:
                     return tune
@@ -783,7 +785,8 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
     @tunelength.setter
     def tunelength (self, tl):
         if getattr (self, 'init', None):
-            raise ValueError ('Not possible to set tunelength after init')
+            raise ValueError \
+                ('Not possible to set tunelength after init') # pragma: no cover
         self._tunelength = tl
     # end def tunelength
 
@@ -904,7 +907,7 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
                 if r:
                     return True
         else:
-            assert 0
+            assert 0 # pragma: no cover
         return False
     # end def find_contrapunctus
 
@@ -918,19 +921,23 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
         if not self.cantus_firmus:
             result = self.find_cantus_firmus (0)
             if not result:
-                print ('No Cantus Firmus found')
+                with Outfile (self.args.output_file) as f:
+                    print ('No Cantus Firmus found', file = f)
                 return
         else:
             if not self.verify_cantus_firmus ():
-                print ('No valid Contrapunctus for this Cantus Firmus')
+                with Outfile (self.args.output_file) as f:
+                    msg = 'No valid Contrapunctus for this Cantus Firmus'
+                    print (msg, file = f)
                 return
         result = self.find_contrapunctus (0, 0)
         if not result:
             # This should never be reached unless we have rules or a CF
             # that make it fail early. Otherwise the user will interrupt
             # before we ever get here :-)
-            print ('No Contrapunctus found')
-            return
+            with Outfile (self.args.output_file) as f: # pragma: no cover
+                print ('No Contrapunctus found', file = f)
+            return                                     # pragma: no cover
         r = []
         with Outfile (self.args.output_file) as f:
             print (self.as_complete_tune (force = True), file = f)
