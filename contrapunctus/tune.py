@@ -321,6 +321,8 @@ class Halftone:
         ^a
         >>> halftone ('_B').enharmonic_equivalent ()
         ^A
+        >>> halftone ('B').enharmonic_equivalent ()
+        B
         """
         name = self.name
         if not name.startswith ('^') and not name.startswith ('_'):
@@ -676,18 +678,9 @@ class Meter:
     # end def __str__
     __repr__ = __str__
 
-    @property
-    def duration (self):
-        return len (self)
-    # end def duration
-
     def as_abc (self):
         return "M: %s/%s" % (self.measure, self.beats)
     # end def as_abc
-
-    def length (self):
-        return Rational (self.measure, self.beats)
-    # end def length
 
 # end class Meter
 
@@ -904,7 +897,7 @@ class Bar:
             raise ValueError \
                 ( "Overfull bar: %s + %s > %s"
                 % (self.dur_sum, bar_object.duration, self.duration)
-                )
+                ) # pragma: no cover
         bar_object.register (self, self.dur_sum, len (self.objects))
         if self.objects:
             prev = self.objects [-1]
@@ -971,7 +964,7 @@ class Voice:
     def __getattr__ (self, prop):
         try:
             v = self.properties [prop]
-        except KeyError as err:
+        except KeyError as err: # pragma: no cover
             raise AttributeError (err)
         return v
     # end def __getattr__
@@ -1018,6 +1011,13 @@ class Voice:
         for b in s.split ('|'):
             self.add (Bar.from_string (key, unit, b))
     # end def bars_from_string
+
+    def copy (self):
+        bars = []
+        for bar in self.bars:
+            bars.append (bar.copy ())
+        return self.__class__ (self.id, *bars, **self.properties)
+    # end def copy
 
     def replace (self, idx, bar):
         """ Replace bar at position idx
@@ -1088,23 +1088,26 @@ class Tune:
                 unit = kw ['unit']
                 vinfo, rest = line.split (None, 1)
                 if not rest.endswith ('|'):
-                    raise NotImplementedError ('Incomplete bar in "%s" % line')
+                    raise NotImplementedError \
+                        ('Incomplete bar in "%s" % line') # pragma: no cover
                 # Strip bar for later split
                 rest = rest [:-1]
                 if not vinfo.endswith (']'):
-                    raise ValueError ('Invalid voice format: "%s"' % vinfo)
+                    raise ValueError ('Invalid voice format: "%s"' % vinfo) \
+                    # pragma: no cover
                 vinfo = vinfo [1:-1]
                 a, b = vinfo.split (':', 1)
                 if a != 'V':
                     raise NotImplementedError \
-                        ('Unknown voice format "%s in "%s"' % (a, line))
-                if b not in voices:
+                        ('Unknown voice format "%s in "%s"' % (a, line)) \
+                        # pragma: no cover
+                if b not in voices: # pragma: no cover
                     print ('Warning: Undeclared voice "%s"' % b)
                     voices [b] = Voice (b)
                 voice = voices [b]
                 key   = kw.get ('key')
                 if not key:
-                    raise ValueError ('No key (K) definition')
+                    raise ValueError ('No key (K) definition') #pragma: no cover
                 voice.bars_from_string (key, unit, rest)
             else:
                 k, v = line.split (':', 1)
@@ -1114,11 +1117,13 @@ class Tune:
                 elif k == 'L':
                     if 'unit' in kw:
                         raise ValueError \
-                            ('Duplicate unit note length: %s' % line)
+                            ('Duplicate unit note length: %s' % line) \
+                            # pragma: no cover
                     n, d = (int (x) for x in v.split ('/', 1))
                     unit = Rational (1) / Rational (n, d)
                     if int (unit) != unit:
-                        raise NotImplementedError ('Non integral unit')
+                        raise NotImplementedError \
+                            ('Non integral unit') # pragma: no cover
                     kw ['unit'] = unit
                 elif k == 'M':
                     kw ['meter'] = Meter.from_string (v)
@@ -1126,7 +1131,11 @@ class Tune:
                     kw ['title'] = v
                 elif k == 'V':
                     vkw  = {}
-                    id, rest = v.split (None, 1)
+                    try:
+                        id, rest = v.split (None, 1)
+                    except ValueError:
+                        id   = v
+                        rest = ''
                     while rest:
                         k, rest = rest.split ('=', 1)
                         if rest.startswith ('"'):
@@ -1145,7 +1154,8 @@ class Tune:
                     kw ['number'] = v
                 else:
                     if len (k) != 1:
-                        raise NotImplementedError ('Unknown field "%s"' % k)
+                        raise NotImplementedError \
+                            ('Unknown field "%s"' % k) # pragma: no cover
                     if k in kw:
                         if not isinstance (kw [k], list):
                             kw [k] = [kw [k]]
@@ -1166,7 +1176,7 @@ class Tune:
     def __getattr__ (self, k):
         try:
             return self.kw [k]
-        except KeyError as err:
+        except KeyError as err: # pragma: no cover
             raise AttributeError (err)
     # end def __getattr__
 

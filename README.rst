@@ -35,7 +35,21 @@ or more verbose (including a report about untested lines) with::
 
     python3 -m pytest --cov-report term-missing --cov contrapunctus test
 
-Of course as of this writing the coverage is very poor.
+By default this skips long-running tests. You can enable these tests
+with the --longrun option::
+
+    python3 -m pytest --cov-report term-missing --cov \
+        contrapunctus test --longrun
+
+When running things with MPI it is a good idea to run the ``coverage``
+program explicitly (it may be named differently on your installation, on
+Debian Linux it is called ``python3-coverage``) and tell it via
+``setup.cfg`` to produce separate coverage reports for each CPU::
+
+    mpirun --machinefile ~/.mpi-openmpi-bee+cat --np 8 \
+        coverage run --rcfile setup.cfg -m pytest --longrun
+    coverage combine --keep
+    coverage report -m --include "contrapunctus/*"
 
 Regeln für Cantus Firmus
 ------------------------

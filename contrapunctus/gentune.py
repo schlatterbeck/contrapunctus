@@ -115,6 +115,8 @@ class Contrapunctus:
     pop_default = (10, 500)
     # These should always be printed when printing options:
     necessary_options = ['--random-seed', '--tune-length']
+    # And these should always be removed:
+    remove_options    = ['--output-file']
 
     # These need to call reset before each eval:
     melody_history_checks = \
@@ -122,12 +124,14 @@ class Contrapunctus:
     harmony_history_checks = [c for c in harmony_checks if hasattr (c, 'reset')]
 
     def __init__ (self, cmd, args):
-        self.cmd         = cmd
-        self.args        = args
-        self.orig_args   = None
-        self.do_explain  = False
-        self.explanation = []
-        self._tunelength = args.tune_length
+        self.cmd           = cmd
+        self.args          = args
+        self.orig_args     = None
+        self.do_explain    = False
+        self.explanation   = []
+        self.tune          = None # for given cantus firmus
+        self.cantus_firmus = None
+        self._tunelength   = args.tune_length
         assert args.tune_length > 3
         if not args.pop_size and not args.optimize_depth_first:
             if args.use_de:
@@ -138,7 +142,24 @@ class Contrapunctus:
         if args.optimize_depth_first or not args.gene_file:
             if args.verbose < 2:
                 args.verbose = 2
-        self.set_init ()
+        if args.cantus_firmus:
+            assert args.cantus_firmus != '+'
+            if args.cantus_firmus == '-':
+                self.tune = Tune.from_iterator (sys.stdin)
+            else:
+                with open (args.cantus_firmus) as f:
+                    self.tune = Tune.from_iterator (f)
+            # Now set the option to '+' so that next time we read from abc file
+            args.cantus_firmus = '+'
+            for v in self.tune.voices:
+                if v.id == 'CantusFirmus':
+                    self.cantus_firmus = v
+                    break
+                else:
+                    raise ValueError ('No CantusFirmus voice found')
+            self.tunelength = len (self.cantus_firmus.bars)
+        if not getattr (self, 'init', None):
+            self.set_init ()
     # end def __init__
 
     @property
@@ -150,7 +171,8 @@ class Contrapunctus:
     def tunelength (self, tl):
         self._tunelength = tl
         self.set_init ()
-        self.fix_gene_length ()
+        if getattr (self, 'gene', None):
+            self.fix_gene_length ()
     # end def tunelength
 
     def args_from_gene (self, iter):
@@ -182,22 +204,20 @@ class Contrapunctus:
             return ''
         by_dest = {}
         for k in args.__dict__:
-            minopt = None
             opts   = dest_dict [k].option_strings
+            minopt = opts [-1]
             for opt in opts:
-                if  ( opt.startswith ('--')
-                    and (minopt is None or len (opt) < len (minopt))
-                    ):
+                if opt.startswith ('--') and len (opt) < len (minopt):
                     minopt = opt
-            if minopt is None:
-                opt = opts [0]
-            by_dest [k] = opt
+            by_dest [k] = minopt
 
         # Determine options that need printing
         maxl  = 0
         valid = []
         for k in args.__dict__:
             opt = by_dest [k]
+            if opt in self.remove_options:
+                continue
             v   = args.__dict__ [k]
             act = dest_dict [k]
             if act.nargs and act.nargs > 1:
@@ -413,7 +433,11 @@ class Contrapunctus:
     # end def _fix_gene
 
     def _from_gene (self, f):
-        for genelength in self.from_gene_lines (f):
+        iter = f
+        if self.cantus_firmus == '+':
+            self.tune = Tune.from_iterator (f)
+            iter = self.tune.comment
+        for genelength in self.from_gene_lines (iter):
             if not self.orig_args or not self.orig_args.tune_length:
                 tunelength = (genelength + 25) / 12
                 assert int (tunelength) == tunelength
@@ -443,11 +467,15 @@ class Contrapunctus:
             , unit   = 8
             , score  = '(Contrapunctus) (CantusFirmus)'
             )
-        cf = Voice (id = 'CantusFirmus', name = 'Cantus Firmus')
+        if self.cantus_firmus:
+            cf = self.cantus_firmus.copy ()
+            assert self.cflength == 0
+        else:
+            cf = Voice (id = 'CantusFirmus', name = 'Cantus Firmus')
+            b  = Bar (8, 8)
+            b.add (Tone (hypodorian.finalis, 8))
+            cf.add (b)
         tune.add (cf)
-        b  = Bar (8, 8)
-        b.add (Tone (hypodorian.finalis, 8))
-        cf.add (b)
         for i in range (self.cflength):
             if maxidx is not None and i > maxidx:
                 return tune
@@ -466,16 +494,17 @@ class Contrapunctus:
         # the cantus firmus
         # 1.1: "The counterpoint must begin and end on a perfect
         # consonance" is also achived by hard-coding the last tone.
-        b  = Bar (8, 8)
-        b.add (Tone (hypodorian.step2, 8))
-        cf.add (b)
-        b  = Bar (8, 8)
-        b.add (Tone (hypodorian.finalis, 8))
-        cf.add (b)
+        if not self.cantus_firmus:
+            b  = Bar (8, 8)
+            b.add (Tone (hypodorian.step2, 8))
+            cf.add (b)
+            b  = Bar (8, 8)
+            b.add (Tone (hypodorian.finalis, 8))
+            cf.add (b)
         cp  = Voice (id = 'Contrapunctus', name = 'Contrapunctus')
         tune.add (cp)
-        off = self.cflength
         for i in range (self.cplength):
+            off  = i * 11 + self.cflength
             boff = 0 # offset in bar
             v = []
             for j in range (11):
@@ -484,29 +513,28 @@ class Contrapunctus:
                 if self.args.fix_gene:
                     a = self.from_allele (a, idx)
                 v.append (a)
-            off += 11
             b = Bar (8, 8)
             cp.add (b)
-            if maxidx is not None and off - 11 + 1 > maxidx:
+            if maxidx is not None and off + 1 > maxidx:
                 return tune
             l = 1 << v [0]
             assert 2 <= l <= 8
             b.add (Tone (dorian [v [1]], l))
             boff += l
             if boff == 2:
-                if maxidx is not None and off - 11 + 3 > maxidx:
+                if maxidx is not None and off + 3 > maxidx:
                     return tune
                 l = 1 << v [2]
                 assert 1 <= l <= 2
                 b.add (Tone (dorian [v [3]], l))
                 boff += l
             if boff == 3:
-                if maxidx is not None and off - 11 + 4 > maxidx:
+                if maxidx is not None and off + 4 > maxidx:
                     return tune
                 b.add (Tone (dorian [v [4]], 1))
                 boff += 1
             if boff == 4:
-                if maxidx is not None and off - 11 + 6 > maxidx:
+                if maxidx is not None and off + 6 > maxidx:
                     return tune
                 l = 1 << v [5]
                 assert 2 <= l <= 4
@@ -514,19 +542,19 @@ class Contrapunctus:
                 boff += l
             if boff == 5:
                 # Probably never reached, prev tone may not be len 1
-                if maxidx is not None and off - 11 + 7 > maxidx:
+                if maxidx is not None and off + 7 > maxidx:
                     return tune
                 b.add (Tone (dorian [v [7]], 1))
                 boff += 1
             if boff == 6:
-                if maxidx is not None and off - 11 + 9 > maxidx:
+                if maxidx is not None and off + 9 > maxidx:
                     return tune
                 l = 1 << v [8]
                 assert 1 <= l <= 2
                 b.add (Tone (dorian [v [9]], l))
                 boff += l
             if boff == 7:
-                if maxidx is not None and off - 11 + 10 > maxidx:
+                if maxidx is not None and off + 10 > maxidx:
                     return tune
                 b.add (Tone (dorian [v [10]], 1))
                 boff += 1
@@ -546,8 +574,110 @@ class Contrapunctus:
         return tune
     # end def phenotype
 
+    def _run_cf_end_check (self, bd, bar = None, b = 0, t = 0):
+        if b >= len (bd.bars):
+            return True
+        cp = bd.tune.voices [-1]
+        for a in bd.seq:
+            if bar is None:
+                nbar = Bar (8, 8)
+            else:
+                nbar = bar.copy ()
+            cp.replace (bd.bar_idx (b), nbar)
+            nbar.add (Tone (dorian [a], bd.tone_idx (b, t)))
+            #print (bd.tune)
+            tsum = sum (bd.tone_idx (b, x) for x in range (t))
+            assert nbar.objects [-1].offset == tsum
+            sidx = cp.bars [bd.bar_idx (0)].idx
+            eidx = cp.bars [bd.bar_idx (b)].idx + 1
+            if eidx == self.cplength and t == bd.tone_idx_len (b) - 1:
+                eidx = self.tunelength
+            assert sidx < eidx
+            #print ('CHECK RANGE %d to %d' % (sidx, eidx))
+            # Beware, sidx is optional and is *last*
+            if not self.run_cp_checks (bd.tune, eidx, sidx):
+                #print ('\n'.join (self.explanation))
+                continue
+            n_t = t + 1
+            n_b = b
+            if n_t >= bd.tone_idx_len (b):
+                n_t   = 0
+                n_b  += 1
+                nbar = None
+            if self._run_cf_end_check (bd, nbar, n_b, n_t):
+                return True
+        return False
+    # end def _run_cf_end_check
+
+    def run_cf_end_checks (self, tune):
+        """ Here we check if for the last 4 bars for the given CF we can
+            find a valid CP.
+            This asumes an empty Contrapunctus voice in tune.
+        """
+        self.explanation = []
+        assert len (tune.voices) == 2
+        assert len (tune.voices [1].bars) == 1
+        assert len (tune.voices [1].bars [0].objects) == 0
+        # Preparation
+        cp = tune.voices [1]
+        for k in range (self.tunelength - 1):
+            b  = Bar (8, 8)
+            cp.add (b)
+        cp.bars [-2].add (Tone (dorian.subsemitonium, 8))
+        cp.bars [-1].add (Tone (dorian [7], 8))
+        off = self.cplength - 1
+        pos = -22 + 1
+        seq = range (self.init [pos][0], self.init [pos][1] + 1)
+
+        bd = Bardata (tune, seq)
+        bd.add_bar (-4, (8,))
+        bd.add_bar (-3, (4, 2, 2))
+        return self._run_cf_end_check (bd)
+    # end def run_cf_end_checks
+
+    def run_cp_checks (self, tune, idx, startidx = None):
+        """ Run Contrapunctus checks
+            Note that if the startidx is given the caller asumes
+            responsibility for start = startidx / end = idx.
+        """
+        self.explanation = []
+        if startidx is None:
+            start = max (idx - 2, 0)
+            end   = idx + 1
+            # Check last two hardcoded bars if at end
+            if idx >= self.cplength - 1:
+                end = self.tunelength
+        else:
+            # Explicit specification of start/end
+            start = startidx
+            end   = idx
+        for c in melody_checks_cp:
+            if hasattr (c, 'reset'):
+                c.reset ()
+            for bcp in tune.voices [1].bars [start:end]:
+                for cp_obj in bcp.objects:
+                    b, u = c.check (cp_obj)
+                    if b or u:
+                        self.explain (c)
+                        return False
+        for c in harmony_checks:
+            if hasattr (c, 'reset'):
+                c.reset ()
+            for bcf, bcp in zip (*(v.bars [start:end] for v in tune.voices)):
+                assert len (bcf.objects) == 1
+                for cp_obj in bcp.objects:
+                    b, u = c.check (bcf.objects [0], cp_obj)
+                    if b or u:
+                        self.explain (c)
+                        return False
+        return True
+    # end def run_cp_checks
+
     def set_init (self):
-        self.cflength   = self.tunelength - 3
+        if self.cantus_firmus is None:
+            self.cflength = self.tunelength - 3
+        else:
+            self.cflength = 0
         self.cplength   = self.tunelength - 2
         init            = []
         # Can't use '[[0, 7]] * cflength' due to aliasing
@@ -568,6 +698,15 @@ class Contrapunctus:
         self.init = init
     # end def set_init
 
+    def verify_cantus_firmus (self):
+        if not self.cantus_firmus:
+            return True
+        tune  = self.phenotype (1, pga.PGA_NEWPOP, 0)
+        if not self.run_cf_end_checks (tune):
+            return False
+        return True
+    # end def verify_cantus_firmus
+
 # end class Contrapunctus
 
 class Contrapunctus_PGA (Contrapunctus, pga.PGA):
@@ -575,6 +714,7 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
     def __init__ (self, cmd, args):
         Contrapunctus.__init__ (self, cmd, args)
         self.prefix_printed = False
+        self.stop_reached   = False
         init = deepcopy (self.init)
         if args.use_de:
             for item in init:
@@ -622,11 +762,16 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
     # end def tunelength
 
     def print_string (self, file, p, pop):
-        if not self.prefix_printed:
+        if not self.prefix_printed or self.stop_reached:
             print (self.as_args (force = True), file = file)
             self.prefix_printed = True
-        print ('Iter: %s Evals: %s' % (self.GA_iter, self.eval_count))
+        evalstr = 'Iter: %s Evals: %s' % (self.GA_iter, self.eval_count)
+        print (evalstr, file = file)
         print (self.as_tune (p, pop), file = file)
+        if self.stop_reached:
+            self.do_explain = True
+            self.evaluate (p, pop)
+            print ('\n'.join (self.explanation), file = file)
         file.flush ()
         super ().print_string (file, p, pop)
     # end def print_string
@@ -635,10 +780,13 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
         best = self.get_best_report_index (pga.PGA_OLDPOP, 0)
         eval = self.get_evaluation (best, pga.PGA_OLDPOP)
         if eval == 1:
+            self.stop_reached = True
             return True
         if self.eval_count >= self.args.max_evals:
+            self.stop_reached = True
             return True
-        return self.check_stopping_conditions ()
+        self.stop_reached = self.check_stopping_conditions ()
+        return self.stop_reached
     # end def stop_cond
 
 # end class Contrapunctus_PGA
@@ -741,10 +889,22 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
     # end def randrange
 
     def run (self):
-        result = self.find_cantus_firmus (0)
-        assert result
+        if not self.cantus_firmus:
+            result = self.find_cantus_firmus (0)
+            if not result:
+                print ('No Cantus Firmus found')
+                return
+        else:
+            if not self.verify_cantus_firmus ():
+                print ('No valid Contrapunctus for this Cantus Firmus')
+                return
         result = self.find_contrapunctus (0, 0)
-        assert result
+        if not result:
+            # This should never be reached unless we have rules or a CF
+            # that make it fail early. Otherwise the user will interrupt
+            # before we ever get here :-)
+            print ('No Contrapunctus found')
+            return
         r = []
         if self.args.output_file:
             with open (self.args.output_file, 'w') as f:
@@ -752,67 +912,6 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
         else:
             print (self.as_complete_tune (force = True))
     # end def run
-
-    def _run_cf_end_check (self, bd, bar = None, b = 0, t = 0):
-        if b >= len (bd.bars):
-            return True
-        cp = bd.tune.voices [-1]
-        for a in bd.seq:
-            if bar is None:
-                nbar = Bar (8, 8)
-            else:
-                nbar = bar.copy ()
-            cp.replace (bd.bar_idx (b), nbar)
-            nbar.add (Tone (dorian [a], bd.tone_idx (b, t)))
-            #print (bd.tune)
-            tsum = sum (bd.tone_idx (b, x) for x in range (t))
-            assert nbar.objects [-1].offset == tsum
-            sidx = cp.bars [bd.bar_idx (0)].idx
-            eidx = cp.bars [bd.bar_idx (b)].idx + 1
-            if eidx == self.cplength and t == bd.tone_idx_len (b) - 1:
-                eidx = self.tunelength
-            assert sidx < eidx
-            #print ('CHECK RANGE %d to %d' % (sidx, eidx))
-            # Beware, sidx is optional and is *last*
-            if not self.run_cp_checks (bd.tune, eidx, sidx):
-                #print ('\n'.join (self.explanation))
-                continue
-            n_t = t + 1
-            n_b = b
-            if n_t >= bd.tone_idx_len (b):
-                n_t   = 0
-                n_b  += 1
-                nbar = None
-            if self._run_cf_end_check (bd, nbar, n_b, n_t):
-                return True
-        return False
-    # end def _run_cf_end_check
-
-    def run_cf_end_checks (self, tune):
-        """ Here we check if for the last 4 bars for the given CF we can
-            find a valid CP.
-            This asumes an empty Contrapunctus voice in tune.
-        """
-        self.explanation = []
-        assert len (tune.voices) == 2
-        assert len (tune.voices [1].bars) == 1
-        assert len (tune.voices [1].bars [0].objects) == 0
-        # Preparation
-        cp = tune.voices [1]
-        for k in range (self.tunelength - 1):
-            b  = Bar (8, 8)
-            cp.add (b)
-        cp.bars [-2].add (Tone (dorian.subsemitonium, 8))
-        cp.bars [-1].add (Tone (dorian [7], 8))
-        off = self.cplength - 1
-        pos = -22 + 1
-        seq = range (self.init [pos][0], self.init [pos][1] + 1)
-
-        bd = Bardata (tune, seq)
-        bd.add_bar (-4, (8,))
-        bd.add_bar (-3, (4, 2, 2))
-        return self._run_cf_end_check (bd)
-    # end def run_cf_end_checks
 
     def run_cf_checks (self, tune, idx):
         self.explanation = []
@@ -835,44 +934,6 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
         return True
     # end def run_cf_checks
 
-    def run_cp_checks (self, tune, idx, startidx = None):
-        """ Run Contrapunctus checks
-            Note that if the startidx is given the caller asumes
-            responsibility for start = startidx / end = idx.
-        """
-        self.explanation = []
-        if startidx is None:
-            start = max (idx - 2, 0)
-            end   = idx + 1
-            # Check last two hardcoded bars if at end
-            if idx >= self.cplength - 1:
-                end = self.tunelength
-        else:
-            # Explicit specification of start/end
-            start = startidx
-            end   = idx
-        for c in melody_checks_cp:
-            if hasattr (c, 'reset'):
-                c.reset ()
-            for bcp in tune.voices [1].bars [start:end]:
-                for cp_obj in bcp.objects:
-                    b, u = c.check (cp_obj)
-                    if b or u:
-                        self.explain (c)
-                        return False
-        for c in harmony_checks:
-            if hasattr (c, 'reset'):
-                c.reset ()
-            for bcf, bcp in zip (*(v.bars [start:end] for v in tune.voices)):
-                assert len (bcf.objects) == 1
-                for cp_obj in bcp.objects:
-                    b, u = c.check (bcf.objects [0], cp_obj)
-                    if b or u:
-                        self.explain (c)
-                        return False
-        return True
-    # end def run_cp_checks
-
 # end class Contrapunctus_Depth_First
 
 def contrapunctus_cmd (argv = None):
@@ -881,6 +942,11 @@ def contrapunctus_cmd (argv = None):
         ( "-b", "--best-eval"
         , help    = "Asume a search trace for -g option and output best"
         , action  = 'store_true'
+        )
+    cmd.add_argument \
+        ( "-c", "--cantus-firmus"
+        , help    = "Read Cantus Firmus from file, '-' reads from standard"
+                    " input, '+' reads from gene file given with -g"
         )
     cmd.add_argument \
         ( "-d", "--use-differential-evolution", "--use-de"
@@ -979,24 +1045,51 @@ def contrapunctus_cmd (argv = None):
 # end def contrapunctus_cmd
 
 def main (argv = None):
+    """ Document some common error cases here and test them
+    >>> args = ['--de-variant', 'unknown']
+    >>> r = main (args)
+    Invalid --de-variant, use one of best, rand, either-or
+    >>> r
+    1
+    >>> args = ['-c+']
+    >>> r = main (args)
+    --cantus-firmus=+ needs --gene-file option
+    >>> r
+    1
+    """
     de_variants = ['best', 'rand', 'either-or']
     cmd  = contrapunctus_cmd ()
     args = cmd.parse_args (argv)
+    if args.cantus_firmus == '+' and not args.gene_file:
+        print ('--cantus-firmus=+ needs --gene-file option')
+        return 1
     if args.de_variant not in de_variants:
         print ('Invalid --de-variant, use one of %s' % ', '.join (de_variants))
-        return
+        return 1
     if args.gene_file or args.optimize_depth_first:
         cp = Contrapunctus_Depth_First (cmd, args)
         if args.gene_file:
             cp.from_gene ()
             txt = cp.as_complete_tune ()
-            print (txt)
+            if args.output_file:
+                with open (args.output_file, 'w') as f:
+                    print (txt, file = f)
+            else:
+                print (txt)
         else:
             cp.run ()
     else:
         cp = Contrapunctus_PGA (cmd, args)
+        if not cp.verify_cantus_firmus ():
+            errmsg = 'No valid Contrapunctus for this Cantus Firmus'
+            if args.output_file:
+                with open (args.output_file, 'w') as f:
+                    print (errmsg, file = f)
+            else:
+                print (errmsg)
+            return 1
         cp.run ()
 # end def main
 
 if __name__ == '__main__':
-    main (sys.argv [1:])
+    main (sys.argv [1:]) # pragma: no cover

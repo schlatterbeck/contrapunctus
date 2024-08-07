@@ -32,6 +32,7 @@ from pga.testsupport import PGA_Test_Instrumentation
 from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 from contrapunctus.tune import Key
 from contrapunctus.checks import *
+from contrapunctus.gentune import main as gentune_main
 
 tune_output = """
 X: 1
@@ -62,7 +63,11 @@ tune_transposed  = tune_output.replace ('K: Gm', 'K: F#m')
 tune_output     += '\n' + tune_voices
 tune_transposed += '\n' + transposed_voices
 
-class Test_Contrapunctus (PGA_Test_Instrumentation):
+# Explicit decorator for long-running tests, but all tests in
+# Test_Contrapunctus_Slow are automagically skipped if longrun is not set
+# @pytest.mark.slow
+
+class Test_Contrapunctus:
 
     abcheader = \
         ( "X: 1\nM: 4/4\nQ: 1/4=200\n"
@@ -162,15 +167,11 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
     # end def build_tune
 
     def test_tune (self):
-        if pytest.mpi_rank != 0:
-            return
         tune = self.build_tune ()
         assert tune.as_abc ().strip () == tune_output
     # end def test_tune
 
     def test_transpose_tune (self):
-        if pytest.mpi_rank != 0:
-            return
         tune = self.build_tune ()
         # Transpose by a half tone down
         tune = tune.transpose (-1)
@@ -852,7 +853,90 @@ class Test_Contrapunctus (PGA_Test_Instrumentation):
         assert len (abc.split ('\n')) > 100
     # end def test_guess_tune_length
 
+    def test_invalid_cf (self):
+        """ Specify a CF file for searching, the test should reveal that
+            the CF file is invalid (not Contrapunctus can be found)
+        """
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v', '-c' 'test/invalid-cf.abc'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        res  = cp.verify_cantus_firmus ()
+        assert not res
+    # end def test_invalid_cf
+
+    def test_cf_no_voice (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v', '-c' 'test/nocf.abc'])
+        with pytest.raises (ValueError):
+            cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+    # end def test_cf_no_voice
+
+    def test_parse_abc_with_no_voicename (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        with open ('test/df-no-name.abc') as f:
+            tune = Tune.from_iterator (f)
+    # end def test_parse_abc_with_no_voicename
+
 # end class Test_Contrapunctus
+
+class Test_Contrapunctus_IO (PGA_Test_Instrumentation):
+
+    def test_depth_first (self):
+        args = self.out_options + ['-v', '-v', '--df']
+        gentune_main (args)
+        self.compare ()
+    # end def test_depth_first
+
+    def test_depth_first_with_cantus (self):
+        args = self.out_options + ['-v', '-v', '--df', '-c', 'test/de-1.abc']
+        gentune_main (args)
+        self.compare ()
+    # end def test_depth_first_with_cantus
+
+    def test_gene_roundtrip (self):
+        args = self.out_options + ['-v', '-v', '-g', self.data_name]
+        gentune_main (args)
+        self.compare ()
+    # end def test_gene_roundtrip
+
+    def test_ga_invalid_cf (self):
+        args = self.out_options + ['-c', 'test/invalid-cf.abc']
+        gentune_main (args)
+        self.compare ()
+    # end def test_ga_invalid_cf
+
+# end class Test_Contrapunctus_IO
+
+@pytest.mark.slow
+class Test_Contrapunctus_Slow (PGA_Test_Instrumentation):
+
+    def test_search_ga (self):
+        args = self.out_options
+        gentune_main (args)
+        self.compare ()
+    # end def test_search_ga
+
+    def test_search_ga_cf (self):
+        args = self.out_options + ['-c', 'test/de-1.abc']
+        gentune_main (args)
+        self.compare ()
+    # end def test_search_ga_cf
+
+    def test_search_de (self):
+        args = self.out_options + ['-R', '9', '--use-de']
+        gentune_main (args)
+        self.compare ()
+    # end def test_search_de
+
+    def test_search_de_cf (self):
+        args = self.out_options + ['--use-de', '-c', 'test/de-1.abc']
+        gentune_main (args)
+        self.compare ()
+    # end def test_search_de_cf
+
+# end class Test_Contrapunctus_Slow
 
 class Test_Doctest:
 
@@ -860,9 +944,9 @@ class Test_Doctest:
 
     num_tests = dict \
         ( circle    =  2
-        , gentune   =  0
+        , gentune   =  6
         , gregorian = 10
-        , tune      = 103
+        , tune      = 104
         )
 
     def test_doctest (self):

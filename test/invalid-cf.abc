@@ -1,0 +1,8 @@
+X: 1
+M: 4/4
+Q: 1/4=200
+%%score (CantusFirmus)
+L: 1/8
+V:CantusFirmus name="Cantus Firmus"
+K: DDor
+[V:CantusFirmus] D8 |E8 |G8 |F8 |G8 |E8 |F8 |E8 |D8 |C8 |E8 |D8 |
