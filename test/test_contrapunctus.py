@@ -926,6 +926,12 @@ class Test_Contrapunctus_IO (PGA_Test_Instrumentation):
         self.compare ()
     # end def test_ga_invalid_cf
 
+    def test_df_invalid_cf (self):
+        args = self.out_options + ['-c', 'test/invalid-cf.abc', '--df']
+        gentune_main (args)
+        self.compare ()
+    # end def test_df_invalid_cf
+
 # end class Test_Contrapunctus_IO
 
 @pytest.mark.slow

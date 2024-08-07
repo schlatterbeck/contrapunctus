@@ -920,7 +920,10 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
     def run (self):
         if not self.cantus_firmus:
             result = self.find_cantus_firmus (0)
-            if not result:
+            # This should not happen: It is only possible if the rules
+            # forbid enough so that we cannot find a CF, and this may
+            # take *ages*.
+            if not result: # pragma no cover
                 with Outfile (self.args.output_file) as f:
                     print ('No Cantus Firmus found', file = f)
                 return
