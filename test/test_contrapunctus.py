@@ -883,36 +883,33 @@ class Test_Contrapunctus:
 
 # These can fail if all process perform I/O to same file
 # Looks like pytest.mpi_rank is only available *inside* the test method
-#@pytest.mark.skipif (pytest.mpi_rank != 0)
 class Test_Contrapunctus_IO (PGA_Test_Instrumentation):
 
-    def test_depth_first (self):
+    @pytest.fixture (autouse = True)
+    def skip_if_rank_nonzero (self, request):
         if pytest.mpi_rank != 0:
-            return
+            pytest.skip ('Skipping because mpi_rank=%s' % pytest.mpi_rank)
+    # end def skip_if_rank_nonzero
+
+    def test_depth_first (self):
         args = self.out_options + ['-v', '-v', '--df']
         gentune_main (args)
         self.compare ()
     # end def test_depth_first
 
     def test_depth_first_with_cantus (self):
-        if pytest.mpi_rank != 0:
-            return
         args = self.out_options + ['-v', '-v', '--df', '-c', 'test/de-1.abc']
         gentune_main (args)
         self.compare ()
     # end def test_depth_first_with_cantus
 
     def test_gene_roundtrip (self):
-        if pytest.mpi_rank != 0:
-            return
         args = self.out_options + ['-v', '-v', '-g', self.data_name]
         gentune_main (args)
         self.compare ()
     # end def test_gene_roundtrip
 
     def test_ga_invalid_cf (self):
-        if pytest.mpi_rank != 0:
-            return
         args = self.out_options + ['-c', 'test/invalid-cf.abc']
         gentune_main (args)
         self.compare ()
