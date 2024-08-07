@@ -32,6 +32,38 @@ from   copy       import deepcopy
 # Backwards compatibility:
 from   rsclib.iter_recipes import batched
 
+class File_Handler:
+    def __init__ (self, filename):
+        self.filename = filename
+    # end def __init__
+
+    def __exit__ (self, exc_type, exc_val, exc_tb):
+        if self.filename:
+            self.f.close ()
+    # end def __exit__
+# end def File_Handler
+
+class Outfile (File_Handler):
+    def __enter__ (self):
+        if self.filename:
+            self.f = open (self.filename, 'w')
+        else:
+            self.f = sys.stdout
+        return self.f
+    # end def __enter__
+# end class Outfile
+
+class Infile (File_Handler):
+    def __enter__ (self):
+        if self.filename and self.filename != '-':
+            self.f = open (self.filename)
+        else:
+            self.f = sys.stdin
+            self.filename = None
+        return self.f
+    # end def __enter__
+# end class Infile
+
 class Fake_PGA:
     """ This just has a single gene copy and emulates the allele
         accessor methods.
@@ -144,11 +176,8 @@ class Contrapunctus:
                 args.verbose = 2
         if args.cantus_firmus:
             assert args.cantus_firmus != '+'
-            if args.cantus_firmus == '-':
-                self.tune = Tune.from_iterator (sys.stdin)
-            else:
-                with open (args.cantus_firmus) as f:
-                    self.tune = Tune.from_iterator (f)
+            with Infile (args.cantus_firmus) as f:
+                self.tune = Tune.from_iterator (f)
             # Now set the option to '+' so that next time we read from abc file
             args.cantus_firmus = '+'
             for v in self.tune.voices:
@@ -451,11 +480,8 @@ class Contrapunctus:
     # end def _from_gene
 
     def from_gene (self):
-        if self.args.gene_file == '-':
-            self._from_gene (sys.stdin)
-        else:
-            with open (self.args.gene_file, 'r') as f:
-                self._from_gene (f)
+        with Infile (self.args.gene_file) as f:
+            self._from_gene (f)
     # end def from_gene
 
     def phenotype (self, p, pop, maxidx = None):
@@ -906,11 +932,8 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
             print ('No Contrapunctus found')
             return
         r = []
-        if self.args.output_file:
-            with open (self.args.output_file, 'w') as f:
-                print (self.as_complete_tune (force = True), file = f)
-        else:
-            print (self.as_complete_tune (force = True))
+        with Outfile (self.args.output_file) as f:
+            print (self.as_complete_tune (force = True), file = f)
     # end def run
 
     def run_cf_checks (self, tune, idx):
@@ -1070,23 +1093,16 @@ def main (argv = None):
         cp = Contrapunctus_Depth_First (cmd, args)
         if args.gene_file:
             cp.from_gene ()
-            txt = cp.as_complete_tune ()
-            if args.output_file:
-                with open (args.output_file, 'w') as f:
-                    print (txt, file = f)
-            else:
-                print (txt)
+            with Outfile (args.output_file) as f:
+                print (cp.as_complete_tune (), file = f)
         else:
             cp.run ()
     else:
         cp = Contrapunctus_PGA (cmd, args)
         if not cp.verify_cantus_firmus ():
             errmsg = 'No valid Contrapunctus for this Cantus Firmus'
-            if args.output_file:
-                with open (args.output_file, 'w') as f:
-                    print (errmsg, file = f)
-            else:
-                print (errmsg)
+            with Outfile (args.output_file) as f:
+                print (errmsg, file = f)
             return 1
         cp.run ()
 # end def main
