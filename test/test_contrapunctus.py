@@ -879,6 +879,17 @@ class Test_Contrapunctus:
             tune = Tune.from_iterator (f)
     # end def test_parse_abc_with_no_voicename
 
+    def test_multi_parse_gene (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        cnt  = 0
+        with open ('test/example.log') as f:
+            for k in cp.from_gene_lines (f):
+                cnt += 1
+        assert cnt == 4
+    # end def test_multi_parse_gene
+
 # end class Test_Contrapunctus
 
 # These can fail if all process perform I/O to same file

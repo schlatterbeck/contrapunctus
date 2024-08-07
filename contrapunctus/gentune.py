@@ -206,7 +206,7 @@ class Contrapunctus:
 
     def args_from_gene (self, iter):
         argv = []
-        for line in iter:
+        for n, line in enumerate (iter):
             line = line.strip ()
             line = line.split ('%') [-1]
             if not line:
@@ -216,6 +216,7 @@ class Contrapunctus:
         # Set tune length accordingly
         if self.orig_args.tune_length == self.args.tune_length:
             self.tunelength = self.orig_args.tune_length
+        return n
     # end def args_from_gene
 
     def as_args (self, prefix = None, force = False):
@@ -419,15 +420,14 @@ class Contrapunctus:
         if self.args.best_eval:
             for n, line in enumerate (iter):
                 if ('Command-line options:' in line):
-                    self.args_from_gene (iter)
+                    c += self.args_from_gene (iter)
                     continue
                 if line.startswith ('The Best String:'):
-                    c = n
+                    c += n
                     break
-        started = False
         for n, line in enumerate (iter):
             if ('Command-line options:' in line):
-                self.args_from_gene (iter)
+                c += self.args_from_gene (iter)
                 continue
             ln = n + 1 + c
             start = '#', '%#', 'Text: #'
@@ -435,10 +435,10 @@ class Contrapunctus:
                 if line.startswith (s):
                     break
             else:
-                if not started:
-                    continue
-                else:
+                if idx > 0:
                     yield idx
+                idx = 0
+                continue
             i, l = line.split ('#', 1)[-1].split (':')
             i = int (i)
             if i != idx:

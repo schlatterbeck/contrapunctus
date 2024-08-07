@@ -44,7 +44,6 @@ Tests
 -----
 
 - roundtrip tune with --cantus-firmus
-- yield multiple genes with -g option (not just the best with -b)
 - test transpose
 - read abc with multiple information fields with the same key
 - add a test that falls back to the meter ('M') field in case the 'L'
