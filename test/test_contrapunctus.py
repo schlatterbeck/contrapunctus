@@ -32,6 +32,7 @@ from pga.testsupport import PGA_Test_Instrumentation
 from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 from contrapunctus.tune import Key
 from contrapunctus.checks import *
+from contrapunctus.checks import Check_Harmony
 from contrapunctus.gentune import main as gentune_main
 
 tune_output = """
@@ -918,6 +919,27 @@ class Test_Contrapunctus:
                 cnt += 1
         assert cnt == 4
     # end def test_multi_parse_gene
+
+    def test_cf_iter (self):
+        k    = Key.get ('D')
+        v_cf = Voice ('cf')
+        v_cp = Voice ('cp')
+        b_cf = Bar.from_string (k, 8, 'A2 ^F2 ^F4')
+        v_cf.add (b_cf)
+        v_cf.add (Bar.from_string (k, 8, 'G2 E2 E4'))
+        v_cf.add (Bar.from_string (k, 8, 'D2 ^F2 A2 A2'))
+        v_cf.add (Bar.from_string (k, 8, 'D8'))
+        b_cp = Bar.from_string (k, 8, 'D8')
+        v_cp.add (b_cp)
+        v_cp.add (Bar (8))
+        v_cp.add (Bar (8))
+        v_cp.add (Bar (8))
+        check = Check_Harmony ('test', 1, 1)
+        check.cp_obj = b_cp.objects [0]
+        check.cf_obj = b_cf.objects [0]
+        l = list (check.cf_iter ())
+        assert len (l) == 3
+    # end def test_cf_iter
 
 # end class Test_Contrapunctus
 

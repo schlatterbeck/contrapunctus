@@ -845,6 +845,10 @@ class Bardata:
         self.bars = []
     # end def __init__
 
+    def __str__ (self):
+        return 'Bardata: %s' % str (self.bars)
+    # end def __str
+
     def add_bar (self, bar_idx, tone_lengths):
         self.bars.append ((bar_idx, tone_lengths))
     # end def add_bar

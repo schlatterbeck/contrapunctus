@@ -210,12 +210,15 @@ class Check_Harmony (Check):
             bar objects in parallel to the given cp_obj (in the CP).
         """
         assert self.cp_obj is not None
+        bidx   = self.cp_obj.bar.idx
+        eoff   = self.cp_obj.offset + self.cp_obj.duration
         cf_obj = self.cf_obj.bar.get_by_offset (self.cp_obj)
-        yield cf_obj
-        while cf_obj and cf_obj.duration < self.cp_obj.duration:
-            cf_obj = cf_obj.next
-            if cf_obj:
+        while True:
+            if cf_obj and cf_obj.bar.idx == bidx and cf_obj.offset < eoff:
                 yield cf_obj
+                cf_obj = cf_obj.next
+                continue
+            break
     # end def cf_iter
 
 # end class Check_Harmony
