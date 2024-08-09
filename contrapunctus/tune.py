@@ -1032,7 +1032,7 @@ class Voice:
 
     def as_abc (self):
         r = []
-        if id:
+        if self.id:
             r.append ("[V:%s] " % self.id)
         for bar in self.bars:
             r.append (bar.as_abc ())

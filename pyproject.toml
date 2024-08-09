@@ -64,6 +64,7 @@ classifiers     = [
 
 [project.scripts]
 contrapunctus    = "contrapunctus.gentune:main"
+transpose        = "contrapunctus.gentune:transpose_tune"
 
 [tool.setuptools.dynamic]
 version = {file = "VERSION"}

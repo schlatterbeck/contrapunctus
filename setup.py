@@ -73,7 +73,9 @@ setup \
     , python_requires  = '>=3.10'
     , entry_points     = dict
         ( console_scripts =
-            ['contrapunctus=contrapunctus.gentune:main']
+            [ 'contrapunctus=contrapunctus.gentune:main'
+            , 'transpose=contrapunctus.gentune:transpose_tune'
+            ]
         )
     , long_description_content_type = 'text/x-rst'
     , long_description = ''.join (description)

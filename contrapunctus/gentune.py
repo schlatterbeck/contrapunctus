@@ -1145,5 +1145,23 @@ def main (argv = None):
         cp.run ()
 # end def main
 
+def transpose_tune (argv = None):
+    cmd = ArgumentParser ()
+    cmd.add_argument \
+        ( 'filename'
+        , nargs = 1
+        )
+    cmd.add_argument \
+        ( "-t", "--transpose"
+        , help    = "Number of halftones to transpose resulting tune"
+        , type    = int
+        , default = 0
+        )
+    args = cmd.parse_args ()
+    tune = Tune.from_file (args.filename [0])
+    tune = tune.transpose (args.transpose)
+    print (tune.as_abc ())
+# end def transpose_tune
+
 if __name__ == '__main__':
     main (sys.argv [1:]) # pragma: no cover
