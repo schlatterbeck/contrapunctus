@@ -21,6 +21,7 @@ NOTES=notes
 VERSIONPY=$(PROJECT)/Version.py
 VERSIONTXT=VERSION
 VERSION=$(VERSIONPY) $(VERSIONTXT)
+CONTRAPUNCTUS=python3 -m contrapunctus.gentune
 
 all: $(VERSIONPY)
 
@@ -32,6 +33,9 @@ all: $(VERSIONPY)
 
 %.mid: %.abc
 	abc2midi $< -o $@
+
+%.abc: %.log
+	$(CONTRAPUNCTUS) -vv -b -g $< > $@
 
 clean:
 	rm -f MANIFEST Version.py README.html VERSION

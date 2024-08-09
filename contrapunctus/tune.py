@@ -503,7 +503,8 @@ class Bar_Object:
 
     def __init__ (self, duration):
         super ().__init__ ()
-        self.duration = duration
+        assert duration == int (duration)
+        self.duration = int (duration)
         # offset in Bar (parent), filled when inserting into Bar
         self.offset   = None
         # Index into Bar (parent)
@@ -570,7 +571,7 @@ class Bar_Object:
         return self.__class__ (self.duration)
     # end def copy
 
-    def length (self, unit = None):
+    def length (self):
         assert isinstance (self.duration, int)
         return self.duration
     # end def length
@@ -600,11 +601,17 @@ class Tone (Bar_Object):
 
     @classmethod
     def from_string (cls, accidentals, s):
+        assert s
+        n = None
         for n, x in enumerate (reversed (s)):
             if not x.isdigit ():
                 break
-        dur = int (s [-n:])
-        ht  = s [:-n]
+        if n:
+            dur = int (s [-n:])
+            ht  = s [:-n]
+        else:
+            dur = 1
+            ht  = s
         if ht.startswith ('^') or ht.startswith ('_'):
             ht = halftone (ht)
         else:
@@ -865,7 +872,23 @@ class Bar:
     def from_string (cls, key, unit, s):
         bar = cls (unit, unit)
         for t in s.strip ().split ():
-            bar.add (Bar_Object.from_string (key.accidentals, t))
+            while t:
+                tone = []
+                if t [0] in '^_=':
+                    tone.append (t [0])
+                    t = t [1:]
+                if t [0].lower () in 'cdefgabcz':
+                    tone.append (t [0])
+                    t = t [1:]
+                while t and t [0] in ",'":
+                    tone.append (t [0])
+                    t = t [1:]
+                while t and t [0].isdigit ():
+                    tone.append (t [0])
+                    t = t [1:]
+                tone = ''.join (tone)
+                assert tone
+                bar.add (Bar_Object.from_string (key.accidentals, tone))
         return bar
     # end def from_string
 
@@ -912,6 +935,34 @@ class Bar:
         r.append ('|')
         return ' '.join (r)
     # end def as_abc
+
+    def change_unit (self, unit, dry_run = False):
+        """ Change unit of this bar
+            Of course this needs to be done in the Tune, too.
+        """
+        if self.unit == unit:
+            return
+        factor  = Rational (unit) / self.unit
+        newunit = factor * self.unit
+        newdur  = factor * self.duration
+        if newunit != int (newunit) or newdur != int (newdur):
+            raise ValueError \
+                ( 'Cannot set unit, duration to %s, %s for %s'
+                % (newunit, newdur, self)
+                )
+        newunit = int (newunit)
+        newdur  = int (newdur)
+        for bo in self.objects:
+            newlen = factor * len (bo)
+            if newlen < 1:
+                raise ValueError \
+                    ('Cannot set length to %s for %s' % (newlen, bo))
+            if not dry_run:
+                bo.duration = newlen
+        if not dry_run:
+            self.unit     = newunit
+            self.duration = newdur
+    # end def change_unit
 
     def copy (self):
         other = self.__class__ (self.duration, self.unit)
@@ -1055,7 +1106,7 @@ class Tune:
         self.title   = title
         self.number  = number
         self.kw      = kw
-        self.unit    = unit or Rational (8)
+        self._unit   = unit or Rational (8)
         self.comment = comment or []
     # end def __init__
 
@@ -1068,6 +1119,8 @@ class Tune:
         barlen = None
         for line in iter:
             line = line.strip ()
+            if not line:
+                continue
             if line.startswith ('%%'):
                 k, v = (line.lstrip ('%').split (None, 1))
                 kw [k] = v
@@ -1075,31 +1128,47 @@ class Tune:
                 if 'comment' not in kw:
                     kw ['comment'] = []
                 kw ['comment'].append (line [1:])
-            elif line.startswith ('['):
+            elif line.startswith ('[') or ':' not in line:
                 if 'unit' not in kw:
                     if 'meter' in kw:
                         kw ['unit'] = kw ['meter'].beats
                     else:
                         raise ValueError ('No unit note length')
                 unit = kw ['unit']
-                vinfo, rest = line.split (None, 1)
+                if line.startswith ('['):
+                    vinfo, rest = line.split (None, 1)
+                else:
+                    vinfo = None
+                    rest  = line
                 if not rest.endswith ('|'):
                     raise NotImplementedError \
                         ('Incomplete bar in "%s" % line') # pragma: no cover
                 # Strip bar for later split
                 rest = rest [:-1]
-                if not vinfo.endswith (']'):
-                    raise ValueError ('Invalid voice format: "%s"' % vinfo) \
-                    # pragma: no cover
-                vinfo = vinfo [1:-1]
-                a, b = vinfo.split (':', 1)
-                if a != 'V':
-                    raise NotImplementedError \
-                        ('Unknown voice format "%s in "%s"' % (a, line)) \
-                        # pragma: no cover
-                if b not in voices: # pragma: no cover
-                    print ('Warning: Undeclared voice "%s"' % b)
-                    voices [b] = Voice (b)
+                # We support either the voice format with a declaration
+                # of voices (using info field V) and then each line
+                # prefixed with a voice in angular brackets, or a
+                # *single* voice without a prior declaration.
+                if vinfo:
+                    if not vinfo.endswith (']'):
+                        raise ValueError \
+                            ('Invalid voice format: "%s"' % vinfo) \
+                            # pragma: no cover
+                    vinfo = vinfo [1:-1]
+                    a, b = vinfo.split (':', 1)
+                    if a != 'V':
+                        raise NotImplementedError \
+                            ('Unknown voice format "%s in "%s"' % (a, line)) \
+                            # pragma: no cover
+                    if b not in voices: # pragma: no cover
+                        print ('Warning: Undeclared voice "%s"' % b)
+                        voices [b] = Voice (b)
+                else:
+                    b = None
+                    if not voices:
+                        voices [None] = Voice ()
+                    else:
+                        assert len (voices) == 1 and list (voices) [0] is None
                 voice = voices [b]
                 key   = kw.get ('key')
                 if not key:
@@ -1164,6 +1233,34 @@ class Tune:
         return tune
     # end def from_iterator
 
+    @classmethod
+    def from_file (cls, fn):
+        with open (fn, 'r') as f:
+            return cls.from_iterator (f)
+    # end def from_file
+
+    @property
+    def unit (self):
+        return self._unit
+    # end def unit
+
+    @unit.setter
+    def unit (self, unit):
+        if unit == self.unit:
+            return
+        if unit != int (unit):
+            raise ValueError ('Invalid unit: %s' % unit)
+        # Do it twice, first with dry_run, first run will raise an
+        # exception if impossible. This ensures that if the change is
+        # impossible the tune is left consistent.
+        for v in self.voices:
+            for b in v.bars:
+                b.change_unit (unit, dry_run = True)
+        for v in self.voices:
+            for b in v.bars:
+                b.change_unit (unit)
+    # end def unit
+
     def __str__ (self):
         return self.as_abc ()
     # end def __str__
@@ -1210,12 +1307,6 @@ class Tune:
             r.append ('%' + c)
         return '\n'.join (r)
     # end def as_abc
-
-    @classmethod
-    def from_file (cls, fn):
-        with open (fn, 'r') as f:
-            return cls.from_iterator (f)
-    # end def from_file
 
     def iter (self, voice_idx):
         for bar in self.voices [voice_idx].bars:

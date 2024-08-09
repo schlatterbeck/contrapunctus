@@ -203,9 +203,14 @@ class Test_Contrapunctus:
     def test_check_harmony_interval_max (self):
         check = Check_Harmony_Interval_Max \
             ('must be up', maximum = 12, badness = 1)
+        b = Bar (8)
         t_cf  = Tone (halftone ('E'), 8)
-        t_cp  = Tone (halftone ('e'), 8)
-        t_cp2 = Tone (halftone ('f'), 8)
+        b.add (t_cf)
+        b = Bar (8)
+        t_cp  = Tone (halftone ('e'), 4)
+        b.add (t_cp)
+        t_cp2 = Tone (halftone ('f'), 4)
+        b.add (t_cp2)
         # This is the normal order of parameters for checks, cf first
         b, u = check.check (t_cf, t_cp)
         assert b == 0
@@ -216,8 +221,12 @@ class Test_Contrapunctus:
     def test_check_harmony_interval_min (self):
         check = Check_Harmony_Interval_Min \
             ('must be up', minimum = 0, badness = 1)
+        b = Bar (8)
         t_cp = Tone (halftone ('e'), 8)
+        b.add (t_cp)
+        b = Bar (8)
         t_cf = Tone (halftone ('f'), 8)
+        b.add (t_cf)
         # This is the normal order of parameters for checks, cf first
         b, u = check.check (t_cf, t_cp)
         assert b == 1
@@ -234,29 +243,45 @@ class Test_Contrapunctus:
             , badness  = 1
             , octave   = True
             )
+        b = Bar (8)
         t_cp = Tone (halftone ('e'), 8)
+        b.add (t_cp)
+        b = Bar (8)
         t_cf = Tone (halftone ('f'), 8)
+        b.add (t_cf)
         b, u = check.check (t_cf, t_cp)
         assert b == 1
         b, u = check.check (t_cp, t_cf)
         assert b == 1
 
+        b = Bar (8)
         t_cp = Tone (halftone ('c'), 8)
+        b.add (t_cp)
+        b = Bar (8)
         t_cf = Tone (halftone ('d'), 8)
+        b.add (t_cf)
         b, u = check.check (t_cf, t_cp)
         assert b == 1
         b, u = check.check (t_cp, t_cf)
         assert b == 1
 
+        b = Bar (8)
         t_cp = Tone (halftone ('C'), 8)
+        b.add (t_cp)
+        b = Bar (8)
         t_cf = Tone (halftone ('d'), 8)
+        b.add (t_cf)
         b, u = check.check (t_cf, t_cp)
         assert b == 1
         b, u = check.check (t_cp, t_cf)
         assert b == 1
 
+        b = Bar (8)
         t_cp = Tone (halftone ('c'), 8)
+        b.add (t_cp)
+        b = Bar (8)
         t_cf = Tone (halftone ('e'), 8)
+        b.add (t_cf)
         b, u = check.check (t_cf, t_cp)
         assert b == 0
         b, u = check.check (t_cp, t_cf)
@@ -271,8 +296,12 @@ class Test_Contrapunctus:
             , octave   = False
             , signed   = True
             )
+        b = Bar (8)
         t_cf = Tone (halftone ('e'), 8)
+        b.add (t_cf)
+        b = Bar (8)
         t_cp = Tone (halftone ('f'), 8)
+        b.add (t_cp)
         b, u = check.check (t_cf, t_cp)
         assert b == 1
         b, u = check.check (t_cp, t_cf)

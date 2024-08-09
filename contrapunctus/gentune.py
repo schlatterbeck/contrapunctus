@@ -178,14 +178,24 @@ class Contrapunctus:
             assert args.cantus_firmus != '+'
             with Infile (args.cantus_firmus) as f:
                 self.tune = Tune.from_iterator (f)
+            # Convert unit if necessary
+            if self.tune.unit != 8:
+                self.tune.unit = 8
             # Now set the option to '+' so that next time we read from abc file
             args.cantus_firmus = '+'
-            for v in self.tune.voices:
-                if v.id == 'CantusFirmus':
-                    self.cantus_firmus = v
-                    break
+            if len (self.tune.voices) == 1:
+                self.cantus_firmus = self.tune.voices [0]
+            else:
+                for v in self.tune.voices:
+                    if v.id == 'CantusFirmus':
+                        self.cantus_firmus = v
+                        break
                 else:
                     raise ValueError ('No CantusFirmus voice found')
+            if not getattr (self.cantus_firmus, 'id', None):
+                self.cantus_firmus.id = 'CantusFirmus'
+            if not getattr (self.cantus_firmus, 'name', None):
+                self.cantus_firmus.name = 'Cantus Firmus'
             self.tunelength = len (self.cantus_firmus.bars)
         if not getattr (self, 'init', None):
             self.set_init ()
@@ -365,11 +375,12 @@ class Contrapunctus:
             assert len (cf.objects) == 1
 
             for check in melody_checks_cf:
-                b, u = check.check (cf_obj)
-                if b:
-                    badness *= b
-                ugliness += u
-                self.explain (check)
+                for obj in cf.objects:
+                    b, u = check.check (obj)
+                    if b:
+                        badness *= b
+                    ugliness += u
+                    self.explain (check)
             bsum = usum = 0
             for cp_obj in cp.objects:
                 for check in melody_checks_cp:
@@ -613,7 +624,6 @@ class Contrapunctus:
                 nbar = bar.copy ()
             cp.replace (bd.bar_idx (b), nbar)
             nbar.add (Tone (dorian [a], bd.tone_idx (b, t)))
-            #print (bd.tune)
             tsum = sum (bd.tone_idx (b, x) for x in range (t))
             assert nbar.objects [-1].offset == tsum
             sidx = cp.bars [bd.bar_idx (0)].idx
@@ -624,7 +634,10 @@ class Contrapunctus:
             #print ('CHECK RANGE %d to %d' % (sidx, eidx))
             # Beware, sidx is optional and is *last*
             if not self.run_cp_checks (bd.tune, eidx, sidx):
-                #print ('\n'.join (self.explanation))
+                if self.explanation:
+                    print ('\n'.join (self.explanation))
+                    for v in bd.tune.voices:
+                        print (v.as_abc ())
                 continue
             n_t = t + 1
             n_b = b
@@ -657,10 +670,14 @@ class Contrapunctus:
         pos = -22 + 1
         seq = range (self.init [pos][0], self.init [pos][1] + 1)
 
-        bd = Bardata (tune, seq)
-        bd.add_bar (-4, (8,))
-        bd.add_bar (-3, (4, 2, 2))
-        return self._run_cf_end_check (bd)
+        if self.args.explain_cp_cf:
+            self.do_explain = True
+        for b in (((8,), (4, 2, 2)), ((8,), (2, 1, 1, 2, 1, 1))):
+            bd = Bardata (tune, seq)
+            bd.add_bar (-4, b [0])
+            bd.add_bar (-3, b [1])
+            if self._run_cf_end_check (bd):
+                return True
     # end def run_cf_end_checks
 
     def run_cp_checks (self, tune, idx, startidx = None):
@@ -685,17 +702,16 @@ class Contrapunctus:
             for bcp in tune.voices [1].bars [start:end]:
                 for cp_obj in bcp.objects:
                     b, u = c.check (cp_obj)
-                    if b or u:
+                    if b or (not self.args.allow_ugliness and u):
                         self.explain (c)
                         return False
         for c in harmony_checks:
             if hasattr (c, 'reset'):
                 c.reset ()
             for bcf, bcp in zip (*(v.bars [start:end] for v in tune.voices)):
-                assert len (bcf.objects) == 1
                 for cp_obj in bcp.objects:
                     b, u = c.check (bcf.objects [0], cp_obj)
-                    if b or u:
+                    if b or (not self.args.allow_ugliness and u):
                         self.explain (c)
                         return False
         return True
@@ -957,11 +973,11 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
             if idx >= self.cflength - 1:
                 end = 3 + self.cflength
             for bar in tune.voices [0].bars [max (idx - 1, 0):end]:
-                assert len (bar.objects) == 1
-                b, u = c.check (bar.objects [0])
-                if b or u:
-                    self.explain (c)
-                    return False
+                for obj in bar.objects:
+                    b, u = c.check (obj)
+                    if b or u:
+                        self.explain (c)
+                        return False
         if idx >= self.cflength - 1:
             return self.run_cf_end_checks (tune)
         return True
@@ -971,6 +987,12 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
 
 def contrapunctus_cmd (argv = None):
     cmd = ArgumentParser ()
+    cmd.add_argument \
+        ( "-a", "--allow-ugliness"
+        , help    = "Allow ugliness with DF search and for given cantus"
+                    " firmus (with --cantus-firmus option)"
+        , action  = 'store_true'
+        )
     cmd.add_argument \
         ( "-b", "--best-eval"
         , help    = "Asume a search trace for -g option and output best"
@@ -1017,6 +1039,12 @@ def contrapunctus_cmd (argv = None):
         , dest    = 'fix_gene'
         , action  = 'store_false'
         , default = True
+        )
+    cmd.add_argument \
+        ( "--explain-cp-cf"
+        , help    = "Explain results when checking if a Contrapunctus"
+                    " exists for a given Cantus Firmus"
+        , action  = 'store_true'
         )
     cmd.add_argument \
         ( "-g", "--gene-file"

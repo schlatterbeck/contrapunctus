@@ -205,6 +205,19 @@ class Check_Harmony (Check):
             )
     # end def compute_description
 
+    def cf_iter (self):
+        """ In the new scheme it can occur that the CF has *several*
+            bar objects in parallel to the given cp_obj (in the CP).
+        """
+        assert self.cp_obj is not None
+        cf_obj = self.cf_obj.bar.get_by_offset (self.cp_obj)
+        yield cf_obj
+        while cf_obj and cf_obj.duration < self.cp_obj.duration:
+            cf_obj = cf_obj.next
+            if cf_obj:
+                yield cf_obj
+    # end def cf_iter
+
 # end class Check_Harmony
 
 class Check_Harmony_Interval (Check_Harmony):
@@ -226,13 +239,22 @@ class Check_Harmony_Interval (Check_Harmony):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
+        # First compute *real* cf_obj: It is only valid if it is the
+        # only object in the bar. We now allow more than one object in a
+        # bar.
+        cf_obj = self.cf_obj = cf_obj.bar.get_by_offset (cp_obj)
+        if cf_obj is None:
+            return False
         if self.not_first and (cf_obj.is_first and cp_obj.is_first):
             return False
-        if self.not_last  and (cf_obj.is_last  and cp_obj.is_last):
-            return False
-        d = self.compute_interval (cf_obj, cp_obj)
-        if d in self.interval:
-            return True
+        self.cp_obj = cp_obj
+        for cf_obj in self.cf_iter ():
+            if self.not_last and (cp_obj.is_last and cf_obj.is_last):
+                continue
+            self.cf_obj = cf_obj
+            d = self.compute_interval (cf_obj, cp_obj)
+            if d in self.interval:
+                return True
         return False
     # end def _check
 
@@ -261,6 +283,7 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
         # if this should be the case we need to use cf_obj below.
         if not cp_obj.is_first:
             return False
+        cf_obj = cf_obj.bar.get_by_offset (cp_obj)
         d = self.compute_interval (cf_obj, cp_obj)
         if d not in self.interval:
             return True
@@ -280,9 +303,12 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        d = self.compute_interval (cf_obj, cp_obj)
-        if d > self.maximum:
-            return True
+        self.cp_obj = cp_obj
+        self.cf_obj = cf_obj
+        for cf_obj in self.cf_iter ():
+            d = self.compute_interval (cf_obj, cp_obj)
+            if d > self.maximum:
+                return True
         return False
     # end def _check
 
@@ -299,9 +325,12 @@ class Check_Harmony_Interval_Min (Check_Harmony_Interval):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        d = self.compute_interval (cf_obj, cp_obj)
-        if d < self.minimum:
-            return True
+        self.cf_obj = cf_obj
+        self.cp_obj = cp_obj
+        for cf_obj in self.cf_iter ():
+            d = self.compute_interval (cf_obj, cp_obj)
+            if d < self.minimum:
+                return True
         return False
     # end def _check
 
@@ -315,25 +344,22 @@ class Check_Melody_Jump_2 (Check_Harmony):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        if not self.p_cf_obj:
-            self.p_cf_obj = self.cf_obj = cf_obj
-            self.p_cp_obj = self.cp_obj = cp_obj
-            return False
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
-        d1 = cf_obj.halftone.offset - self.p_cf_obj.halftone.offset
-        d2 = cp_obj.halftone.offset - self.p_cp_obj.halftone.offset
-        self.p_cf_obj = cf_obj
-        self.p_cp_obj = cp_obj
-        if d1 > self.limit and d2 > self.limit:
-            return True
+        p_cp_obj    = cp_obj.prev
+        if not p_cp_obj:
+            return False
+        for cf_obj in self.cf_iter ():
+            p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+            if not p_cf_obj:
+                continue
+            self.cf_obj = cf_obj
+            d1 = cf_obj.halftone.offset - p_cf_obj.halftone.offset
+            d2 = cp_obj.halftone.offset - p_cp_obj.halftone.offset
+            if d1 > self.limit and d2 > self.limit:
+                return True
         return False
     # end def _check
-
-    def reset (self):
-        self.p_cf_obj = None
-        self.p_cp_obj = None
-    # end def reset
 
 # end class Check_Melody_Jump_2
 
@@ -366,14 +392,16 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
             return False
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
-        d = self.compute_interval (cf_obj, cp_obj)
-        # An empty interval matches everything
-        if  (   (not self.interval or d in self.interval)
-            and self.direction_check ()
-            ):
-            if not self.only_repeat or self.prev_match:
-                self.prev_match = True
-                return True
+        for cf_obj in self.cf_iter ():
+            self.cf_obj = cf_obj
+            d = self.compute_interval (cf_obj, cp_obj)
+            # An empty interval matches everything
+            if  (   (not self.interval or d in self.interval)
+                and self.direction_check ()
+                ):
+                if not self.only_repeat or self.prev_match:
+                    self.prev_match = True
+                    return True
         return False
     # end def _check
 

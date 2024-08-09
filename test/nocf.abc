@@ -4,5 +4,6 @@ Q: 1/4=200
 %%score (NotCantusFirmus)
 L: 1/8
 V:NotCantusFirmus name="Not Cantus Firmus"
+V:AnotherVoice
 K: DDor
 [V:NotCantusFirmus] D8 |E8 |G8 |F8 |G8 |E8 |F8 |E8 |D8 |C8 |E8 |D8 |
