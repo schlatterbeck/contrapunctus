@@ -27,7 +27,7 @@ import random
 import itertools
 from   .tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
 from   .gregorian import dorian, hypodorian
-from   .checks    import *
+from   .checks    import checks
 from   argparse   import ArgumentParser
 from   copy       import deepcopy
 # Backwards compatibility:

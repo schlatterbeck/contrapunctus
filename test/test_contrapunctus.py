@@ -31,9 +31,8 @@ import contrapunctus.gregorian
 from pga.testsupport import PGA_Test_Instrumentation
 from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 from contrapunctus.tune import Key
-from contrapunctus.checks import *
-from contrapunctus.checks import Check_Harmony
 from contrapunctus.gentune import main as gentune_main
+from contrapunctus import checks
 
 tune_output = """
 X: 1
@@ -202,7 +201,7 @@ class Test_Contrapunctus:
     # end def test_prev
 
     def test_check_harmony_interval_max (self):
-        check = Check_Harmony_Interval_Max \
+        check = checks.Check_Harmony_Interval_Max \
             ('must be up', maximum = 12, badness = 1)
         b = Bar (8)
         t_cf  = Tone (halftone ('E'), 8)
@@ -220,7 +219,7 @@ class Test_Contrapunctus:
     # end def test_check_harmony_interval_max
 
     def test_check_harmony_interval_min (self):
-        check = Check_Harmony_Interval_Min \
+        check = checks.Check_Harmony_Interval_Min \
             ('must be up', minimum = 0, badness = 1)
         b = Bar (8)
         t_cp = Tone (halftone ('e'), 8)
@@ -238,7 +237,7 @@ class Test_Contrapunctus:
     # end def test_check_harmony_interval_min
 
     def test_check_harmony_interval_octave (self):
-        check = Check_Harmony_Interval \
+        check = checks.Check_Harmony_Interval \
             ( 'Sekund'
             , interval = (1, 2)
             , badness  = 1
@@ -290,7 +289,7 @@ class Test_Contrapunctus:
     # end def test_check_harmony_interval_octave
 
     def test_check_harmony_interval_sign (self):
-        check = Check_Harmony_Interval \
+        check = checks.Check_Harmony_Interval \
             ( 'Sekund'
             , interval = (1, 2)
             , badness  = 1
@@ -310,7 +309,7 @@ class Test_Contrapunctus:
     # end def test_check_harmony_interval_sign
 
     def test_check_harmony_interval_first_last (self):
-        check = Check_Harmony_Interval \
+        check = checks.Check_Harmony_Interval \
             ( 'first-last'
             , interval  = (1, 2)
             , badness   = 1
@@ -358,7 +357,7 @@ class Test_Contrapunctus:
     # end def test_check_harmony_interval_first_last
 
     def test_check_harmony_history (self):
-        check = Check_Harmony_History \
+        check = checks.Check_Harmony_History \
             ( 'Parallel fifth'
             , interval    = (7,) # fifth
             , badness     = 9
@@ -385,7 +384,7 @@ class Test_Contrapunctus:
     # end def test_check_harmony_history
 
     def test_check_harmony_melody_direction_same (self):
-        check = Check_Harmony_Melody_Direction \
+        check = checks.Check_Harmony_Melody_Direction \
             ( 'Opposite direction'
             , interval = () # All
             , dir      = 'same'
@@ -406,7 +405,7 @@ class Test_Contrapunctus:
     # end def test_check_harmony_melody_direction_same
 
     def test_check_harmony_melody_direction_zero (self):
-        check = Check_Harmony_Melody_Direction \
+        check = checks.Check_Harmony_Melody_Direction \
             ( 'No sixth or third in a row'
             , interval = (3, 4, 8, 9)
             , dir      = 'zero'
@@ -438,7 +437,7 @@ class Test_Contrapunctus:
     # end def test_check_harmony_melody_direction_zero
 
     def test_check_melody_interval (self):
-        check = Check_Melody_Interval \
+        check = checks.Check_Melody_Interval \
             ( 'Devils interval'
             , interval = (6,)
             , badness  = 10
@@ -499,7 +498,7 @@ class Test_Contrapunctus:
     # end def test_get_by_offset
 
     def test_reset_upcall (self):
-        check = Check_Melody_Jump ('Jump', badness = 10)
+        check = checks.Check_Melody_Jump ('Jump', badness = 10)
         assert check.msg == 'Jump'
         assert check.prev_match is False
     # end def test_reset_upcall
@@ -633,7 +632,7 @@ class Test_Contrapunctus:
         """ Some of the searches have an empty bar *before* a valid one.
             This tests that nothing breaks.
         """
-        check = Check_Harmony_Melody_Direction \
+        check = checks.Check_Harmony_Melody_Direction \
             ( 'better same direction'
             , interval = () # All
             , dir      = 'same'
@@ -677,7 +676,7 @@ class Test_Contrapunctus:
     # end def test_copy_bar
 
     def test_check_harmony_first_interval (self):
-        check = Check_Harmony_First_Interval \
+        check = checks.Check_Harmony_First_Interval \
             ( 'unison, octave, fifth'
             , interval = (0, 7, 12)
             , badness  = 100
@@ -947,7 +946,7 @@ class Test_Contrapunctus:
         v_cp.add (Bar (8))
         v_cp.add (Bar (8))
         v_cp.add (Bar (8))
-        check = Check_Harmony ('test', 1, 1)
+        check = checks.Check_Harmony ('test', 1, 1)
         check.cp_obj = b_cp.objects [0]
         check.cf_obj = b_cf.objects [0]
         l = list (check.cf_iter ())

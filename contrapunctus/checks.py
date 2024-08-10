@@ -618,10 +618,4 @@ checks = dict \
     ( default = (old_melody_checks_cf, old_melody_checks_cp, old_harmony_checks)
     )
 
-__all__ = [ 'Check_Melody_Interval', 'Check_Melody_Jump'
-          , 'Check_Harmony_Interval', 'Check_Harmony_First_Interval'
-          , 'Check_Harmony_Interval_Max', 'Check_Harmony_Interval_Min'
-          , 'Check_Melody_Jump_2', 'Check_Harmony_Melody_Direction'
-          , 'Check_Harmony_History', 'Check_Melody_History'
-          , 'checks'
-          ]
+__all__ = ['checks']
