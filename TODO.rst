@@ -40,6 +40,14 @@ wichtige Rand-/ Zwischennotizen
 - alterierte Töne nur bei Terz und Sext möglich
 - Viertel müssen auf leichte Zeit einsetzen (=leichte Halbe)
 
+Features
+--------
+
+- Allow specified --cantus-firmus tune to be transposed before use
+- Permit Pause in tunes, the current checks cannot deal with this
+- Better searching for CP for given CF for the last 4 bars, this
+  currently uses a fixed combination of tone lengths
+
 Tests
 -----
 
@@ -49,3 +57,4 @@ Tests
 - output abc without 'id' field in voice
 - Read tune and/or gene from stdin (using '-' as filename)
 - Write output to stdout
+- Test accessing self.tune in Contrapunctus, this is currently unused
