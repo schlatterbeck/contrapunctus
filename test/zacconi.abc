@@ -1,0 +1,16 @@
+X:191
+T: Aus Prattica di musica
+B: Prattica di musica, Band 2
+N: Wikipedia https://de.wikipedia.org/wiki/Kontrapunkt 2024-08-09
+N: Modified for M:4/4, last tone is only 4/4 not 8/4
+N: Modified one octave higher
+O: Venedig, 1622
+C: Ludovico Zacconi
+Q: 1/4=200
+M: 4/4
+L: 1/1
+K: C
+V:Contrapunctus name=Contrapunctus
+V:CantusFirmus name="Cantus Firmus"
+[V:Contrapunctus] d | c | f | e | d | c | e | ^f | g | g | d | e | d | ^c | d |
+[V:CantusFirmus]  G | A | D | G | D | A | A | A  | G | C | G | E | F | E  | D |

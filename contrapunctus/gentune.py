@@ -24,6 +24,7 @@
 import sys
 import pga
 import random
+import itertools
 from   .tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
 from   .gregorian import dorian, hypodorian
 from   .checks    import *
@@ -46,7 +47,7 @@ class File_Handler:
 class Outfile (File_Handler):
     def __enter__ (self):
         if self.filename:
-            self.f = open (self.filename, 'w')
+            self.f = open (self.filename, 'a')
         else:
             self.f = sys.stdout
         return self.f
@@ -161,7 +162,7 @@ class Contrapunctus:
         self.orig_args     = None
         self.do_explain    = False
         self.explanation   = []
-        self.tune          = None # for given cantus firmus
+        self._tune         = None # for given cantus firmus
         self.cantus_firmus = None
         self._tunelength   = args.tune_length
         assert args.tune_length > 3
@@ -177,29 +178,40 @@ class Contrapunctus:
         if args.cantus_firmus:
             assert args.cantus_firmus != '+'
             with Infile (args.cantus_firmus) as f:
-                self.tune = Tune.from_iterator (f)
-            # Convert unit if necessary
-            if self.tune.unit != 8:
-                self.tune.unit = 8
-            # Now set the option to '+' so that next time we read from abc file
-            args.cantus_firmus = '+'
-            if len (self.tune.voices) == 1:
-                self.cantus_firmus = self.tune.voices [0]
-            else:
-                for v in self.tune.voices:
-                    if v.id == 'CantusFirmus':
-                        self.cantus_firmus = v
-                        break
-                else:
-                    raise ValueError ('No CantusFirmus voice found')
-            if not getattr (self.cantus_firmus, 'id', None):
-                self.cantus_firmus.id = 'CantusFirmus'
-            if not getattr (self.cantus_firmus, 'name', None):
-                self.cantus_firmus.name = 'Cantus Firmus'
-            self.tunelength = len (self.cantus_firmus.bars)
+                tune = Tune.from_iterator (f)
+            self.tune = tune
         if not getattr (self, 'init', None):
             self.set_init ()
     # end def __init__
+
+    @property
+    def tune (self):
+        return self._tune
+    # end def tune
+
+    @tune.setter
+    def tune (self, tune):
+        # Convert unit if necessary
+        if tune.unit != 8:
+            tune.unit = 8
+        # Now set the option to '+' so that next time we read from abc file
+        self.args.cantus_firmus = '+'
+        if len (tune.voices) == 1:
+            self.cantus_firmus = tune.voices [0]
+        else:
+            for v in tune.voices:
+                if v.id == 'CantusFirmus':
+                    self.cantus_firmus = v
+                    break
+            else:
+                raise ValueError ('No CantusFirmus voice found')
+        if not getattr (self.cantus_firmus, 'id', None):
+            self.cantus_firmus.id = 'CantusFirmus'
+        if not getattr (self.cantus_firmus, 'name', None):
+            self.cantus_firmus.properties ['name'] = 'Cantus Firmus'
+        self._tune = tune
+        self.tunelength = len (self.cantus_firmus.bars)
+    # end def tune
 
     @property
     def tunelength (self):
@@ -214,10 +226,12 @@ class Contrapunctus:
             self.fix_gene_length ()
     # end def tunelength
 
-    def args_from_gene (self, iter):
+    def args_from_gene (self, itr):
         argv = []
-        for n, line in enumerate (iter):
+        for n, line in enumerate (itr):
             line = line.strip ()
+            if line == 'Command-line options:':
+                continue
             line = line.split ('%') [-1]
             if not line:
                 break
@@ -370,17 +384,15 @@ class Contrapunctus:
             assert cp.voice.id == 'Contrapunctus'
             assert cf.voice.id == 'CantusFirmus'
             cf_obj = cf.objects [0]
-            # For now a bar in the cantus firmus only
-            # contains one single note, the 0th object in bar
-            assert len (cf.objects) == 1
 
-            for check in melody_checks_cf:
-                for obj in cf.objects:
-                    b, u = check.check (obj)
-                    if b:
-                        badness *= b
-                    ugliness += u
-                    self.explain (check)
+            if not self.args.no_check_cf:
+                for check in melody_checks_cf:
+                    for obj in cf.objects:
+                        b, u = check.check (obj)
+                        if b:
+                            badness *= b
+                        ugliness += u
+                        self.explain (check)
             bsum = usum = 0
             for cp_obj in cp.objects:
                 for check in melody_checks_cp:
@@ -418,6 +430,13 @@ class Contrapunctus:
                 self.explanation.append (ex)
     # end def explain
 
+    def fix_gene (self):
+        for i in range (len (self.init)):
+            a = self.get_allele (1, pga.PGA_NEWPOP, i)
+            v = self.from_allele (a, i)
+            self.set_allele (1, pga.PGA_NEWPOP, i, v)
+    # end def fix_gene
+
     def from_allele (self, v, i):
         v = int (v)
         if v > self.init [i][1]:
@@ -425,20 +444,40 @@ class Contrapunctus:
         return v
     # end def from_allele
 
-    def from_gene_lines (self, iter):
-        idx = 0
-        c   = 0
+    def from_gene (self):
+        with Infile (self.args.gene_file) as f:
+            next (self.from_gene_lines (f))
+    # end def from_gene
+
+    def _from_gene_lines (self, itr):
+        idx  = 0
+        c    = 0
+        tune = None
         if self.args.best_eval:
-            for n, line in enumerate (iter):
+            for n, line in enumerate (itr):
                 if ('Command-line options:' in line):
-                    c += self.args_from_gene (iter)
+                    c += self.args_from_gene (itr)
                     continue
                 if line.startswith ('The Best String:'):
                     c += n
                     break
-        for n, line in enumerate (iter):
+        for n, line in enumerate (itr):
+            if line.startswith ('X:') or line.startswith ('M:'):
+                tmp_iter  = iter ([line])
+                tune = Tune.from_iterator \
+                    (itertools.chain (tmp_iter, itr), True)
+                c += tune.nlines - 1 # first line already counted
+                line = getattr (tune, 'lastline', None)
+                # When reading abc file the abc parser has picked up the
+                # gene, too
+                if tune.comment:
+                    i, t = next (self._from_gene_lines (tune.comment))
+                    yield i, tune
+                    tune = None
+                if line is None:
+                    continue
             if ('Command-line options:' in line):
-                c += self.args_from_gene (iter)
+                c += self.args_from_gene (itr)
                 continue
             ln = n + 1 + c
             start = '#', '%#', 'Text: #'
@@ -447,7 +486,7 @@ class Contrapunctus:
                     break
             else:
                 if idx > 0:
-                    yield idx
+                    yield idx, tune
                 idx = 0
                 continue
             i, l = line.split ('#', 1)[-1].split (':')
@@ -464,38 +503,44 @@ class Contrapunctus:
                 self.set_allele (1, pga.PGA_NEWPOP, idx + offs, a)
             idx += offs + 1
         if idx > 0:
-            yield idx
-    # end def from_gene_lines
+            yield idx, tune
+    # end def _from_gene_lines
 
-    def _fix_gene (self):
-        for i in range (len (self.init)):
-            a = self.get_allele (1, pga.PGA_NEWPOP, i)
-            v = self.from_allele (a, i)
-            self.set_allele (1, pga.PGA_NEWPOP, i, v)
-    # end def _fix_gene
-
-    def _from_gene (self, f):
-        iter = f
-        if self.cantus_firmus == '+':
-            self.tune = Tune.from_iterator (f)
-            iter = self.tune.comment
-        for genelength in self.from_gene_lines (iter):
+    def from_gene_lines (self, itr):
+        for genelength, tune in self._from_gene_lines (itr):
+            if self.orig_args and self.orig_args.cantus_firmus:
+                assert self.orig_args.cantus_firmus == '+'
+                self.tune = tune
+                if self.args.fix_gene:
+                    self.fix_gene ()
+                yield genelength
             if not self.orig_args or not self.orig_args.tune_length:
+                # tunelength with CF doesn't include the gene part for the
+                # CF and is thus shorter.
+                # With CF we have:
+                # genelength = (tunelength - 3) + 11 * (tunelength - 2)
+                # Without CF we have:
+                # genelength = (tunelength - 2) * 11
                 tunelength = (genelength + 25) / 12
+                args = self.orig_args or self.args
+                if tunelength != int (tunelength):
+                    tunelength = (genelength + 22) / 11
+                    assert int (tunelength) == tunelength
+                    assert tune is not None
+                    self.tune = tune
+                    args.cantus_firmus = '+'
+                    assert tunelength == len (self.cantus_firmus.bars)
                 assert int (tunelength) == tunelength
                 tunelength = int (tunelength)
+                args.tune_length = tunelength
             else:
                 tunelength = self.orig_args.tune_length
             if genelength != len (self.init):
                 self.tunelength = tunelength
             if self.args.fix_gene:
-                self._fix_gene ()
-    # end def _from_gene
-
-    def from_gene (self):
-        with Infile (self.args.gene_file) as f:
-            self._from_gene (f)
-    # end def from_gene
+                self.fix_gene ()
+            yield genelength
+    # end def from_gene_lines
 
     def phenotype (self, p, pop, maxidx = None):
         tune = Tune \
@@ -635,9 +680,10 @@ class Contrapunctus:
             # Beware, sidx is optional and is *last*
             if not self.run_cp_checks (bd.tune, eidx, sidx):
                 if self.explanation:
-                    print ('\n'.join (self.explanation))
-                    for v in bd.tune.voices:
-                        print (v.as_abc ())
+                    with Outfile (self.args.output_file) as f:
+                        print ('\n'.join (self.explanation), file = f)
+                        for v in bd.tune.voices:
+                            print (v.as_abc (), file = f)
                 continue
             n_t = t + 1
             n_b = b
@@ -677,6 +723,10 @@ class Contrapunctus:
             bd.add_bar (-4, b [0])
             bd.add_bar (-3, b [1])
             if self._run_cf_end_check (bd):
+                if self.args.explain_cp_cf:
+                    with Outfile (self.args.output_file) as f:
+                        print \
+                            ('Feasibility: Found CP for last 4 bars', file = f)
                 return True
     # end def run_cf_end_checks
 
@@ -745,6 +795,8 @@ class Contrapunctus:
     def verify_cantus_firmus (self):
         if not self.cantus_firmus:
             return True
+        if self.args.no_cf_feasibility:
+            return True
         tune  = self.phenotype (1, pga.PGA_NEWPOP, 0)
         if not self.run_cf_end_checks (tune):
             return False
@@ -797,6 +849,7 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
     # end def __init__
 
     tunelength = Contrapunctus.tunelength
+    tune       = Contrapunctus.tune
 
     @tunelength.setter
     def tunelength (self, tl):
@@ -805,6 +858,14 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
                 ('Not possible to set tunelength after init') # pragma: no cover
         self._tunelength = tl
     # end def tunelength
+
+    @tune.setter
+    def tune (self, tune):
+        if getattr (self, 'init', None):
+            raise ValueError \
+                ('Not possible to set tunelength after init') # pragma: no cover
+        Contrapunctus.tune.fset (self, tune)
+    # end def tune
 
     def print_string (self, file, p, pop):
         if not self.prefix_printed or self.stop_reached:
@@ -955,12 +1016,9 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
                 return
         result = self.find_contrapunctus (0, 0)
         if not result:
-            # This should never be reached unless we have rules or a CF
-            # that make it fail early. Otherwise the user will interrupt
-            # before we ever get here :-)
-            with Outfile (self.args.output_file) as f: # pragma: no cover
+            with Outfile (self.args.output_file) as f:
                 print ('No Contrapunctus found', file = f)
-            return                                     # pragma: no cover
+            return
         r = []
         with Outfile (self.args.output_file) as f:
             print (self.as_complete_tune (force = True), file = f)
@@ -1073,6 +1131,20 @@ def contrapunctus_cmd (argv = None):
         , default = 10000
         )
     cmd.add_argument \
+        ( "--no-check-cf", "--no-check-cantus-firmus"
+        , help    = "Do not check cantus firmus melody during search,"
+                    " applies only to explicit cantus firmus with"
+                    " --cantus-firmus option and only for EA searching"
+        , action  = 'store_true'
+        )
+    cmd.add_argument \
+        ( "--no-cf-feasibility", "--no-cantus-firmus-feasibility"
+        , help    = "Do not check cantus firmus melody prior to search,"
+                    " applies only to explicit cantus firmus with"
+                    " --cantus-firmus option and only for EA searching"
+        , action  = 'store_true'
+        )
+    cmd.add_argument \
         ( "--optimize-depth-first", "--df"
         , help    = "Optimize using depth first search"
         , action  = 'store_true'
@@ -1121,6 +1193,16 @@ def main (argv = None):
     --cantus-firmus=+ needs --gene-file option
     >>> r
     1
+    >>> args = '--df -c test/test/zacconi.abc --no-check-cf'.split ()
+    >>> r = main (args)
+    CF checking can not be turned off for depth first search
+    >>> r
+    1
+    >>> args = '--df --no-cf-feasibility'.split ()
+    >>> r = main (args)
+    CF checking can be turned off only for --cantus-firmus
+    >>> r
+    1
     """
     de_variants = ['best', 'rand', 'either-or']
     cmd  = contrapunctus_cmd ()
@@ -1131,6 +1213,13 @@ def main (argv = None):
     if args.de_variant not in de_variants:
         print ('Invalid --de-variant, use one of %s' % ', '.join (de_variants))
         return 1
+    if args.no_check_cf or args.no_cf_feasibility:
+        if not args.cantus_firmus:
+            print ('CF checking can be turned off only for --cantus-firmus')
+            return 1
+        if args.optimize_depth_first:
+            print ('CF checking can not be turned off for depth first search')
+            return 1
     if args.gene_file or args.optimize_depth_first:
         cp = Contrapunctus_Depth_First (cmd, args)
         if args.gene_file:
@@ -1161,10 +1250,15 @@ def transpose_tune (argv = None):
         , type    = int
         , default = 0
         )
-    args = cmd.parse_args ()
+    cmd.add_argument \
+        ( "-O", "--output-file"
+        , help    = "Output file for progress information"
+        )
+    args = cmd.parse_args (argv)
     tune = Tune.from_file (args.filename [0])
     tune = tune.transpose (args.transpose)
-    print (tune.as_abc ())
+    with Outfile (args.output_file) as f:
+        print (tune.as_abc (), file = f)
 # end def transpose_tune
 
 if __name__ == '__main__':

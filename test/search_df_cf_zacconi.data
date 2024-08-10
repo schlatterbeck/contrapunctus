@@ -1,0 +1,184 @@
+Contrapunctus bar: 12 note: 1 CantusFirmus bar: 12 note: 1:
+    No Sekund
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||D8 ||^c8 |d8 |
+Contrapunctus bar: 12 note: 1 CantusFirmus bar: 12 note: 1:
+    1.2: Use no unisons except at the beginning or end
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||E8 ||^c8 |d8 |
+Contrapunctus bar: 12 note: 1 CantusFirmus bar: 12 note: 1:
+    No Sekund
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||F8 ||^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    Contrapunctus voice must be *up*
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||G8 |D4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    No Sekund
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||G8 |E4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    1.2: Use no unisons except at the beginning or end
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||G8 |F4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    No Sekund
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||G8 |G4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    For terz (third) don't allow several in a row
+    (B: 0 U: 3)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||G8 |A4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    Magdalena: 5/6 verboten
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||G8 |B4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    Generally it's better that voices move in opposite direction (or
+    one stays the same if allowed)
+    (B: 0 U: 0.1)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||G8 |c4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    Generally it's better that voices move in opposite direction (or
+    one stays the same if allowed)
+    (B: 0 U: 0.1)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||G8 |d4 |^c8 |d8 |
+Contrapunctus bar: 12 note: 1 CantusFirmus bar: 12 note: 1:
+    Magdalena: 5/6 verboten
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||A8 |d4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    Contrapunctus voice must be *up*
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |D4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    No Sekund
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |E4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1:
+    0.1.2: no Devils interval
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |F4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+    No Sekund
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |G4 |^c8 |d8 |
+Contrapunctus bar: 13 note: 2 CantusFirmus bar: 13 note: 1:
+    Contrapunctus voice must be *up*
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 D2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 2 CantusFirmus bar: 13 note: 1:
+    No Sekund
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 E2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 2 CantusFirmus bar: 13 note: 1:
+    1.2: Use no unisons except at the beginning or end
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 F2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 2 CantusFirmus bar: 13 note: 1:
+    No Sekund
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 G2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 2 CantusFirmus bar: 13 note: 1:
+    For terz (third) don't allow several in a row
+    (B: 0 U: 3)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 A2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 2 CantusFirmus bar: 13 note: 1:
+    Magdalena: 5/6 verboten
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 B2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    0.1.2: no seventh (Septime)
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 c2 D2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    Jump
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 c2 E2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    Jump
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 c2 F2 |^c8 |d8 |
+Contrapunctus bar: 14 note: 1:
+    0.1.2: no Devils interval
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 c2 G2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    Jump
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 c2 A2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3 CantusFirmus bar: 13 note: 1:
+    Magdalena: 5/6 verboten
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 c2 B2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3 CantusFirmus bar: 13 note: 1:
+    Magdalena: Avoid parallel fifth
+    (B: 9 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 c2 c2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    Same-direction movement after jump
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 c2 d2 |^c8 |d8 |
+Contrapunctus bar: 14 note: 1:
+    0.1.2: no seventh (Septime)
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 d2 D2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    0.1.2: no seventh (Septime)
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 d2 E2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    Jump
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 d2 F2 |^c8 |d8 |
+Contrapunctus bar: 14 note: 1:
+    0.1.2: no Devils interval
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 d2 G2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    Jump
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 d2 A2 |^c8 |d8 |
+Contrapunctus bar: 13 note: 3:
+    Jump
+    (B: 10 U: 0)
+[V:CantusFirmus] G8 |A8 |D8 |G8 |D8 |A8 |A8 |A8 |G8 |C8 |G8 |E8 |F8 |E8 |D8 |
+[V:Contrapunctus] |||||||||||B8 |A4 d2 B2 |^c8 |d8 |
+Feasibility: Found CP for last 4 bars
+No Contrapunctus found

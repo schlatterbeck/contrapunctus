@@ -883,6 +883,19 @@ class Test_Contrapunctus:
         assert len (abc.split ('\n')) > 100
     # end def test_guess_tune_length
 
+    def test_guess_tune_length_with_cf (self):
+        """ Read a gene file without arguments that has a tune length
+            longer than the default. In addition the tune has a cantus
+            firmus.
+        """
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v', '-g' 'test/bad_w_cf.abc'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        cp.from_gene ()
+        abc  = cp.as_complete_tune ()
+        assert len (abc.split ('\n')) > 100
+    # end def test_guess_tune_length_with_cf
+
     def test_invalid_cf (self):
         """ Specify a CF file for searching, the test should reveal that
             the CF file is invalid (not Contrapunctus can be found)
@@ -941,17 +954,32 @@ class Test_Contrapunctus:
         assert len (l) == 3
     # end def test_cf_iter
 
+    def test_gene_roundtrip_with_cf_abc (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        fn = 'test/depth_first_with_cantus.data'
+        with open (fn) as f:
+            next (cp.from_gene_lines (f))
+            f.seek (0)
+            abc = f.read ().strip ()
+        txt = cp.as_complete_tune ().strip ()
+        assert txt == abc
+    # end def test_gene_roundtrip_with_cf_abc
+
 # end class Test_Contrapunctus
 
-# These can fail if all process perform I/O to same file
-# Looks like pytest.mpi_rank is only available *inside* the test method
-class Test_Contrapunctus_IO (PGA_Test_Instrumentation):
-
+class Base_Skip_Nonzero (PGA_Test_Instrumentation):
     @pytest.fixture (autouse = True)
     def skip_if_rank_nonzero (self, request):
         if pytest.mpi_rank != 0:
             pytest.skip ('Skipping because mpi_rank=%s' % pytest.mpi_rank)
     # end def skip_if_rank_nonzero
+# end class Base_Skip_Nonzero
+
+# These can fail if all process perform I/O to same file
+# Looks like pytest.mpi_rank is only available *inside* the test method
+class Test_Contrapunctus_IO (Base_Skip_Nonzero):
 
     def test_depth_first (self):
         args = self.out_options + ['-v', '-v', '--df']
@@ -983,7 +1011,30 @@ class Test_Contrapunctus_IO (PGA_Test_Instrumentation):
         self.compare ()
     # end def test_df_invalid_cf
 
+    def test_transpose (self):
+        args = self.out_options + '-t -5 test/h2.abc'.split ()
+        contrapunctus.gentune.transpose_tune (args)
+        self.compare ()
+    # end def test_transpose
+
 # end class Test_Contrapunctus_IO
+
+@pytest.mark.slow
+class Test_Contrapunctus_IO_Slow (Base_Skip_Nonzero):
+
+    def test_search_df_cf_zacconi (self):
+        """ Test depth first search with modified tune from Zacconi in
+            german wikipedia page on Kontrapunkt.
+            Seems like there is a problem *in the middle* of the tune
+            where we have several melody unisons in the CF.
+        """
+        args = '--df -c test/zacconi.abc --explain-cp-cf'.split ()
+        args = self.out_options + args
+        gentune_main (args)
+        self.compare ()
+    # end def test_search_df_cf_zacconi
+
+# end class Test_Contrapunctus_IO_Slow
 
 @pytest.mark.slow
 class Test_Contrapunctus_Slow (PGA_Test_Instrumentation):
@@ -1012,6 +1063,25 @@ class Test_Contrapunctus_Slow (PGA_Test_Instrumentation):
         self.compare ()
     # end def test_search_de_cf
 
+    def test_search_de_cf_haenschen (self):
+        """ Test with modified Haenschen Klein
+        """
+        args = '--use-de -c test/h2t.abc --no-cf-feasibility --no-check-cf'
+        args = self.out_options + args.split ()
+        gentune_main (args)
+        self.compare ()
+    # end def test_search_de_cf_haenschen
+
+    def test_search_de_cf_zacconi (self):
+        """ Test DE search with modified tune from Zacconi in german
+            wikipedia page on Kontrapunkt
+        """
+        args = '--use-de -c test/zacconi.abc --no-cf-feasibility --no-check-cf'
+        args = self.out_options + args.split ()
+        gentune_main (args)
+        self.compare ()
+    # end def test_search_de_cf_zacconi
+
 # end class Test_Contrapunctus_Slow
 
 class Test_Doctest:
@@ -1020,7 +1090,7 @@ class Test_Doctest:
 
     num_tests = dict \
         ( circle    =  2
-        , gentune   =  6
+        , gentune   = 12
         , gregorian = 10
         , tune      = 104
         )

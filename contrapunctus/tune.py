@@ -1094,10 +1094,12 @@ class Tune:
 
     def __init__ \
         ( self, meter, key
-        , title   = None
-        , number  = 1
-        , unit    = None
-        , comment = None
+        , title    = None
+        , number   = 1
+        , unit     = None
+        , comment  = None
+        , nlines   = None # Set when parsed from file/iterator
+        , lastline = None # Last line seen during parsing (ugly hack)
         , **kw
         ):
         self.voices  = []
@@ -1111,15 +1113,24 @@ class Tune:
     # end def __init__
 
     @classmethod
-    def from_iterator (self, iter):
+    def from_iterator (self, itr, stop_at_err = False):
         """ The iterator will usually be a file
         """
         kw = {}
         voices = {}
         barlen = None
-        for line in iter:
+        for lineno, line in enumerate (itr):
             line = line.strip ()
-            if not line:
+            if not line or line.startswith ('#'):
+                if stop_at_err:
+                    tune = Tune (**kw)
+                    tune.nlines   = lineno + 1
+                    # Ugly hack to allow the calling line parser to
+                    # parse the line we didn't need
+                    tune.lastline = line
+                    for v in voices:
+                        tune.add (voices [v])
+                    return tune
                 continue
             if line.startswith ('%%'):
                 k, v = (line.lstrip ('%').split (None, 1))
@@ -1228,6 +1239,7 @@ class Tune:
                     else:
                         kw [k] = v
         tune = Tune (**kw)
+        tune.nlines = lineno + 1
         for v in voices:
             tune.add (voices [v])
         return tune
