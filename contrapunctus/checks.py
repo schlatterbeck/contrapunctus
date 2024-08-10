@@ -443,7 +443,7 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
 # forbid the following: 0, 6, 10, 11
 # We currently allow sixth in both directions
 # We allow unison in the second voice but not several in a series.
-melody_checks_cf = \
+old_melody_checks_cf = \
     [ Check_Melody_Interval
         ( "0.1.2: no seventh (Septime)"
         , interval = (10, 11)
@@ -483,7 +483,7 @@ melody_checks_cf = \
         , badness = 10.0
         )
     ]
-melody_checks_cp = \
+old_melody_checks_cp = \
     [ Check_Melody_Interval
         ( "0.1.2: no seventh (Septime)"
         , interval = (10, 11)
@@ -505,7 +505,7 @@ melody_checks_cp = \
         , badness = 10.0
         )
     ]
-harmony_checks = \
+old_harmony_checks = \
     [ Check_Harmony_Interval
         ( "1.2: Use no unisons except at the beginning or end"
         , interval  = (0,)
@@ -614,10 +614,14 @@ harmony_checks = \
         )
     ]
 
+checks = dict \
+    ( default = (old_melody_checks_cf, old_melody_checks_cp, old_harmony_checks)
+    )
+
 __all__ = [ 'Check_Melody_Interval', 'Check_Melody_Jump'
           , 'Check_Harmony_Interval', 'Check_Harmony_First_Interval'
           , 'Check_Harmony_Interval_Max', 'Check_Harmony_Interval_Min'
           , 'Check_Melody_Jump_2', 'Check_Harmony_Melody_Direction'
           , 'Check_Harmony_History', 'Check_Melody_History'
-          , 'melody_checks_cf', 'melody_checks_cp', 'harmony_checks'
+          , 'checks'
           ]

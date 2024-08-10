@@ -151,11 +151,6 @@ class Contrapunctus:
     # And these should always be removed:
     remove_options    = ['--output-file']
 
-    # These need to call reset before each eval:
-    melody_history_checks = \
-        [c for c in melody_checks_cp + melody_checks_cf if hasattr (c, 'reset')]
-    harmony_history_checks = [c for c in harmony_checks if hasattr (c, 'reset')]
-
     def __init__ (self, cmd, args):
         self.cmd           = cmd
         self.args          = args
@@ -182,6 +177,7 @@ class Contrapunctus:
             self.tune = tune
         if not getattr (self, 'init', None):
             self.set_init ()
+        self.get_checks ()
     # end def __init__
 
     @property
@@ -386,7 +382,7 @@ class Contrapunctus:
             cf_obj = cf.objects [0]
 
             if not self.args.no_check_cf:
-                for check in melody_checks_cf:
+                for check in self.melody_checks_cf:
                     for obj in cf.objects:
                         b, u = check.check (obj)
                         if b:
@@ -395,12 +391,12 @@ class Contrapunctus:
                         self.explain (check)
             bsum = usum = 0
             for cp_obj in cp.objects:
-                for check in melody_checks_cp:
+                for check in self.melody_checks_cp:
                     b, u = check.check (cp_obj)
                     bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
                     self.explain (check)
-                for check in harmony_checks:
+                for check in self.harmony_checks:
                     b, u = check.check (cf_obj, cp_obj)
                     bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
@@ -541,6 +537,17 @@ class Contrapunctus:
                 self.fix_gene ()
             yield genelength
     # end def from_gene_lines
+
+    def get_checks (self):
+        ch = checks [self.args.checks]
+        self.melody_checks_cf, self.melody_checks_cp, self.harmony_checks = ch
+        # These need to call reset before each eval:
+        melody_checks = self.melody_checks_cp + self.melody_checks_cf
+        self.melody_history_checks = \
+            [c for c in melody_checks if hasattr (c, 'reset')]
+        self.harmony_history_checks = \
+            [c for c in self.harmony_checks if hasattr (c, 'reset')]
+    # end def get_checks
 
     def phenotype (self, p, pop, maxidx = None):
         tune = Tune \
@@ -746,7 +753,7 @@ class Contrapunctus:
             # Explicit specification of start/end
             start = startidx
             end   = idx
-        for c in melody_checks_cp:
+        for c in self.melody_checks_cp:
             if hasattr (c, 'reset'):
                 c.reset ()
             for bcp in tune.voices [1].bars [start:end]:
@@ -755,7 +762,7 @@ class Contrapunctus:
                     if b or (not self.args.allow_ugliness and u):
                         self.explain (c)
                         return False
-        for c in harmony_checks:
+        for c in self.harmony_checks:
             if hasattr (c, 'reset'):
                 c.reset ()
             for bcf, bcp in zip (*(v.bars [start:end] for v in tune.voices)):
@@ -1026,7 +1033,7 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
 
     def run_cf_checks (self, tune, idx):
         self.explanation = []
-        for c in melody_checks_cf:
+        for c in self.melody_checks_cf:
             if hasattr (c, 'reset'):
                 c.reset ()
             # Check up to idx + 1 because first bar is hardcoded
@@ -1066,6 +1073,12 @@ def contrapunctus_cmd (argv = None):
                     " input, '+' reads from gene file given with -g"
         )
     cmd.add_argument \
+        ( "--checks"
+        , help    = "Name of checks to use, default=%(default)s"
+        , default = 'default'
+        , choices = checks.keys ()
+        )
+    cmd.add_argument \
         ( "-d", "--use-differential-evolution", "--use-de"
         , dest    = 'use_de'
         , help    = "Use Differential Evolution"
@@ -1094,6 +1107,7 @@ def contrapunctus_cmd (argv = None):
         ( "--de-variant"
         , help    = "Differential Evolution variant, default=%(default)s"
         , default = 'best'
+        , choices = ('best', 'rand', 'either-or')
         )
     cmd.add_argument \
         ( "--do-not-fix-gene"
@@ -1183,11 +1197,6 @@ def contrapunctus_cmd (argv = None):
 
 def main (argv = None):
     """ Document some common error cases here and test them
-    >>> args = ['--de-variant', 'unknown']
-    >>> r = main (args)
-    Invalid --de-variant, use one of best, rand, either-or
-    >>> r
-    1
     >>> args = ['-c+']
     >>> r = main (args)
     --cantus-firmus=+ needs --gene-file option
@@ -1204,14 +1213,10 @@ def main (argv = None):
     >>> r
     1
     """
-    de_variants = ['best', 'rand', 'either-or']
     cmd  = contrapunctus_cmd ()
     args = cmd.parse_args (argv)
     if args.cantus_firmus == '+' and not args.gene_file:
         print ('--cantus-firmus=+ needs --gene-file option')
-        return 1
-    if args.de_variant not in de_variants:
-        print ('Invalid --de-variant, use one of %s' % ', '.join (de_variants))
         return 1
     if args.no_check_cf or args.no_cf_feasibility:
         if not args.cantus_firmus:

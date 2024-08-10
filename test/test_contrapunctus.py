@@ -1090,7 +1090,7 @@ class Test_Doctest:
 
     num_tests = dict \
         ( circle    =  2
-        , gentune   = 12
+        , gentune   =  9
         , gregorian = 10
         , tune      = 104
         )
