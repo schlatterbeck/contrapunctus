@@ -854,6 +854,17 @@ class Test_Contrapunctus:
         assert tune.as_abc ().strip () == tunestr
     # end def test_parse_tune_from_file
 
+    def test_parse_all_genes_from_abc_file (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        cnt  = 0
+        with open ('test/example.abc') as f:
+            for k in cp.from_gene_lines (f):
+                cnt += 1
+        assert cnt == 1
+    # end def test_parse_all_genes_from_abc_file
+
     def test_parse_gene_with_args (self):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         args = cmd.parse_args (['-v', '-v', '-g' 'test/example.log'])
@@ -931,6 +942,19 @@ class Test_Contrapunctus:
                 cnt += 1
         assert cnt == 4
     # end def test_multi_parse_gene
+
+    def test_parse_gene_with_empty_line (self):
+        """ Empty line between tune and rest
+        """
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        cnt  = 0
+        with open ('test/spaced.log') as f:
+            for k in cp.from_gene_lines (f):
+                cnt += 1
+        assert cnt == 1
+    # end def test_parse_gene_with_empty_line
 
     def test_cf_iter (self):
         k    = Key.get ('D')
@@ -1091,7 +1115,7 @@ class Test_Doctest:
         ( circle    =  2
         , gentune   =  9
         , gregorian = 10
-        , tune      = 104
+        , tune      = 110
         )
 
     def test_doctest (self):

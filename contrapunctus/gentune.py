@@ -188,8 +188,7 @@ class Contrapunctus:
     @tune.setter
     def tune (self, tune):
         # Convert unit if necessary
-        if tune.unit != 8:
-            tune.unit = 8
+        tune.unit = 8
         # Now set the option to '+' so that next time we read from abc file
         self.args.cantus_firmus = '+'
         if len (tune.voices) == 1:
@@ -304,8 +303,9 @@ class Contrapunctus:
                 opt = by_dest [k]
                 act = dest_dict [k]
                 c   = '='
+                # Currently there is no option with only a single '-'.
                 if not opt.startswith ('--'):
-                    c = ' '
+                    c = ' ' # pragma: no cover
                 if act.nargs == 0:
                     s = opt
                 else:

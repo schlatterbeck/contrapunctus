@@ -237,6 +237,10 @@ class Halftone:
         'A'
         >>> halftone ('_a').stem
         'a'
+        >>> halftone ('F').as_abc (Key.get ('G'))
+        '=F'
+        >>> halftone ('_F').as_abc (Key.get ('G'))
+        '_F'
         """
         if self.prefix:
             return self.name [1]
@@ -252,7 +256,7 @@ class Halftone:
             if self.prefix == prefix:
                 return self.name [1:]
             elif not self.prefix:
-                return '=' + self.name [1:]
+                return '=' + self.name
             else:
                 return self.name
         else:
@@ -662,6 +666,12 @@ class Pause (Bar_Object):
 
 class Meter:
     """ Represent the meter of a tune, e.g. 4/4, 3/4 or similar
+    >>> m = Meter.from_string ('C')
+    >>> print (m)
+    4/4
+    >>> m = Meter.from_string ('C|')
+    >>> print (m)
+    2/2
     """
 
     def __init__ (self, measure, beats):
@@ -940,8 +950,9 @@ class Bar:
         """ Change unit of this bar
             Of course this needs to be done in the Tune, too.
         """
+        # The following never happens if called via Tune, it also checks this
         if self.unit == unit:
-            return
+            return # pragma: no cover
         factor  = Rational (unit) / self.unit
         newunit = factor * self.unit
         newdur  = factor * self.duration
@@ -949,14 +960,15 @@ class Bar:
             raise ValueError \
                 ( 'Cannot set unit, duration to %s, %s for %s'
                 % (newunit, newdur, self)
-                )
+                ) # pragma: no cover
         newunit = int (newunit)
         newdur  = int (newdur)
         for bo in self.objects:
             newlen = factor * len (bo)
             if newlen < 1:
                 raise ValueError \
-                    ('Cannot set length to %s for %s' % (newlen, bo))
+                    ('Cannot set length to %s for %s' % (newlen, bo)) \
+                        # pragma: no cover
             if not dry_run:
                 bo.duration = newlen
         if not dry_run:
@@ -1144,7 +1156,8 @@ class Tune:
                     if 'meter' in kw:
                         kw ['unit'] = kw ['meter'].beats
                     else:
-                        raise ValueError ('No unit note length')
+                        raise ValueError ('No unit note length') \
+                            # pragma: no cover
                 unit = kw ['unit']
                 if line.startswith ('['):
                     vinfo, rest = line.split (None, 1)
@@ -1273,7 +1286,7 @@ class Tune:
         if unit == self.unit:
             return
         if unit != int (unit):
-            raise ValueError ('Invalid unit: %s' % unit)
+            raise ValueError ('Invalid unit: %s' % unit) # pragma: no cover
         # Do it twice, first with dry_run, first run will raise an
         # exception if impossible. This ensures that if the change is
         # impossible the tune is left consistent.

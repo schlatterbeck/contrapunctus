@@ -246,8 +246,9 @@ class Check_Harmony_Interval (Check_Harmony):
         # only object in the bar. We now allow more than one object in a
         # bar.
         cf_obj = self.cf_obj = cf_obj.bar.get_by_offset (cp_obj)
+        # This would only happen if the CF bar is empty
         if cf_obj is None:
-            return False
+            return False # pragma: no cover
         if self.not_first and (cf_obj.is_first and cp_obj.is_first):
             return False
         self.cp_obj = cp_obj
@@ -354,8 +355,9 @@ class Check_Melody_Jump_2 (Check_Harmony):
             return False
         for cf_obj in self.cf_iter ():
             p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+            # This would only happen if the CF bar is empty
             if not p_cf_obj:
-                continue
+                continue # pragma: no cover
             self.cf_obj = cf_obj
             d1 = cf_obj.halftone.offset - p_cf_obj.halftone.offset
             d2 = cp_obj.halftone.offset - p_cp_obj.halftone.offset

@@ -43,12 +43,9 @@ wichtige Rand-/ Zwischennotizen
 Tests
 -----
 
-- roundtrip tune with --cantus-firmus
-- test transpose
-- read abc with multiple information fields with the same key
+- test transpose on tune output
 - add a test that falls back to the meter ('M') field in case the 'L'
   field is missing
 - output abc without 'id' field in voice
-- test C| and C in meter 'M' field in abc
-- test natural accidental '=' when the key has '^' or '_'
-- test accidental different from key ('^' or '_' vs '_' or '^')
+- Read tune and/or gene from stdin (using '-' as filename)
+- Write output to stdout
