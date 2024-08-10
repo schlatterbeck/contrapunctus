@@ -1121,7 +1121,7 @@ class Tune:
         barlen = None
         for lineno, line in enumerate (itr):
             line = line.strip ()
-            if not line or line.startswith ('#'):
+            if not line:
                 if stop_at_err:
                     tune = Tune (**kw)
                     tune.nlines   = lineno + 1
@@ -1230,6 +1230,18 @@ class Tune:
                     kw ['number'] = v
                 else:
                     if len (k) != 1:
+                        err = None
+                        for st in ['#', 'Contra', 'Cantus']:
+                            if k.startswith (st):
+                                err = True
+                                break
+                        if stop_at_err and err:
+                            tune = Tune (**kw)
+                            tune.nlines   = lineno + 1
+                            tune.lastline = line
+                            for v in voices:
+                                tune.add (voices [v])
+                            return tune
                         raise NotImplementedError \
                             ('Unknown field "%s"' % k) # pragma: no cover
                     if k in kw:

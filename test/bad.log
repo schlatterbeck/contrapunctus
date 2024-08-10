@@ -1,6 +1,19 @@
 A log from the very early stages of an optimization run with a gene
 length not matching the default
 
+X: 1
+M: 4/4
+Q: 1/4=200
+%%score (Contrapunctus) (CantusFirmus)
+L: 1/8
+V:CantusFirmus name="Cantus Firmus"
+V:Contrapunctus name=Contrapunctus
+K: DDor
+[V:CantusFirmus] D8 |C8 |B,8 |E8 |B,8 |C8 |F8 |E8 |F8 |E8 |C8 |D8 |E8 |D8 |
+[V:Contrapunctus] c4 G4 |F4 d2 E1 d1 |d8 |c4 A2 d1 B1 |B8 |G2 B1 d1 E4 |D2 E1 E1 F4 |G8 |A8 |G8 |A8 |B8 |^c8 |d8 |
+Contrapunctus bar: 1 note: 1 CantusFirmus bar: 1 note: 1:
+    Magdalena: 10/11 verboten
+    (B: 10 U: 0)
 #    0: [       2], [       1], [       4], [       1], [       2], [       5]
 #    6: [       4], [       5], [       4], [       2], [       3], [       2]
 #   12: [       6], [       1], [       5], [       2], [       2], [       3]
