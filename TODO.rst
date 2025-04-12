@@ -2,26 +2,28 @@ TO DO
 ======
 
 - Takt auf zwei Ganze (Brevis)
-- Takt bis Achteln erweitern
-- schwere, leichte und halbschwere Taktzeiten definieren
-- diff und dist auf Melodie- und Simultan-/Harmonieintervalle umbenennen
-- Kategorien für perfekte und imperfekte Konsonanzen und Dissonanzen macehn
++ Takt bis Achteln erweitern
++ schwere, leichte und halbschwere Taktzeiten definieren
++ diff und dist auf Melodie- und Melodie-/Harmonieintervalle umbenennen
+- Kategorien für perfekte und imperfekte Konsonanzen und Dissonanzen machen
 - Bewegungsrichtungen definieren
-- Überbindungen 
-
-  * was darf gebunden werden?
-  * evtl. immer binden, nicht neu anschlagen
-  * Bindebögen
+- Punktierte
+- nicht ständig die Tonlänge ändern (mehr Gruppen von Achteln oder Vierteln)?
+- Synkopen (kurz-lang(-lang-lang-...)-kurz)
 
 - Notenmaterial (akzidenzien) und ambitus
 - Durchgang, Vorhalt, Wechselnote Regeln
-- Schlüsse und Zwischenkadenzen?
+- Cambiata
+- Schlüsse und Zwischenkadenzen? -> Halbtonanschluss und Akzidenzien als Aufforderung zur Kadenz
 
+  * verschiedene Varianten als Liste oder so
   * evtl. Markierung beim C.F.?
+  
+Was dürfen Achteln und wieso steht das nirgends?
+  
+- erstes Intervall ist erstes Intervall, auch wenn erster Ton CF Pause ist
 
 - Ténor einbauen?
-- seperate Zielfunktion für C.F. (multiobjective optimization)
-- Cambiata
 - C.F. soll auch Halbe können (extra Regel für Synkopen?)
 - C.F. auch angeben zu können wäre gut
 
