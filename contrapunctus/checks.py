@@ -125,6 +125,10 @@ class Check_Melody (Check):
 
     def compute_interval (self):
         prev = self.current.prev
+        if not getattr (self.current, 'halftone', None):
+            return
+        if not getattr (prev, 'halftone', None):
+            return
         d = self.current.halftone.offset - prev.halftone.offset
         if not self.signed:
             d = abs (d)
@@ -147,7 +151,7 @@ class Check_Melody_Interval (Check_Melody):
             return False
         self.current = current
         d = self.compute_interval ()
-        return d in self.interval
+        return d is not None and d in self.interval
     # end def _check
 
 # end class Check_Melody_Interval
@@ -167,6 +171,8 @@ class Check_Melody_Jump (Check_Melody_History):
         if not current.prev:
             return False
         d = self.compute_interval ()
+        if d is None:
+            return False
         retval = False
         # We might want to make the badness and the ugliness different
         # for jumps and directional movements after a jump
@@ -257,7 +263,7 @@ class Check_Harmony_Interval (Check_Harmony):
                 continue
             self.cf_obj = cf_obj
             d = self.compute_interval (cf_obj, cp_obj)
-            if d in self.interval:
+            if d is not None and d in self.interval:
                 return True
         return False
     # end def _check
@@ -265,6 +271,10 @@ class Check_Harmony_Interval (Check_Harmony):
     def compute_interval (self, cf_obj, cp_obj):
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
+        if not getattr (cf_obj, 'halftone', None):
+            return
+        if not getattr (cp_obj, 'halftone', None):
+            return
         self.cft    = cf_obj.halftone.offset
         self.cpt    = cp_obj.halftone.offset
         d = self.cpt - self.cft
@@ -289,7 +299,7 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
             return False
         cf_obj = cf_obj.bar.get_by_offset (cp_obj)
         d = self.compute_interval (cf_obj, cp_obj)
-        if d not in self.interval:
+        if d is not None and d not in self.interval:
             return True
         return False
     # end def _check
@@ -311,7 +321,7 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
         self.cf_obj = cf_obj
         for cf_obj in self.cf_iter ():
             d = self.compute_interval (cf_obj, cp_obj)
-            if d > self.maximum:
+            if d is not None and d > self.maximum:
                 return True
         return False
     # end def _check
@@ -333,7 +343,7 @@ class Check_Harmony_Interval_Min (Check_Harmony_Interval):
         self.cp_obj = cp_obj
         for cf_obj in self.cf_iter ():
             d = self.compute_interval (cf_obj, cp_obj)
-            if d < self.minimum:
+            if d is not None and d < self.minimum:
                 return True
         return False
     # end def _check
@@ -359,6 +369,14 @@ class Check_Melody_Jump_2 (Check_Harmony):
             if not p_cf_obj:
                 continue # pragma: no cover
             self.cf_obj = cf_obj
+            if not getattr (cf_obj, 'halftone', None):
+                continue
+            if not getattr (p_cf_obj, 'halftone', None):
+                continue
+            if not getattr (cp_obj, 'halftone', None):
+                continue
+            if not getattr (p_cp_obj, 'halftone', None):
+                continue
             d1 = cf_obj.halftone.offset - p_cf_obj.halftone.offset
             d2 = cp_obj.halftone.offset - p_cp_obj.halftone.offset
             if d1 > self.limit and d2 > self.limit:
@@ -400,6 +418,8 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
         for cf_obj in self.cf_iter ():
             self.cf_obj = cf_obj
             d = self.compute_interval (cf_obj, cp_obj)
+            if d is None:
+                continue
             # An empty interval matches everything
             if  (   (not self.interval or d in self.interval)
                 and self.direction_check ()
@@ -413,6 +433,14 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
     def compute_interval (self, cf_obj, cp_obj):
         p_cp_obj = cp_obj.prev
         p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+        if not getattr (cf_obj, 'halftone', None):
+            return
+        if not getattr (cp_obj, 'halftone', None):
+            return
+        if not getattr (p_cf_obj, 'halftone', None):
+            return
+        if not getattr (p_cp_obj, 'halftone', None):
+            return
         self.dir_cf = sgn (cf_obj.halftone.offset - p_cf_obj.halftone.offset)
         self.dir_cp = sgn (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
         return super ().compute_interval (cf_obj, cp_obj)
@@ -485,6 +513,8 @@ old_melody_checks_cf = \
         , badness = 10.0
         )
     ]
+magi_melody_checks_cf = old_melody_checks_cf
+
 old_melody_checks_cp = \
     [ Check_Melody_Interval
         ( "0.1.2: no seventh (Septime)"
@@ -501,6 +531,34 @@ old_melody_checks_cp = \
         , interval    = (0,)
         , badness     = 10.0
         , octave      = False
+        )
+    , Check_Melody_Jump
+        ( "Jump"
+        , badness = 10.0
+        )
+    ]
+magi_melody_checks_cp = \
+    [ Check_Melody_Interval
+        ( "no big sixth, no downwards little sixth"
+        , signed = True
+        , interval = (9, -8)
+        , badness = 10.0
+        )
+    , Check_Melody_Interval
+        ( "0.1.2: no Devils interval"
+        , interval = (6,)
+        , badness  = 10.0
+        )
+    , Check_Melody_History
+        ("0.1.2: No consecutive unison (Prim) allowed"
+        , interval    = (0,)
+        , badness     = 10.0
+        , octave      = False
+        )
+    , Check_Melody_Interval
+        ( "0.1.2: no seventh (Septime)"
+        , interval = (10, 11)
+        , badness  = 10.0
         )
     , Check_Melody_Jump
         ( "Jump"
@@ -616,8 +674,98 @@ old_harmony_checks = \
         )
     ]
 
+magi_harmony_checks = \
+    [ Check_Harmony_Interval
+        ( "1.2: Use no unisons except at the beginning or end"
+        , interval  = (0,)
+        , badness   = 10.0
+        , octave    = False
+        , not_first = True
+        , not_last  = True
+        )
+    , Check_Harmony_Interval
+        ( "No Sekund"
+        , interval = (1, 2)
+        , badness  = 10.0
+        , octave   = True
+        )
+    , Check_Harmony_Interval
+        ( "Magdalena: 5/6 verboten"
+        , interval = (5, 6)
+        , badness  = 10.0
+        , octave   = True
+        )
+    , Check_Harmony_Interval
+        ( "Magdalena: 10/11 verboten"
+        , interval = (10, 11)
+        , badness  = 10.0
+        , octave   = True
+        )
+    # 1.6: Attempt to keep any two adjacent parts within a tenth
+    # of each other, unless an exceptionally pleasing line can
+    # be written by moving outside of that range.
+    , Check_Harmony_Interval_Max
+        ( "Distance between voices should not exceed Duodezime"
+        , maximum  = 19
+        , badness  = 10.0
+        )
+    , Check_Harmony_First_Interval
+        ( "1.1. Begin and end on either unison, octave, fifth,"
+          " unless the added part is underneath [it isn't here],"
+          " in which case begin and end only on unison or octave."
+        , interval = (0, 7, 12, -12)
+        , badness  = 100
+        )
+    , Check_Melody_Jump_2
+        ( "Both voices may not jump"
+        , badness  = 10.0
+        )
+    , Check_Harmony_Melody_Direction
+        ( "Magdalena: Ensure that"
+          " the last direction (from where is the fifth or octave"
+          " approached) is different."
+        , interval = (0, 7, 12)
+        , dir      = 'same'
+        , badness  = 9.0
+        )
+    , Check_Harmony_History
+        ( "Magdalena: Avoid parallel unison, octaves, fifths"
+        , interval = (0, 7, 12)
+        , badness  = 9.0
+        )
+
+    # This only checks for two of the *same*. Not if we have several
+    # sixth in a row with different CF. This might need changes to
+    # the underlying check implementation.
+    #, Check_Harmony_Melody_Direction
+    #    ( "For sext (sixth) or terz (third) don't allow several in a row"
+    #    , interval = (3, 4, 8, 9)
+    #    , dir      = 'zero'
+    #    , ugliness = 3
+    #    )
+    # This doesn't allow several (unrelated) sixth or thirds in a row
+    , Check_Harmony_History
+        ( "For sext (sixth) don't allow several in a row"
+        , interval = (8, 9)
+        , ugliness = 3
+        )
+    , Check_Harmony_History
+        ( "For terz (third) don't allow several in a row"
+        , interval = (3, 4)
+        , ugliness = 3
+        )
+    , Check_Harmony_Melody_Direction
+        ( "Generally it's better that voices move in opposite"
+          " direction (or one stays the same if allowed)"
+        , interval = () # All
+        , dir      = 'same'
+        , ugliness = 0.1
+        )
+    ]
+
 checks = dict \
     ( default = (old_melody_checks_cf, old_melody_checks_cp, old_harmony_checks)
+    , special = (magi_melody_checks_cf, magi_melody_checks_cp, magi_harmony_checks)
     )
 
 __all__ = ['checks']
