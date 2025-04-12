@@ -1,0 +1,274 @@
+X: 1
+M: 4/4
+Q: 1/4=200
+%%score (Contrapunctus) (CantusFirmus)
+L: 1/8
+V:CantusFirmus name="Cantus Firmus"
+V:Contrapunctus name=Contrapunctus
+K: DDor
+[V:CantusFirmus] z8 |D8 |D4 F4 |E4 D4 |D4 ^C4 |D8 |D8 |z4 A,4 |C4 D4 |E6 F2 |G2 E2 F2 D2 |E2 C2 D2 B,2 |C2 D2 C4 |B,8 |A,8 |z4 F4 |E4 C4 |D6 C2 |B,4 C4 |D8 |z4 E2 F2 |G2 E2 F4 |E4 A,4 |A,2 B,2 C2 D2 |E2 F2 G4 |G2 F1E1 D2 E2 |F4 E4 |E2 D2 C2 B,2 |A,4 D4 |D2 C2 F4 |F4 E2 D2 |E8 |D8 |
+[V:Contrapunctus] c8 |B8 |B2 A2 A4 |B4 B4 |A2 G1F1 A4 |A4 B4 |A8 |d4 c2 D1E1 |E4 B2 A2 |G4 B2 A1c1 |B2 B1c1 d2 d1F1 |G2 A2 B4 |A2 A1F1 G4 |G8 |c8 |c4 d4 |c4 c4 |F2 F2 A4 |G4 A2 G2 |B4 A4 |B4 B2 d1c1 |B2 B2 A2 c2 |c8 |F2 G2 G2 B2 |B2 D2 E2 D1E1 |E2 A1G1 d2 c1B1 |A4 c4 |B4 A2 G1G1 |A4 B4 |A8 |A4 B4 |^c8 |d8 |
+% CantusFirmus bar: 3 note: 1:
+%     0.1.2: No unison (Prim) allowed
+%     (B: 10 U: 0)
+% Contrapunctus bar: 3 note: 1 CantusFirmus bar: 3 note: 1:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% CantusFirmus bar: 5 note: 1:
+%     0.1.2: No unison (Prim) allowed
+%     (B: 10 U: 0)
+% Contrapunctus bar: 5 note: 2 CantusFirmus bar: 5 note: 1:
+%     Magdalena: 5/6 verboten
+%     (B: 10 U: 0)
+% CantusFirmus bar: 7 note: 1:
+%     0.1.2: No unison (Prim) allowed
+%     (B: 10 U: 0)
+% Contrapunctus bar: 8 note: 3:
+%     0.1.2: no seventh (Septime)
+%     (B: 10 U: 0)
+% Contrapunctus bar: 8 note: 3 CantusFirmus bar: 8 note: 2:
+%     Magdalena: 5/6 verboten
+%     (B: 10 U: 0)
+% CantusFirmus bar: 9 note: 2:
+%     Same-direction movement after jump
+%     (B: 10 U: 0)
+% Contrapunctus bar: 9 note: 2 CantusFirmus bar: 9 note: 2:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 11 note: 4 CantusFirmus bar: 11 note: 3:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 11 note: 4 CantusFirmus bar: 11 note: 3:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 12 note: 1 CantusFirmus bar: 12 note: 1:
+%     For terz (third) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 12 note: 1 CantusFirmus bar: 12 note: 1:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 12 note: 3 CantusFirmus bar: 12 note: 3:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 12 note: 3 CantusFirmus bar: 12 note: 3:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 13 note: 1 CantusFirmus bar: 13 note: 1:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 17 note: 1 CantusFirmus bar: 17 note: 1:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 17 note: 1 CantusFirmus bar: 17 note: 1:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 18 note: 2 CantusFirmus bar: 18 note: 1:
+%     For terz (third) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 19 note: 1 CantusFirmus bar: 19 note: 1:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 19 note: 1 CantusFirmus bar: 19 note: 1:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 19 note: 2 CantusFirmus bar: 19 note: 2:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 19 note: 2 CantusFirmus bar: 19 note: 2:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 20 note: 1 CantusFirmus bar: 20 note: 1:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 21 note: 3 CantusFirmus bar: 21 note: 3:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% CantusFirmus bar: 23 note: 2:
+%     5 or 7
+%     (B: 0 U: 1)
+% CantusFirmus bar: 24 note: 1:
+%     0.1.2: No unison (Prim) allowed
+%     (B: 10 U: 0)
+% Contrapunctus bar: 24 note: 1 CantusFirmus bar: 24 note: 1:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 24 note: 1 CantusFirmus bar: 24 note: 1:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 24 note: 2 CantusFirmus bar: 24 note: 2:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 24 note: 2 CantusFirmus bar: 24 note: 2:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 24 note: 4 CantusFirmus bar: 24 note: 4:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 25 note: 3 CantusFirmus bar: 25 note: 3:
+%     For terz (third) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 25 note: 3 CantusFirmus bar: 25 note: 3:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 25 note: 4 CantusFirmus bar: 25 note: 3:
+%     Magdalena: 5/6 verboten
+%     (B: 10 U: 0)
+% CantusFirmus bar: 26 note: 1:
+%     0.1.2: No unison (Prim) allowed
+%     (B: 10 U: 0)
+% Contrapunctus bar: 26 note: 1 CantusFirmus bar: 26 note: 1:
+%     For terz (third) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 26 note: 2 CantusFirmus bar: 26 note: 2:
+%     For terz (third) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 26 note: 3 CantusFirmus bar: 26 note: 3:
+%     For terz (third) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 26 note: 3 CantusFirmus bar: 26 note: 3:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% CantusFirmus bar: 28 note: 1:
+%     0.1.2: No unison (Prim) allowed
+%     (B: 10 U: 0)
+% Contrapunctus bar: 28 note: 1 CantusFirmus bar: 28 note: 2:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 28 note: 1 CantusFirmus bar: 28 note: 2:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 28 note: 2 CantusFirmus bar: 28 note: 3:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 28 note: 2 CantusFirmus bar: 28 note: 3:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 28 note: 3 CantusFirmus bar: 28 note: 4:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 28 note: 3 CantusFirmus bar: 28 note: 4:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% Contrapunctus bar: 28 note: 4 CantusFirmus bar: 28 note: 4:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% CantusFirmus bar: 29 note: 2:
+%     5 or 7
+%     (B: 0 U: 1)
+% Contrapunctus bar: 29 note: 2 CantusFirmus bar: 29 note: 2:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% CantusFirmus bar: 30 note: 1:
+%     0.1.2: No unison (Prim) allowed
+%     (B: 10 U: 0)
+% CantusFirmus bar: 30 note: 3:
+%     5 or 7
+%     (B: 0 U: 1)
+% Contrapunctus bar: 30 note: 1 CantusFirmus bar: 30 note: 2:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 30 note: 1 CantusFirmus bar: 30 note: 2:
+%     Generally it's better that voices move in opposite direction (or
+%     one stays the same if allowed)
+%     (B: 0 U: 0.1)
+% CantusFirmus bar: 31 note: 1:
+%     0.1.2: No unison (Prim) allowed
+%     (B: 10 U: 0)
+% Contrapunctus bar: 31 note: 1 CantusFirmus bar: 31 note: 1:
+%     For terz (third) don't allow several in a row
+%     (B: 0 U: 3)
+% Contrapunctus bar: 32 note: 1 CantusFirmus bar: 32 note: 1:
+%     For sext (sixth) don't allow several in a row
+%     (B: 0 U: 3)
+% #   0: [   3.988679], [   6.305529], [ 0.06358613], [  0.5494989], [   2.692891]
+% #   5: [    1.00163], [   7.991765], [  0.4660837], [  0.9825849], [   4.534143]
+% #  10: [   6.457425], [   3.587452], [   5.704844], [   0.941307], [   4.524044]
+% #  15: [   7.992815], [    1.69246], [   4.965061], [   3.083666], [   1.771873]
+% #  20: [   6.528482], [  0.3539666], [   1.963051], [   5.724522], [   1.927828]
+% #  25: [   4.160063], [   2.553451], [   2.973035], [   4.280655], [   7.093745]
+% #  30: [   1.658966], [   7.533634], [   6.159273], [   2.701779], [   5.849764]
+% #  35: [  0.8877627], [   0.574559], [   5.478703], [   2.660022], [   5.611211]
+% #  40: [   4.929728], [  0.2112143], [   5.122387], [   3.569401], [   1.181508]
+% #  45: [   4.868068], [  0.6449811], [   3.687974], [   2.981562], [    2.15389]
+% #  50: [   4.332411], [   7.249116], [   1.953423], [   1.936353], [   6.973886]
+% #  55: [   2.380513], [   4.805016], [   1.695431], [  0.1525203], [   1.332122]
+% #  60: [   2.496445], [    5.66851], [  0.7401653], [0.001391745], [   7.936257]
+% #  65: [   5.729112], [    3.99734], [   4.649441], [  0.3888818], [  0.9187406]
+% #  70: [   7.992225], [   2.067777], [   7.203293], [   7.056509], [    1.89089]
+% #  75: [   5.484659], [   4.741792], [   2.095566], [   7.894285], [    1.32253]
+% #  80: [   7.376634], [  0.2924107], [   1.522728], [    6.17939], [ 0.03746313]
+% #  85: [  0.6277114], [  0.1047791], [   1.847406], [   2.937572], [   1.793743]
+% #  90: [  0.4507003], [   6.186451], [   5.440137], [   1.064272], [   5.806182]
+% #  95: [    1.27206], [   1.952346], [   4.477428], [   6.009129], [   2.548103]
+% # 100: [   3.637157], [   1.432884], [   1.881705], [   7.912971], [   1.500238]
+% # 105: [   5.006946], [   7.455254], [0.003196525], [   4.018964], [    6.44053]
+% # 110: [   1.230841], [   5.656015], [  0.2185585], [   5.629758], [   6.967775]
+% # 115: [   1.054671], [   7.538593], [   4.577975], [  0.1228267], [   7.999947]
+% # 120: [   2.090415], [    1.09206], [   3.309733], [   1.025741], [    4.78642]
+% # 125: [ 0.01250182], [    2.09322], [   5.369541], [   3.760365], [   1.687003]
+% # 130: [  0.4249969], [   1.012375], [   1.460396], [   4.782171], [8.872954e-05]
+% # 135: [   4.364326], [   2.508667], [   2.899532], [   3.841224], [  0.8521415]
+% # 140: [ 0.05535989], [   0.984075], [   4.239994], [   3.818197], [    3.36232]
+% # 145: [   1.613599], [   1.620412], [   5.681421], [   1.008564], [   3.542223]
+% # 150: [   7.986826], [  0.5816971], [   4.009751], [   5.085698], [   3.070743]
+% # 155: [   6.588633], [  0.2157922], [   2.142526], [ 0.01451401], [   2.471308]
+% # 160: [  0.8853347], [  0.1063194], [0.003162159], [   4.628726], [   5.825858]
+% # 165: [   2.429372], [   6.058226], [  0.4539735], [   4.164873], [   3.212017]
+% # 170: [   2.346583], [   7.395854], [   7.943685], [   1.378035], [  0.2044297]
+% # 175: [   3.495762], [   2.244122], [   6.992045], [  0.5501185], [  0.8452515]
+% # 180: [  0.9652989], [   2.484833], [   6.974998], [   4.943276], [   1.546164]
+% # 185: [   7.998313], [   5.777533], [   1.088906], [    2.78271], [   1.357417]
+% # 190: [   2.225488], [   3.928196], [   2.221028], [   4.181247], [   1.979714]
+% # 195: [ 0.03371951], [   1.473316], [  0.1955649], [    2.66942], [   3.759048]
+% # 200: [  0.6905975], [   7.270246], [  0.9209097], [   1.259036], [   4.903083]
+% # 205: [   4.714981], [   1.824934], [   3.709331], [   1.808683], [   2.916948]
+% # 210: [   5.067865], [   1.451845], [  0.8561936], [ 0.09561269], [   2.128455]
+% # 215: [   4.198292], [   2.618209], [   1.680031], [   7.490467], [  0.5366107]
+% # 220: [   2.499471], [   5.149021], [   1.210211], [  0.1788693], [   5.521757]
+% # 225: [   1.200801], [   5.919387], [    4.12063], [  0.6957599], [   7.454494]
+% # 230: [    6.30881], [   1.165656], [   5.988944], [   1.175505], [   5.503144]
+% # 235: [  0.1369798], [   1.003569], [   4.217527], [   3.150258], [   1.220916]
+% # 240: [   6.834796], [   5.851811], [   3.079872], [   6.580018], [   1.765911]
+% # 245: [   5.723718], [   6.219441], [   1.343151], [   1.727566], [   1.240369]
+% # 250: [  0.4108396], [   1.299187], [    7.99769], [   1.236688], [   2.724555]
+% # 255: [   1.829725], [   3.260517], [   4.665298], [   1.903014], [   3.046901]
+% # 260: [   1.915169], [   1.704079], [   5.866156], [   3.631904], [   1.012446]
+% # 265: [   5.318001], [   1.922079], [  0.6812408], [   7.087939], [   1.767725]
+% # 270: [   1.737441], [   7.263882], [  0.1020506], [  0.2048709], [    1.66817]
+% # 275: [   1.308913], [   1.031227], [  0.1587101], [     4.6202], [   3.258616]
+% # 280: [   1.451092], [    7.81736], [   7.549919], [  0.8080065], [   6.832307]
+% # 285: [   5.885179], [   2.328286], [   4.695872], [   1.984493], [   7.966751]
+% # 290: [   7.987573], [   2.450638], [   6.284894], [   4.817061], [  0.3723494]
+% # 295: [   5.555955], [   7.996855], [   2.714522], [   5.041077], [   1.406362]
+% # 300: [   1.796074], [   7.912479], [   1.092016], [   4.515419], [    5.23266]
+% # 305: [   0.723337], [   3.175177], [   3.796625], [     2.2067], [   4.940547]
+% # 310: [  0.0895771], [   7.946499], [   7.949585], [   2.226824], [    5.14497]
+% # 315: [    6.59135], [   1.230148], [   3.399565], [   0.652449], [   3.060562]
+% # 320: [   4.137134], [   1.294701], [   6.974172], [  0.6482734], [   1.000004]
+% # 325: [   3.664078], [   6.277676], [   1.657498], [   6.114815], [   6.094974]
+% # 330: [   2.591935], [   4.146392], [  0.4303195], [   1.740369], [   2.798013]
+% # 335: [   2.946575], [   5.853865], [   6.415005], [   1.980711], [   2.989942]
+% # 340: [   3.096767]
+% 
