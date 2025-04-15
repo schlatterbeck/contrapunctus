@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright (C) 2017-2024
+# Copyright (C) 2017-2025
 # Magdalena Schlatterbeck
 # Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
@@ -535,6 +535,15 @@ class Bar_Object:
     __repr__ = __str__
 
     @property
+    def abslen (self):
+        try:
+            unit = self.bar.voice.tune.unit
+        except AttributeError:
+            return None
+        return len (self) / unit
+    # end def abslen
+
+    @property
     def next (self):
         if self.bar.objects [-1] is self:
             # An empty next bar may exist during testing/searching
@@ -598,8 +607,9 @@ class Bar_Object:
 
 class Tone (Bar_Object):
 
-    def __init__ (self, halftone, duration):
+    def __init__ (self, halftone, duration, bind = False):
         self.halftone = halftone
+        self.bind     = bind # bind to next tone
         super ().__init__ (duration)
     # end def __init__
 
@@ -607,6 +617,10 @@ class Tone (Bar_Object):
     def from_string (cls, accidentals, s):
         assert s
         n = None
+        bind = False
+        if s [-1] == '-':
+            bind = True
+            s = s [:-1]
         for n, x in enumerate (reversed (s)):
             if not x.isdigit ():
                 break
@@ -624,7 +638,7 @@ class Tone (Bar_Object):
                 ht = halftone (accidentals [h0] + ht)
             else:
                 ht = halftone (ht)
-        return cls (ht, dur)
+        return cls (ht, dur, bind = bind)
     # end def from_string
 
     def as_abc (self):
@@ -632,18 +646,26 @@ class Tone (Bar_Object):
             key = self.bar.voice.tune.key
         except AttributeError:
             key = None
-        return "%s%s" % (self.halftone.as_abc (key), self.length ())
+        b = ['', '-'][self.bind]
+        e = ' '
+        # No trailing space when not last and abslen <= 1/8
+        eights = Rational (1, 8)
+        if not self.is_last and self.abslen and self.abslen <= eights:
+            if self.next.abslen <= eights:
+                e = ''
+        return "%s%s%s%s" % (self.halftone.as_abc (key), self.length (), b, e)
     # end def as_abc
 
     def copy (self):
         # self.halftone is a singleton
-        return self.__class__ (self.halftone, self.duration)
+        return self.__class__ (self.halftone, self.duration, bind = self.bind)
     # end def copy
 
     def transpose (self, steps, key = 'C'):
         return self.__class__ \
             ( self.halftone.transpose (steps, key)
             , duration = self.duration
+            , bind = self.bind
             )
     # end def transpose
 
@@ -659,7 +681,7 @@ class Pause (Bar_Object):
     # end def from_string
 
     def as_abc (self):
-        return "z%s" % (self.length ())
+        return "z%s " % (self.length ())
     # end def as_abc
 
 # end class Pause
@@ -868,7 +890,7 @@ for m in Key.modes:
 
 class Bar:
 
-    def __init__ (self, duration, unit = 8):
+    def __init__ (self, duration, unit = 8, end = ''):
         assert int (duration) == duration
         self.duration = int (duration)
         self.dur_sum  = 0
@@ -876,11 +898,19 @@ class Bar:
         self.unit     = unit
         self.voice    = None
         self.idx      = None
+        self.end      = end
     # end def __init__
 
     @classmethod
     def from_string (cls, key, unit, s):
-        bar = cls (unit, unit)
+        end = ''
+        if s.endswith ('|\n'):
+            end = '|\n'
+            s = s [:-2]
+        if s.endswith ('\n'):
+            end = '\n'
+            s = s [:-1]
+        bar = cls (unit, unit, end)
         for t in s.strip ().split ():
             while t:
                 tone = []
@@ -896,9 +926,15 @@ class Bar:
                 while t and t [0].isdigit ():
                     tone.append (t [0])
                     t = t [1:]
+                if t and t [0] == '-':
+                    tone.append (t [0])
+                    t = t [1:]
                 tone = ''.join (tone)
                 assert tone
-                bar.add (Bar_Object.from_string (key.accidentals, tone))
+                bo = Bar_Object.from_string (key.accidentals, tone)
+                if bo is None:
+                    raise ValueError ('Invalid Bar object: "%s"' % tone)
+                bar.add (bo)
         return bar
     # end def from_string
 
@@ -942,8 +978,8 @@ class Bar:
         r = []
         for bo in self.objects:
             r.append (bo.as_abc ())
-        r.append ('|')
-        return ' '.join (r)
+        r.append ('|%s' % self.end)
+        return ''.join (r)
     # end def as_abc
 
     def change_unit (self, unit, dry_run = False):
@@ -977,7 +1013,7 @@ class Bar:
     # end def change_unit
 
     def copy (self):
-        other = self.__class__ (self.duration, self.unit)
+        other = self.__class__ (self.duration, self.unit, self.end)
         for obj in self.objects:
             other.add (obj.copy ())
         return other
@@ -1002,7 +1038,7 @@ class Bar:
     # end def get_by_offset
 
     def transpose (self, steps, key = 'C'):
-        b = self.__class__ (self.duration, self.unit)
+        b = self.__class__ (self.duration, self.unit, self.end)
         for o in self.objects:
             b.add (o.transpose (steps, key))
         return b
@@ -1069,8 +1105,16 @@ class Voice:
         """ Parse (and append) bars from string.
             Can be called multiple times to append multiple lines.
         """
-        for b in s.split ('|'):
-            self.add (Bar.from_string (key, unit, b))
+        bars = s.split ('|')
+        for n, b in enumerate (bars):
+            r = ''
+            if n + 1 == len (bars):
+                r = '\n'
+            if n + 2 == len (bars) and bars [n + 1] == '':
+                r = '|\n'
+            self.add (Bar.from_string (key, unit, b + r))
+            if r:
+                break
     # end def bars_from_string
 
     def copy (self):
