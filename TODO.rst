@@ -1,10 +1,10 @@
 TO DO
 ======
 
+Allgemein
+---------
+
 - Takt auf zwei Ganze (Brevis)
-+ Takt bis Achteln erweitern
-+ schwere, leichte und halbschwere Taktzeiten definieren
-+ diff und dist auf Melodie- und Melodie-/Harmonieintervalle umbenennen
 - Kategorien für perfekte und imperfekte Konsonanzen und Dissonanzen machen
 - Bewegungsrichtungen definieren
 - Punktierte
@@ -14,25 +14,33 @@ TO DO
 - Notenmaterial (akzidenzien) und ambitus
 - Durchgang, Vorhalt, Wechselnote Regeln
 - Cambiata
-- Schlüsse und Zwischenkadenzen? -> Halbtonanschluss und Akzidenzien als Aufforderung zur Kadenz
+- Schlüsse und Zwischenkadenzen? -> Halbtonanschluss und Akzidenzien als
+  Aufforderung zur Kadenz
 
   * verschiedene Varianten als Liste oder so
   * evtl. Markierung beim C.F.?
   
 Was dürfen Achteln und wieso steht das nirgends?
   
-- erstes Intervall ist erstes Intervall, auch wenn erster Ton CF Pause ist
-
 - Ténor einbauen?
 - C.F. soll auch Halbe können (extra Regel für Synkopen?)
-- C.F. auch angeben zu können wäre gut
+
+Done
+++++
+
++ Takt bis Achteln erweitern
++ schwere, leichte und halbschwere Taktzeiten definieren
++ diff und dist auf Melodie- und Melodie-/Harmonieintervalle umbenennen
++ erstes Intervall ist erstes Intervall, auch wenn erster Ton CF Pause ist
++ C.F. auch angeben zu können wäre gut
 
 wichtige Rand-/ Zwischennotizen
 --------------------------------
 
 - Vorhalte:
 
-  * bei Septim- und Quartvorhalten bleibt immer die Oberstimme liegen, Unterstimme schreitet zum nächsten Ton vor und erzeugt so Dissonanz
+  * bei Septim- und Quartvorhalten bleibt immer die Oberstimme liegen,
+    Unterstimme schreitet zum nächsten Ton vor und erzeugt so Dissonanz
   * beim Sekundvorhalt bleibt immer die Unterstimme liegen
 
 - keine parallelen großen Terzen -> sonst entsteht Tritonus
@@ -46,9 +54,13 @@ Features
 --------
 
 - Allow specified --cantus-firmus tune to be transposed before use
-- Permit Pause in tunes, the current checks cannot deal with this
 - Better searching for CP for given CF for the last 4 bars, this
   currently uses a fixed combination of tone lengths
+
+Features Done
++++++++++++++
+
++ Permit Pause in tunes, the current checks cannot deal with this
 
 Tests
 -----
