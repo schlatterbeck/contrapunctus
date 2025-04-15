@@ -14,7 +14,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |G8 |F8 |G8 |E8 |F8 |E8 |D8 |F8 |E8 |D8 |
-[V:Contrapunctus] d8 |B4 A2 G1 B1 |B8 |d8 |d8 |c4 G2 d2 |c8 |F2 B2 c2 c1 c1 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B4 A2 G1B1 |B8 |d8 |d8 |c4 G2 d2 |c8 |F2 B2 c2 c1c1 |d8 |c8 |^c8 |d8 |
 #    0: [       3], [       7], [       1], [       4], [       7], [       1]
 #    6: [       0], [       4], [       1], [       0], [       2], [       2]
 #   12: [       5], [       1], [       7], [       1], [       1], [       4]

@@ -23,7 +23,7 @@
 
 from bisect import bisect_right
 from functools import cached_property
-from rsclib.rational import Rational
+from fractions import Fraction
 
 def sgn (i):
     if i > 0:
@@ -580,6 +580,11 @@ class Bar_Object:
         return False
     # end def is_last
 
+    @property
+    def is_pause (self):
+        return isinstance (self, Pause)
+    # end def is_pause
+
     def copy (self):
         return self.__class__ (self.duration)
     # end def copy
@@ -649,9 +654,9 @@ class Tone (Bar_Object):
         b = ['', '-'][self.bind]
         e = ' '
         # No trailing space when not last and abslen <= 1/8
-        eights = Rational (1, 8)
+        eights = Fraction (1, 8)
         if not self.is_last and self.abslen and self.abslen <= eights:
-            if self.next.abslen <= eights:
+            if self.next and self.next.abslen <= eights:
                 e = ''
         return "%s%s%s%s" % (self.halftone.as_abc (key), self.length (), b, e)
     # end def as_abc
@@ -978,7 +983,10 @@ class Bar:
         r = []
         for bo in self.objects:
             r.append (bo.as_abc ())
-        r.append ('|%s' % self.end)
+        e = self.end
+        if not self.next:
+            e = e.rstrip ('\n')
+        r.append ('|%s' % e)
         return ''.join (r)
     # end def as_abc
 
@@ -989,7 +997,7 @@ class Bar:
         # The following never happens if called via Tune, it also checks this
         if self.unit == unit:
             return # pragma: no cover
-        factor  = Rational (unit) / self.unit
+        factor  = Fraction (unit) / self.unit
         newunit = factor * self.unit
         newdur  = factor * self.duration
         if newunit != int (newunit) or newdur != int (newdur):
@@ -1164,7 +1172,7 @@ class Tune:
         self.title   = title
         self.number  = number
         self.kw      = kw
-        self._unit   = unit or Rational (8)
+        self._unit   = unit or Fraction (8)
         self.comment = comment or []
     # end def __init__
 
@@ -1253,7 +1261,7 @@ class Tune:
                             ('Duplicate unit note length: %s' % line) \
                             # pragma: no cover
                     n, d = (int (x) for x in v.split ('/', 1))
-                    unit = Rational (1) / Rational (n, d)
+                    unit = Fraction (1) / Fraction (n, d)
                     if int (unit) != unit:
                         raise NotImplementedError \
                             ('Non integral unit') # pragma: no cover
@@ -1376,7 +1384,7 @@ class Tune:
             else:
                 for v in l:
                     r.append ('%%%%%s %s' % (k, v))
-        r.append ("L: %s" % (Rational (1) / self.unit))
+        r.append ("L: %s" % (Fraction (1) / self.unit))
         for v in self.voices:
             h = v.as_abc_header ()
             if h:

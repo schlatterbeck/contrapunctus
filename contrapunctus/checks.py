@@ -22,7 +22,7 @@
 # ****************************************************************************
 
 from textwrap import fill as text_wrap
-from .tune    import sgn
+from .tune    import sgn, Pause
 
 class Check:
     """ Super class of all checks
@@ -290,14 +290,26 @@ class Check_Harmony_Interval (Check_Harmony):
 class Check_Harmony_First_Interval (Check_Harmony_Interval):
     """ Note that the interval is *inverted*: Only the elements in
         interval are allowed.
+        Note that this checks the first harmony interval where we do not
+        have a pause from the start (the first real harmony interval).
     """
     def _check (self, cf_obj, cp_obj):
-        # Only check for the very first object
-        # Not sure if this holds for *all* cp_objects in the first bar,
-        # if this should be the case we need to use cf_obj below.
-        if not cp_obj.is_first:
-            return False
+        """ We check the first two objects *which are not a Pause*
+        """
         cf_obj = cf_obj.bar.get_by_offset (cp_obj)
+        if cf_obj.is_pause or cp_obj.is_pause:
+            return False
+        # Check if everything *before* cp_obj is a pause
+        p_cp_obj = cp_obj
+        while not p_cp_obj.is_first:
+            p_cp_obj = p_cp_obj.prev
+            # Happens only during testing/searching when the previous
+            # bar has no objects:
+            if p_cp_obj is None:
+                return False
+            p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+            if not p_cp_obj.is_pause and not p_cf_obj.is_pause:
+                return False
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d not in self.interval:
             return True

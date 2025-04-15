@@ -7,7 +7,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |G8 |F8 |G8 |E8 |F8 |E8 |D8 |F8 |E8 |D8 |
-[V:Contrapunctus] d8 |B4 c4 |B4 d4 |d2 c1 d1 c2 d2 |B8 |B2 c2 B2 c1 B1 |A8 |B4 G4 |A8 |A4 d2 c2 |^c8 |d8 |
+[V:Contrapunctus] d8 |B4 c4 |B4 d4 |d2 c1d1 c2 d2 |B8 |B2 c2 B2 c1B1 |A8 |B4 G4 |A8 |A4 d2 c2 |^c8 |d8 |
 % Command-line options:
 % --cantus-firmus=+      --df                   --random-seed=23
 % --tune-length=12       --verbose              --verbose

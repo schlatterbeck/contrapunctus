@@ -197,7 +197,7 @@ class Test_Contrapunctus:
             t = t.prev
             if t:
                 tones.append (t.as_abc ())
-        assert ' '.join (tones) == 'g1 f1 e1 d1 c1 b1 a1'
+        assert ''.join (tones) == 'g1 f1 e1 d1 c1 b1 a1 '
     # end def test_prev
 
     def test_check_harmony_interval_max (self):
@@ -585,7 +585,7 @@ class Test_Contrapunctus:
         fake.set_allele (1, 1, 1 + cpl +  9,  2) # CP pitch (F)
         fake.set_allele (1, 1, 1 + cpl + 10,  3) # CP pitch (G)
         t = fake.as_tune ()
-        result = header + '[V:Contrapunctus] G4 A2 F2 |G4 A2 F1 G1 |^c8 |d8 |'
+        result = header + '[V:Contrapunctus] G4 A2 F2 |G4 A2 F1G1 |^c8 |d8 |'
         assert t == result
     # end def test_gene_decode_422_4211
 
@@ -623,8 +623,8 @@ class Test_Contrapunctus:
         fake.set_allele (1, 1, 1 + cpl +  9,  4) # CP pitch (A)
         fake.set_allele (1, 1, 1 + cpl + 10,  4) # CP pitch (A)
         t = fake.as_tune ()
-        result = header + '[V:Contrapunctus] G2 A2 A2 F1 F1 |' \
-                          'G2 A1 A1 G2 A1 A1 |^c8 |d8 |'
+        result = header + '[V:Contrapunctus] G2 A2 A2 F1F1 |' \
+                          'G2 A1A1 G2 A1A1 |^c8 |d8 |'
         assert t == result
     # end def test_gene_decode_22211_211211
 
@@ -704,6 +704,60 @@ class Test_Contrapunctus:
         b, u = check.check (b11.objects [0], b21.objects [0])
         assert b == 100
     # end def test_check_harmony_first_interval
+
+    def test_check_harmony_first_interval_complex (self):
+        check = checks.Check_Harmony_First_Interval \
+            ( 'unison, octave, fifth'
+            , interval = (0, 7, 12)
+            , badness  = 100
+            )
+        v_cf  = Voice ()
+        v_cp  = Voice ()
+
+        bcf0  = Bar (8, 8)
+        v_cf.add (bcf0)
+        p_cf0 = Pause (8)
+        bcf0.add (p_cf0)
+        bcf1  = Bar (8, 8)
+        v_cf.add (bcf1)
+        t_cf11 = Tone (halftone ('D'), 8)
+        bcf1.add (t_cf11)
+        bcf2  = Bar (8, 8)
+        v_cf.add (bcf2)
+        t_cf21 = Tone (halftone ('D'), 4)
+        t_cf22 = Tone (halftone ('F'), 4)
+        bcf2.add (t_cf21)
+        bcf2.add (t_cf22)
+
+        bcp0  = Bar (8, 8)
+        v_cp.add (bcp0)
+        t_cp01 = Tone (halftone ('c'), 8)
+        bcp0.add (t_cp01)
+        bcp1  = Bar (8, 8)
+        v_cp.add (bcp1)
+        t_cp11 = Tone (halftone ('B'), 8)
+        bcp1.add (t_cp11)
+        bcp2  = Bar (8, 8)
+        v_cp.add (bcp2)
+        t_cp21 = Tone (halftone ('B'), 2)
+        t_cp22 = Tone (halftone ('A'), 2)
+        t_cp23 = Tone (halftone ('A'), 4)
+        bcp2.add (t_cp21)
+        bcp2.add (t_cp22)
+        bcp2.add (t_cp23)
+
+        b, u = check.check (p_cf0, t_cp01)
+        assert b == 0
+        b, u = check.check (t_cf11, t_cp11)
+        assert b == 100
+        b, u = check.check (t_cf21, t_cp21)
+        assert b == 0
+        b, u = check.check (t_cf21, t_cp22)
+        assert b == 0
+        b, u = check.check (t_cf22, t_cp23)
+        assert b == 0
+    # end def test_check_harmony_first_interval_complex
+
 
     def test_dorian_hypodorian (self):
         dorian = ['D', 'E', 'F', 'G', 'A', 'B', 'c']
@@ -834,14 +888,14 @@ class Test_Contrapunctus:
         # Cannot get this via getattr because we have a transpose method:
         assert voice.properties ['transpose'] == '-24'
         bars = \
-            ( ( 'B2 c2 d2 g2', 'f6 e2', 'd2 c2 d2 e2', 'd4 c2 z2')
-            , ( 'G2 A2 B2 e2', 'd6 c2', 'B2 A2 B2 c2', 'B4 A2 z2')
-            , ( 'z8', 'z2 f2 g2 a2', 'b2 z2 z2 e2', 'f4 f2 z2')
+            ( ( 'B2 c2 d2 g2 ', 'f6 e2 ', 'd2 c2 d2 e2 ', 'd4 c2 z2 ')
+            , ( 'G2 A2 B2 e2 ', 'd6 c2 ', 'B2 A2 B2 c2 ', 'B4 A2 z2 ')
+            , ( 'z8 ', 'z2 f2 g2 a2 ', 'b2 z2 z2 e2 ', 'f4 f2 z2 ')
             )
         for voice, b in zip (tune.voices, bars):
             assert len (voice.bars) == len (b)
             for bar, bstr in zip (voice.bars, b):
-                bs = ' '.join (obj.as_abc () for obj in bar.objects)
+                bs = ''.join (obj.as_abc () for obj in bar.objects)
                 assert bs == bstr
         # Finally test that it roundtrips:
         assert tune.as_abc ().strip () == tune_output

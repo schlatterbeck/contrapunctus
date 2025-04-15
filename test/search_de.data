@@ -14,7 +14,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |A,8 |A8 |F8 |E8 |C8 |D8 |E8 |B,8 |A,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B2 F1 G1 D2 c2 |B2 D2 E2 c2 |F2 D1 A1 B4 |D4 d4 |G4 F2 c2 |B8 |A4 B4 |B8 |c8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B2 F1G1 D2 c2 |B2 D2 E2 c2 |F2 D1A1 B4 |D4 d4 |G4 F2 c2 |B8 |A4 B4 |B8 |c8 |^c8 |d8 |
 #   0: [  0.5437431], [    7.19477], [   5.316016], [   4.591544], [   2.195466]
 #   5: [   3.553029], [   4.381207], [   1.613033], [   0.784236], [   3.817055]
 #  10: [   4.300869], [  0.4025806], [   3.183929], [   2.337352], [   1.540443]
@@ -52,7 +52,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |A,8 |F8 |F8 |E8 |C8 |D8 |E8 |B,8 |A,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B2 F1 G1 D2 c2 |B2 D2 E2 c2 |F2 D1 A1 B4 |D4 d4 |G4 F2 c2 |B8 |A2 d1 D1 B4 |B8 |c8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B2 F1G1 D2 c2 |B2 D2 E2 c2 |F2 D1A1 B4 |D4 d4 |G4 F2 c2 |B8 |A2 d1D1 B4 |B8 |c8 |^c8 |d8 |
 #   0: [  0.5437431], [   5.168837], [   5.316016], [   4.591544], [   2.195466]
 #   5: [   3.553029], [   4.381207], [   1.613033], [   0.784236], [   3.524758]
 #  10: [   4.300869], [  0.4025806], [   3.183929], [   2.337352], [   1.540443]
@@ -90,7 +90,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |A,8 |F8 |F8 |E8 |C8 |D8 |E8 |B,8 |A,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B2 F1 A1 D2 c2 |B2 D2 E2 c2 |F2 B1 A1 B4 |D4 d4 |G4 E2 c2 |B8 |A2 d1 D1 B4 |B8 |c8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B2 F1A1 D2 c2 |B2 D2 E2 c2 |F2 B1A1 B4 |D4 d4 |G4 E2 c2 |B8 |A2 d1D1 B4 |B8 |c8 |^c8 |d8 |
 #   0: [  0.5437431], [   5.168837], [   5.316016], [   4.591544], [   2.195466]
 #   5: [   3.553029], [   4.381207], [   1.613033], [   0.784236], [   3.524758]
 #  10: [   4.300869], [  0.4025806], [   3.183929], [   1.268516], [   1.331694]
@@ -128,7 +128,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |A8 |G8 |B,8 |C8 |D8 |B,8 |G8 |F8 |G8 |E8 |D8 |
-[V:Contrapunctus] A8 |A2 c1 D1 D2 F2 |G2 G2 B2 D2 |D4 F2 D2 |E2 F1 D1 D2 c2 |B8 |B8 |d8 |d4 D2 E1 G1 |B2 d1 A1 F2 D1 d1 |^c8 |d8 |
+[V:Contrapunctus] A8 |A2 c1D1 D2 F2 |G2 G2 B2 D2 |D4 F2 D2 |E2 F1D1 D2 c2 |B8 |B8 |d8 |d4 D2 E1G1 |B2 d1A1 F2 D1d1 |^c8 |d8 |
 #   0: [    7.09728], [   6.922292], [   1.987051], [   2.648725], [   3.529871]
 #   5: [   1.021984], [   6.376382], [   5.195212], [   6.525938], [   3.012154]
 #  10: [   4.109993], [  0.7138616], [   2.471394], [   3.071292], [   1.032697]
@@ -166,7 +166,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |E8 |F8 |F8 |D8 |A8 |F8 |G8 |F8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G8 |F4 G4 |A8 |d8 |d8 |G4 A2 d1 d1 |B8 |c8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G8 |F4 G4 |A8 |d8 |d8 |G4 A2 d1d1 |B8 |c8 |^c8 |d8 |
 #   0: [   1.540033], [   4.562976], [   5.186767], [   5.551046], [    3.85848]
 #   5: [   7.296758], [   5.517291], [   6.694865], [   5.994315], [   3.958047]
 #  10: [   4.128098], [  0.3287995], [   7.080715], [   1.768076], [   1.184777]
@@ -204,7 +204,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |E8 |F8 |F8 |D8 |A8 |F8 |G8 |F8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G8 |A4 G4 |A8 |d8 |d4 c2 c2 |c4 A2 d1 d1 |B8 |c8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G8 |A4 G4 |A8 |d8 |d4 c2 c2 |c4 A2 d1d1 |B8 |c8 |^c8 |d8 |
 #   0: [   1.540033], [   4.562976], [   5.186767], [   5.551046], [    3.85848]
 #   5: [   7.296758], [   5.517291], [   6.694865], [   5.994315], [   3.958047]
 #  10: [   4.128098], [  0.3287995], [   7.080715], [   1.768076], [   1.184777]
@@ -242,7 +242,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |A,8 |A,8 |C8 |B,8 |F8 |F8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G4 A2 B2 |F4 B2 c2 |c2 B1 D1 E2 A2 |G8 |D8 |d2 c2 A4 |B4 A4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G4 A2 B2 |F4 B2 c2 |c2 B1D1 E2 A2 |G8 |D8 |d2 c2 A4 |B4 A4 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.751294], [  0.6840527], [  0.8154246], [   2.418402]
 #   5: [   1.625005], [   5.111817], [   5.940501], [   3.563916], [   3.961263]
 #  10: [   7.981473], [ 0.04490014], [ 0.01172047], [   1.561794], [   2.204003]
@@ -280,7 +280,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |C8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |d2 B2 D2 E1 F1 |A2 B1 B1 d2 c1 B1 |d8 |c8 |d2 E2 A2 d1 A1 |A8 |d8 |d2 G2 G2 B1 B1 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |d2 B2 D2 E1F1 |A2 B1B1 d2 c1B1 |d8 |c8 |d2 E2 A2 d1A1 |A8 |d8 |d2 G2 G2 B1B1 |d8 |^c8 |d8 |
 #   0: [   1.355922], [    2.57989], [   1.307315], [  0.2223306], [     2.4133]
 #   5: [   2.475497], [   1.713529], [  0.9208078], [   1.056992], [   3.150013]
 #  10: [   4.298645], [   1.092981], [   7.534649], [   1.833684], [   1.756435]
@@ -318,7 +318,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |C8 |F8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G4 A2 B1 c1 |F4 d2 c2 |c2 B1 D1 E2 A2 |G8 |D8 |d2 d2 A4 |B4 A4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G4 A2 B1c1 |F4 d2 c2 |c2 B1D1 E2 A2 |G8 |D8 |d2 d2 A4 |B4 A4 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.751294], [   1.489056], [  0.8154246], [   2.418402]
 #   5: [   1.625005], [     2.5564], [   5.940501], [   3.563916], [   3.961263]
 #  10: [   7.981473], [ 0.04490014], [   2.417951], [   1.123941], [   2.204003]
@@ -356,7 +356,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |C8 |F8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |F4 d4 |c2 B1 D1 E2 A2 |G8 |D8 |d2 d2 A4 |B4 A4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |F4 d4 |c2 B1D1 E2 A2 |G8 |D8 |d2 d2 A4 |B4 A4 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.751294], [   1.489056], [  0.8154246], [   2.418402]
 #   5: [   1.625005], [     2.5564], [   5.940501], [   3.563916], [   3.961263]
 #  10: [   7.981473], [ 0.03843661], [   2.417951], [   1.123941], [   2.204003]
@@ -394,7 +394,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |C8 |F8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |F4 d4 |c2 B1 D1 E2 A2 |G8 |D8 |d2 d2 A4 |B4 A4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |F4 d4 |c2 B1D1 E2 A2 |G8 |D8 |d2 d2 A4 |B4 A4 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.751294], [   1.307321], [  0.8154246], [   2.418402]
 #   5: [   1.625005], [     2.5564], [   5.940501], [   3.563916], [   3.961263]
 #  10: [   7.981473], [ 0.03843661], [   2.417951], [   1.123941], [   2.204003]
@@ -432,7 +432,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |F8 |F8 |D8 |A8 |F8 |G8 |F8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G2 G1 F1 d2 c1 d1 |A8 |A8 |d8 |D2 d1 B1 c2 c2 |d4 A4 |B8 |c8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G2 G1F1 d2 c1d1 |A8 |A8 |d8 |D2 d1B1 c2 c2 |d4 A4 |B8 |c8 |^c8 |d8 |
 #   0: [   1.540033], [   2.797776], [   5.186767], [   5.551046], [    3.85848]
 #   5: [   7.296758], [   5.517291], [   6.694865], [   5.994315], [   3.234181]
 #  10: [   4.128098], [  0.2047909], [   2.432351], [   2.747931], [   1.425447]
@@ -470,7 +470,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |F8 |F8 |D8 |A8 |F8 |G8 |F8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G2 G1 F1 d2 c1 d1 |A8 |A8 |d8 |D2 A1 B1 c2 c2 |d4 A4 |B8 |c8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G2 G1F1 d2 c1d1 |A8 |A8 |d8 |D2 A1B1 c2 c2 |d4 A4 |B8 |c8 |^c8 |d8 |
 #   0: [   1.540033], [   2.797776], [   5.186767], [   5.551046], [    3.85848]
 #   5: [   7.317556], [   5.517291], [   6.986927], [   5.994315], [   3.234181]
 #  10: [   4.128098], [  0.2047909], [   1.278128], [   2.747931], [   1.425447]
@@ -508,7 +508,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |A,8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B2 B1 B1 D2 E1 F1 |c2 A1 G1 A2 c1 c1 |d8 |c8 |d2 E1 d1 A2 d1 A1 |A8 |d8 |d2 B2 G2 B1 B1 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B2 B1B1 D2 E1F1 |c2 A1G1 A2 c1c1 |d8 |c8 |d2 E1d1 A2 d1A1 |A8 |d8 |d2 B2 G2 B1B1 |d8 |^c8 |d8 |
 #   0: [   1.355922], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [  0.8367494], [   1.197623], [  0.9208078], [   1.056992], [   3.650124]
 #  10: [   4.107852], [  0.2336243], [   7.534649], [   1.833684], [   2.988859]
@@ -546,7 +546,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |A,8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B2 B1 B1 D2 E1 F1 |c2 B1 G1 A2 c1 c1 |d8 |c8 |d2 E1 d1 A2 d1 A1 |A8 |d8 |d2 B2 G2 B1 B1 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B2 B1B1 D2 E1F1 |c2 B1G1 A2 c1c1 |d8 |c8 |d2 E1d1 A2 d1A1 |A8 |d8 |d2 B2 G2 B1B1 |d8 |^c8 |d8 |
 #   0: [   1.355922], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [  0.8367494], [   1.197623], [   0.917143], [   1.991067], [   3.650124]
 #  10: [   4.107852], [   0.101192], [   6.537913], [   1.365456], [    2.99208]
@@ -584,7 +584,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |A,8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B2 B1 B1 D2 E1 F1 |c2 c1 G1 A2 c1 c1 |d8 |c8 |d2 E1 d1 A2 d1 A1 |A8 |d8 |d2 B2 G2 B1 B1 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B2 B1B1 D2 E1F1 |c2 c1G1 A2 c1c1 |d8 |c8 |d2 E1d1 A2 d1A1 |A8 |d8 |d2 B2 G2 B1B1 |d8 |^c8 |d8 |
 #   0: [   1.355922], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [  0.8367494], [   1.197623], [   0.917143], [   1.991067], [   3.650124]
 #  10: [   4.107852], [   0.101192], [   6.537913], [   1.365456], [    2.99208]
@@ -660,7 +660,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |d2 c2 A2 c2 |B2 A2 d4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |d2 c2 A2 c2 |B2 A2 d4 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [  0.5109209], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [     4.8446], [   3.563916], [   3.975352]
 #  10: [   7.981473], [ 0.03843661], [   5.779921], [   4.187842], [   2.905893]
@@ -698,7 +698,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |d2 c2 A2 c2 |B2 A2 d4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |d2 c2 A2 c2 |B2 A2 d4 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [  0.5109209], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [     4.8446], [   3.563916], [   3.780541]
 #  10: [   7.981473], [ 0.03843661], [   5.779921], [   3.406005], [   2.905893]
@@ -736,7 +736,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |d2 c2 A4 |B2 A2 d4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |d2 c2 A4 |B2 A2 d4 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [  0.5109209], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [     4.8446], [   3.563916], [   3.885346]
 #  10: [   7.981473], [ 0.03843661], [   5.779921], [   3.406005], [   2.905893]
@@ -774,7 +774,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |A,8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |c2 d1 G1 A2 c1 c1 |d8 |c8 |d4 A2 d1 A1 |A8 |d8 |d2 B2 c2 c1 B1 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |c2 d1G1 A2 c1c1 |d8 |c8 |d4 A2 d1A1 |A8 |d8 |d2 B2 c2 c1B1 |d8 |^c8 |d8 |
 #   0: [   1.355922], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [  0.8367494], [   1.551613], [   0.917143], [   1.991067], [   3.980993]
 #  10: [   4.107852], [  0.1628538], [   4.176395], [   1.365456], [   2.384856]
@@ -812,7 +812,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |A,8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |c2 d1 G1 A2 c1 c1 |d8 |c8 |d4 A2 d1 A1 |A8 |d8 |d2 B2 c2 c1 B1 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |c2 d1G1 A2 c1c1 |d8 |c8 |d4 A2 d1A1 |A8 |d8 |d2 B2 c2 c1B1 |d8 |^c8 |d8 |
 #   0: [   1.355922], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [  0.8367494], [   1.551613], [   0.917143], [   1.991067], [   3.980993]
 #  10: [   4.107852], [  0.1628538], [   4.176395], [   1.365456], [   2.384856]
@@ -888,7 +888,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |C8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [   2.153239], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.563916], [   3.356827]
 #  10: [   7.981473], [0.004796132], [   5.779921], [   3.406005], [   2.905893]
@@ -926,7 +926,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |C8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [   2.153239], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.563916], [   3.356827]
 #  10: [   7.981473], [0.004796132], [   5.779921], [   1.991131], [   2.845335]
@@ -964,7 +964,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |C8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [   2.153239], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.563916], [   3.356827]
 #  10: [   7.981473], [0.001321337], [   7.753558], [   1.991131], [   2.845335]
@@ -1002,7 +1002,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [  0.8878543], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.133089], [   3.356827]
 #  10: [   7.987612], [0.001321337], [   7.753558], [   1.991131], [   2.845335]
@@ -1040,7 +1040,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [  0.8878543], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.766633], [   3.356827]
 #  10: [   7.987612], [0.001321337], [   7.941309], [   1.991131], [   2.905901]
@@ -1078,7 +1078,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.842393], [   2.908962], [   1.307321], [  0.8878543], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.766633], [   3.356827]
 #  10: [   7.987612], [0.001321337], [   7.941309], [   1.991131], [   2.905901]
@@ -1116,7 +1116,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.822785], [   2.908962], [   1.307321], [  0.8878543], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.766633], [   3.356827]
 #  10: [   7.987612], [0.001321337], [   7.941309], [   1.991131], [   2.905901]
@@ -1154,7 +1154,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.822785], [   2.908962], [   1.307321], [  0.8878543], [   2.165981]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.766633], [   3.356827]
 #  10: [   7.987612], [0.001321337], [   7.941309], [   1.991131], [   2.489991]
@@ -1192,7 +1192,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.822785], [   2.908962], [   1.307321], [  0.8878543], [   2.290405]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.766633], [   3.633981]
 #  10: [   7.987612], [   0.188068], [   3.641678], [   1.991131], [    2.50492]
@@ -1230,7 +1230,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.822785], [   2.908962], [   1.307321], [  0.8878543], [   2.290405]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.766633], [   3.633981]
 #  10: [   7.987612], [   0.188068], [   3.641678], [   1.991131], [    2.50492]
@@ -1268,7 +1268,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |D8 |C8 |B,8 |A,8 |C8 |B,8 |A,8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1 D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |F8 |G8 |d4 d4 |c2 A1D1 E2 A2 |G8 |D8 |c2 c2 A4 |B8 |d8 |^c8 |d8 |
 #   0: [   3.822785], [   2.908962], [   1.307321], [  0.8878543], [   2.290405]
 #   5: [   1.625005], [  0.8072789], [   4.063814], [   3.766633], [   3.633981]
 #  10: [   7.987612], [ 0.08032442], [   3.641678], [   2.579572], [    2.50492]
@@ -1306,7 +1306,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |A2 c1 G1 A2 c1 c1 |d8 |c8 |G8 |A8 |d8 |B2 A1 d1 c2 c2 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |A2 c1G1 A2 c1c1 |d8 |c8 |G8 |A8 |d8 |B2 A1d1 c2 c2 |d8 |^c8 |d8 |
 #   0: [   1.856023], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [   2.062537], [   1.551613], [   0.917143], [   1.991067], [   3.114008]
 #  10: [   4.348226], [  0.2974518], [   7.816229], [   3.191534], [    2.82312]
@@ -1344,7 +1344,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |A4 A2 c1 c1 |d8 |c8 |G8 |A8 |d8 |G2 A1 d1 c2 c2 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |A4 A2 c1c1 |d8 |c8 |G8 |A8 |d8 |G2 A1d1 c2 c2 |d8 |^c8 |d8 |
 #   0: [   1.856023], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [   2.062537], [   1.551613], [   0.917143], [   1.991067], [   3.114008]
 #  10: [   4.348226], [  0.2863109], [   7.816229], [   3.191534], [   2.332205]
@@ -1382,7 +1382,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |A4 A2 c1 c1 |d8 |c8 |G8 |A8 |d8 |G2 A1 d1 c2 c2 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |A4 A2 c1c1 |d8 |c8 |G8 |A8 |d8 |G2 A1d1 c2 c2 |d8 |^c8 |d8 |
 #   0: [   1.856023], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [   2.062537], [   1.551613], [   0.917143], [   1.991067], [   3.114008]
 #  10: [   4.348226], [  0.2863109], [   7.816229], [   3.191534], [   2.332205]
@@ -1420,7 +1420,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |A4 A2 c1 c1 |d8 |c8 |B8 |A8 |d8 |G2 A1 d1 c2 c2 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |A4 A2 c1c1 |d8 |c8 |B8 |A8 |d8 |G2 A1d1 c2 c2 |d8 |^c8 |d8 |
 #   0: [   1.856023], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [   2.062537], [   1.551613], [   0.917143], [   1.991067], [   3.114008]
 #  10: [   4.348226], [  0.2863109], [   7.816229], [   3.191534], [   2.332205]
@@ -1458,7 +1458,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |B,8 |A,8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |A4 A4 |d8 |c8 |B8 |A8 |d8 |G2 A1 d1 c2 c2 |d8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |A4 A4 |d8 |c8 |B8 |A8 |d8 |G2 A1d1 c2 c2 |d8 |^c8 |d8 |
 #   0: [   1.856023], [    2.57989], [   1.307315], [  0.2223306], [   1.729099]
 #   5: [   2.062537], [   1.551613], [   0.917143], [   1.991067], [   3.114008]
 #  10: [   4.348226], [  0.2863109], [   7.816229], [   3.191534], [   2.332205]
@@ -1876,7 +1876,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B1 A1 |A4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B1A1 |A4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.301701], [   3.765578], [   4.461751], [   3.371558], [   3.377896]
 #  10: [   7.714711], [  0.4366339], [   6.697419], [   5.582772], [   1.740892]
@@ -1914,7 +1914,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B1 A1 |A4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B1A1 |A4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.301701], [   3.765578], [   4.461751], [   3.371558], [   3.377896]
 #  10: [   7.714711], [  0.4523159], [   6.697419], [   5.582772], [   1.740892]
@@ -1952,7 +1952,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B1 A1 |A4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B1A1 |A4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.301701], [   3.765578], [   4.461751], [   3.371558], [   3.377896]
 #  10: [   7.714711], [  0.4523159], [   6.697419], [   5.582772], [   1.740892]
@@ -1990,7 +1990,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B1 A1 |A4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B1A1 |A4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.301701], [   3.765578], [   4.461751], [   3.371558], [   3.377896]
 #  10: [   7.714711], [  0.4523159], [   6.697419], [   5.582772], [   1.740892]
@@ -2028,7 +2028,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B1 A1 |A4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B1A1 |A4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.301701], [   3.765578], [   4.461751], [   3.371558], [   3.377896]
 #  10: [   7.714711], [  0.4523159], [   6.697419], [   5.582772], [   1.740892]
@@ -2066,7 +2066,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B1 A1 |A4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B1A1 |A4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.301701], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.4523159], [   6.697419], [   5.582772], [   1.740892]
@@ -2104,7 +2104,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B1 A1 |A4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B1A1 |A4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.301701], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.4523159], [   6.697419], [   5.582772], [   1.740892]
@@ -2142,7 +2142,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.414179], [   6.697419], [   5.582772], [   1.740892]
@@ -2180,7 +2180,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.375226]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.414179], [   7.158966], [   5.582772], [   1.740892]
@@ -2218,7 +2218,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.414179], [    7.14253], [   3.439424], [   1.740892]
@@ -2256,7 +2256,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.2901722], [    7.14253], [   3.439424], [   1.740892]
@@ -2294,7 +2294,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [    7.14253], [   3.439424], [   1.740892]
@@ -2332,7 +2332,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [    7.14253], [   5.566772], [   1.740892]
@@ -2370,7 +2370,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   5.566772], [    2.66488]
@@ -2408,7 +2408,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   5.566772], [    2.66488]
@@ -2446,7 +2446,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [    3.56373], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   5.566772], [    2.66488]
@@ -2484,7 +2484,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   3.916402], [    2.66488]
@@ -2522,7 +2522,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   3.916402], [    2.66488]
@@ -2560,7 +2560,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   3.916402], [    2.66488]
@@ -2598,7 +2598,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   3.916402], [    2.66488]
@@ -2636,7 +2636,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   3.916402], [    2.66488]
@@ -2674,7 +2674,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [   0.304365], [   7.612195], [   3.916402], [    2.66488]
@@ -2712,7 +2712,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.4668127], [   7.612195], [   3.916402], [    2.66488]
@@ -2750,7 +2750,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.4668127], [   6.636491], [   3.916402], [   2.677737]
@@ -2788,7 +2788,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.4668127], [   6.636491], [   3.916402], [   2.677737]
@@ -2826,7 +2826,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.4668127], [   6.636491], [   3.916402], [   2.677737]
@@ -2864,7 +2864,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.579847], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.461751], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.4668127], [   6.636491], [   3.916402], [   2.677737]
@@ -2902,7 +2902,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.731608], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.899595], [   3.371558], [   3.471475]
 #  10: [   7.714711], [  0.3743469], [   6.636491], [   5.264221], [   2.677737]
@@ -2940,7 +2940,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.731608], [   3.795869], [    2.37511], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.899595], [   3.371558], [    3.88443]
 #  10: [   7.694435], [  0.3743469], [   6.636491], [   5.264221], [   2.677737]
@@ -2978,7 +2978,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.731608], [   3.795869], [   2.388524], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.899595], [   3.371558], [    3.88443]
 #  10: [   7.694435], [  0.3743469], [   6.636491], [   5.264221], [   2.677737]
@@ -3016,7 +3016,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.731608], [   3.795869], [   2.388524], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.899595], [   3.371558], [    3.88443]
 #  10: [   7.694435], [  0.3943725], [   6.636491], [   5.264221], [   2.677737]
@@ -3054,7 +3054,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.731608], [   3.795869], [   2.388524], [   3.151765], [   4.977788]
 #   5: [   4.704321], [   3.765578], [   4.899595], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.3943725], [   6.636491], [   5.264221], [   2.277568]
@@ -3092,7 +3092,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.731608], [   3.795869], [   2.388524], [   3.151765], [    4.10767]
 #   5: [   4.704321], [   3.765578], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   6.636491], [   3.774024], [   2.277568]
@@ -3130,7 +3130,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.731608], [   3.795869], [   2.388524], [   3.151765], [    4.10767]
 #   5: [   4.704321], [   3.142539], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   6.636491], [   3.774024], [   2.277568]
@@ -3168,7 +3168,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.151765], [   4.052728]
 #   5: [   4.704321], [   3.142539], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   6.636491], [   3.774024], [   2.277568]
@@ -3206,7 +3206,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.151765], [   4.052728]
 #   5: [   4.114509], [   3.142539], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   6.636491], [   3.774024], [   2.545798]
@@ -3244,7 +3244,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.151765], [   4.052728]
 #   5: [   4.114509], [   3.142539], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   6.636491], [   3.774024], [   2.423034]
@@ -3282,7 +3282,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.151765], [   4.052728]
 #   5: [   4.114509], [   3.142539], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   6.636491], [   3.774024], [   2.423034]
@@ -3320,7 +3320,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.154212], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   5.323911], [   3.774024], [   2.423034]
@@ -3358,7 +3358,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.154212], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   5.323911], [   3.774024], [   2.423034]
@@ -3396,7 +3396,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.154212], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   5.323911], [   3.774024], [   2.423034]
@@ -3434,7 +3434,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.154212], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   5.323911], [   3.756172], [   2.423034]
@@ -3472,7 +3472,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.154212], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   3.650089], [   3.756172], [   2.423034]
@@ -3510,7 +3510,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.154212], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   3.650089], [   3.756172], [   2.423034]
@@ -3548,7 +3548,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.154212], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.2899783], [   3.650089], [   3.756172], [   2.423034]
@@ -3586,7 +3586,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c4 B4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c4 B4 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.702039], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.4127497], [   3.650089], [   6.398871], [   2.423034]
@@ -3624,7 +3624,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |E8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c4 B4 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c2 A2 |A8 |c8 |B4 c2 B2 |B4 d4 |c4 B4 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.795869], [   2.388524], [   3.098314], [   4.052728]
 #   5: [   4.114509], [   3.702039], [   4.864883], [   3.371558], [   3.862082]
 #  10: [   7.930513], [  0.4127497], [   3.650089], [   6.398871], [   2.423034]
@@ -3662,7 +3662,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.289109], [   4.591544], [   2.904039]
 #   5: [   3.353693], [   2.093854], [   1.609483], [   2.008538], [   3.953985]
 #  10: [   7.788662], [  0.4987528], [    2.24059], [   4.765952], [   2.688762]
@@ -3700,7 +3700,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.289109], [   4.591544], [   2.904039]
 #   5: [   3.353693], [   2.093854], [   1.609483], [   2.008538], [   3.953985]
 #  10: [   7.788662], [  0.4987528], [    2.24059], [   4.765952], [   2.688762]
@@ -3738,7 +3738,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.904039]
 #   5: [   3.565148], [   2.093854], [   1.609483], [   2.008538], [   3.997475]
 #  10: [   7.497443], [  0.4987528], [    2.24059], [   4.765952], [   2.688762]
@@ -3776,7 +3776,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.904039]
 #   5: [   3.565148], [   2.093854], [   1.609483], [   2.008538], [   3.997475]
 #  10: [   7.497443], [  0.4987528], [    2.24059], [   4.765952], [   2.688762]
@@ -3814,7 +3814,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.904039]
 #   5: [   3.565148], [   2.093854], [   1.609483], [   2.008538], [   3.999033]
 #  10: [   7.497443], [  0.4987528], [    2.24059], [   4.765952], [   2.688762]
@@ -3852,7 +3852,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.904039]
 #   5: [   3.565148], [    2.03039], [   1.609483], [   2.008538], [   3.999033]
 #  10: [   7.532968], [  0.4987528], [   3.125663], [   4.765952], [   2.907331]
@@ -3890,7 +3890,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.609483], [   2.008538], [   3.999033]
 #  10: [   7.532968], [  0.4987528], [   3.125663], [   4.765952], [   2.907331]
@@ -3928,7 +3928,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.609483], [   2.008538], [   3.999033]
 #  10: [   7.532968], [  0.4987528], [   3.125663], [   4.765952], [   2.907331]
@@ -3966,7 +3966,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.609483], [   2.008538], [   3.999033]
 #  10: [   7.532968], [   1.106361], [   3.125663], [   4.765952], [   2.907331]
@@ -4004,7 +4004,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.609483], [   2.008538], [   3.999033]
 #  10: [   7.532968], [   1.106361], [   3.125663], [   4.765952], [   2.907331]
@@ -4042,7 +4042,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.609483], [   2.008538], [   3.999808]
 #  10: [   7.532968], [   1.106361], [   3.125663], [   4.765952], [   2.907331]
@@ -4080,7 +4080,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.609483], [   2.008538], [   3.074042]
 #  10: [   7.532968], [   1.106361], [   6.724187], [   4.765952], [   2.907331]
@@ -4118,7 +4118,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.448313], [   2.008538], [   3.074042]
 #  10: [   7.752428], [   1.106361], [   6.724187], [   4.765952], [   2.907331]
@@ -4156,7 +4156,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.448313], [   2.008538], [   3.074042]
 #  10: [   7.752428], [   1.106361], [   6.724187], [   4.765952], [   2.907331]
@@ -4194,7 +4194,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.229823], [   2.008538], [   3.074042]
 #  10: [   7.752428], [   1.106361], [   6.724187], [   4.765952], [   2.907331]
@@ -4232,7 +4232,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B2 c2 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B2 c2 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.229823], [   2.011275], [   3.074042]
 #  10: [   7.752428], [   1.106361], [   6.724187], [   4.765952], [   2.907331]
@@ -4270,7 +4270,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |F8 |E8 |C8 |D8 |C8 |B,8 |C8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |A2 A1 d1 d4 |B4 c2 B1 G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |A2 A1d1 d4 |B4 c2 B1G1 |G8 |F8 |A4 G4 |d8 |c8 |^c8 |d8 |
 #   0: [   4.605468], [   3.161297], [   5.919389], [   4.591544], [   2.508878]
 #   5: [   3.565148], [    2.03039], [   1.229823], [   2.011275], [   3.074042]
 #  10: [   7.752428], [   1.106361], [   6.724187], [   4.765952], [   2.907331]
@@ -4308,7 +4308,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.759747], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.106591], [ 0.09770855], [   1.991067], [   3.361329]
 #  10: [   4.549728], [  0.7808737], [   7.481624], [   2.953763], [   2.090995]
@@ -4346,7 +4346,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.759747], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.991067], [   3.361329]
 #  10: [   4.549728], [   1.833177], [   7.481624], [   2.953763], [   2.090995]
@@ -4384,7 +4384,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.759747], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.991067], [   3.361329]
 #  10: [   4.549728], [   1.833177], [   7.481624], [   2.953763], [    2.42477]
@@ -4422,7 +4422,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.759747], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.991067], [   3.361329]
 #  10: [   4.549728], [   1.833177], [   7.481624], [   2.953763], [    2.42477]
@@ -4460,7 +4460,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.990549], [   3.361329]
 #  10: [   4.549728], [   1.833177], [   7.481624], [   2.953763], [    2.42477]
@@ -4498,7 +4498,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.990549], [   3.361329]
 #  10: [   4.549728], [   1.833177], [   7.481624], [   2.953763], [    2.42477]
@@ -4536,7 +4536,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.990549], [   3.361329]
 #  10: [   4.549728], [   1.833177], [   7.481624], [   2.953763], [    2.42477]
@@ -4574,7 +4574,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.990549], [   3.361329]
 #  10: [   4.549728], [   1.833177], [   7.481624], [   2.953763], [    2.42477]
@@ -4612,7 +4612,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.856023], [   2.271989], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.990549], [   3.361329]
 #  10: [   4.549728], [   1.833177], [   7.481624], [   2.953763], [    2.42477]
@@ -4650,7 +4650,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.271989], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.109032], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.929622], [   7.481624], [   2.953763], [    2.42477]
@@ -4688,7 +4688,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.271989], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.169442], [   7.481624], [   2.953763], [    2.42477]
@@ -4726,7 +4726,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.271989], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.357335], [   7.481624], [   2.953763], [    2.42477]
@@ -4764,7 +4764,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.357335], [   7.481624], [   2.953763], [    2.42477]
@@ -4802,7 +4802,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.194595]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.357335], [   7.481624], [  0.9577933], [    2.42477]
@@ -4840,7 +4840,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.834938]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.357335], [   7.481624], [  0.9577933], [    2.42477]
@@ -4878,7 +4878,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.834938]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.357335], [   7.481624], [  0.9577933], [    2.42477]
@@ -4916,7 +4916,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.834938]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.357335], [   7.481624], [  0.9577933], [    2.42477]
@@ -4954,7 +4954,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.834938]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.357335], [   7.481624], [  0.7337148], [    2.42477]
@@ -4992,7 +4992,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.834938]
 #   5: [   2.062537], [   1.388563], [ 0.09770855], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.208602], [   7.481624], [  0.4375655], [    2.42477]
@@ -5030,7 +5030,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.655972]
 #   5: [   2.062537], [   1.388563], [  0.3012986], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.208602], [   7.481624], [  0.4375655], [    2.42477]
@@ -5068,7 +5068,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.655972]
 #   5: [   2.062537], [   1.388563], [  0.3012986], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.208602], [   7.481624], [  0.4375655], [   2.007774]
@@ -5106,7 +5106,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |B,8 |C8 |D8 |E8 |B,8 |C8 |B,8 |A,8 |B,8 |E8 |D8 |
-[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1 B1 c2 c2 |B8 |^c8 |d8 |
+[V:Contrapunctus] A8 |B8 |G4 A4 |A4 d4 |c8 |B8 |A8 |B8 |c2 A1B1 c2 c2 |B8 |^c8 |d8 |
 #   0: [   1.178668], [   2.782837], [   3.513583], [   4.554359], [   1.655972]
 #   5: [   2.062537], [   1.388563], [  0.3012986], [   1.990549], [   3.271047]
 #  10: [   4.549728], [   1.208602], [   7.481624], [  0.4375655], [   2.007774]
@@ -5600,7 +5600,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |C8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.015127], [   2.625019], [   3.166696], [   2.258663]
 #   5: [   4.772559], [   3.627925], [   4.864883], [   3.481176], [    3.57307]
 #  10: [   7.930513], [   1.352995], [   7.384701], [   0.876051], [   1.527332]
@@ -5638,7 +5638,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |C8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.015127], [   2.625019], [   3.166696], [   2.258663]
 #   5: [   4.772559], [   3.627925], [   4.864883], [   3.481176], [    3.57307]
 #  10: [   7.966875], [   1.352995], [   7.384701], [   0.876051], [   1.527332]
@@ -5676,7 +5676,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |C8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.103822], [   2.854798], [   3.166696], [   2.258663]
 #   5: [   4.371046], [   3.627925], [   4.864883], [   3.481176], [    3.57307]
 #  10: [   7.966875], [   1.352995], [   7.384701], [   0.876051], [   1.980757]
@@ -5714,7 +5714,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |C8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.103822], [   2.854798], [   3.166696], [   2.258663]
 #   5: [   4.371046], [   3.627925], [   4.864883], [   3.481176], [    3.57307]
 #  10: [   7.966875], [   1.352995], [    6.87504], [   0.876051], [   1.980757]
@@ -5752,7 +5752,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |C8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.103822], [   2.854798], [   3.166696], [   2.258663]
 #   5: [   4.371046], [   3.627925], [   4.864883], [   3.481176], [    3.57307]
 #  10: [   7.966875], [   1.352995], [    6.87504], [  0.3630484], [   1.980757]
@@ -5790,7 +5790,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |C8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.103822], [   2.854798], [   3.166696], [   2.258663]
 #   5: [   4.371046], [   3.468393], [   4.864883], [   3.481176], [    3.57307]
 #  10: [   7.976494], [   1.352995], [    6.87504], [   4.080272], [   1.980757]
@@ -5828,7 +5828,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |C8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.103822], [   2.854798], [   3.166696], [   2.258663]
 #   5: [   4.371046], [   3.468393], [   4.864883], [   3.481176], [    3.57307]
 #  10: [   7.976494], [   1.352995], [    6.87504], [   4.080272], [   1.980757]
@@ -5866,7 +5866,7 @@ V:CantusFirmus name="Cantus Firmus"
 V:Contrapunctus name=Contrapunctus
 K: DDor
 [V:CantusFirmus] D8 |E8 |D8 |C8 |D8 |C8 |E8 |D8 |E8 |D8 |E8 |D8 |
-[V:Contrapunctus] d8 |B8 |B8 |c2 A1 B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
+[V:Contrapunctus] d8 |B8 |B8 |c2 A1B1 c4 |A8 |A8 |B8 |B4 d4 |c8 |d8 |^c8 |d8 |
 #   0: [   4.883383], [   3.103822], [   2.854798], [   3.166696], [   2.258663]
 #   5: [   4.371046], [   3.468393], [   4.540339], [   3.210098], [    3.57307]
 #  10: [   7.976494], [   1.352995], [    6.87504], [   4.080272], [   1.980757]
