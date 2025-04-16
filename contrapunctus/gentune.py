@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright (C) 2017-2024
+# Copyright (C) 2017-2025
 # Magdalena Schlatterbeck
 # Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
@@ -174,6 +174,8 @@ class Contrapunctus:
             assert args.cantus_firmus != '+'
             with Infile (args.cantus_firmus) as f:
                 tune = Tune.from_iterator (f)
+            if args.transpose_cf:
+                tune = tune.transpose (args.transpose_cf)
             self.tune = tune
         if not getattr (self, 'init', None):
             self.set_init ()
@@ -458,6 +460,7 @@ class Contrapunctus:
                     c += n
                     break
         for n, line in enumerate (itr):
+            line = line.lstrip ()
             if line.startswith ('X:') or line.startswith ('M:'):
                 tmp_iter  = iter ([line])
                 tune = Tune.from_iterator \
@@ -1179,6 +1182,13 @@ def contrapunctus_cmd (argv = None):
                     " default=%(default)s"
         , type    = int
         , default = 23
+        )
+    cmd.add_argument \
+        ( "-T", "--transpose-cf", "--transpose-cantus-firmus"
+        , help    = "Number of halftones to transpose cantus firmus when"
+                    " read from a file"
+        , type    = int
+        , default = 0
         )
     cmd.add_argument \
         ( "-t", "--transpose"

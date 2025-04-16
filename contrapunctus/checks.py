@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright (C) 2024
+# Copyright (C) 2024-25
 # Magdalena Schlatterbeck
 # Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
