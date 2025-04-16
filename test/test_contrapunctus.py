@@ -461,6 +461,30 @@ class Test_Contrapunctus:
         assert b == 10
     # end def test_check_melody_interval
 
+    def test_check_melody_interval_unison (self):
+        check = checks.Check_Melody_Interval \
+            ( '0.1.2: No unison (Prim) allowed'
+            , interval = (0,)
+            , badness  = 10
+            , octave   = False
+            )
+        bar = Bar (8, 8)
+        t1  = Tone (halftone ('D'), 8, bind = True)
+        bar.add (t1)
+        bar = Bar (8, 8)
+        t2  = Tone (halftone ('D'), 4)
+        bar.add (t2)
+        t3  = Tone (halftone ('D'), 4)
+        bar.add (t3)
+
+        b, u = check.check (t1)
+        assert b == 0
+        b, u = check.check (t2)
+        assert b == 0 # Not a violation due to binding
+        b, u = check.check (t3)
+        assert b == 10
+    # end def test_check_melody_interval_unison
+
     def test_get_by_offset (self):
         v1 = Voice (id = 'V1')
         b  = Bar (8, 8)

@@ -516,6 +516,7 @@ class Bar_Object:
         self.bar      = None
         self._prev    = None
         self._next    = None
+        self.bind     = False
     # end def __init__
 
     @classmethod
@@ -613,9 +614,9 @@ class Bar_Object:
 class Tone (Bar_Object):
 
     def __init__ (self, halftone, duration, bind = False):
+        super ().__init__ (duration)
         self.halftone = halftone
         self.bind     = bind # bind to next tone
-        super ().__init__ (duration)
     # end def __init__
 
     @classmethod

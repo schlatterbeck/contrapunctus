@@ -85,6 +85,14 @@ class History_Mixin:
 
     def _check (self, *args, **kw):
         result = super ()._check (*args, **kw)
+        # It's a single tone if bound to previous one
+        # We keep the history in this case
+        # (Must be after super call above, otherwise self.current is not
+        # yet defined and self.current doesn't exist in harmony checks)
+        if isinstance (self, Check_Melody_Interval):
+            prev = self.current.prev
+            if prev and prev.bind:
+                return False
         if self.prev_match and result:
             return True
         self.prev_match = result
@@ -146,12 +154,17 @@ class Check_Melody_Interval (Check_Melody):
     """
 
     def _check (self, current):
+        self.current = current
         prev = current.prev
         if not prev:
             return False
-        self.current = current
         d = self.compute_interval ()
-        return d is not None and d in self.interval
+        if d is not None and d in self.interval:
+            # It's a single tone if bound to previous one
+            prev = self.current.prev
+            if prev and prev.bind:
+                return False
+            return True
     # end def _check
 
 # end class Check_Melody_Interval
