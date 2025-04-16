@@ -520,6 +520,24 @@ class Test_Contrapunctus:
         assert txt.strip () == abc.strip ()
     # end def test_logparse
 
+    def test_logparse_with_cf (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        log  = 'test/search_de_cf_haenschen.data'
+        args = cmd.parse_args (['-v', '-v', '-b', '-g', log])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        cp.from_gene ()
+        txt  = cp.as_complete_tune ()
+        with open ('test/cf_haenschen.abc') as f:
+            abc = f.read ()
+        assert txt.strip () == abc.strip ()
+        # roundtrip test, note the missing -b ('best') option
+        args = cmd.parse_args (['-v', '-v', '-g' 'test/cf_haenschen.abc'])
+        cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        cp.from_gene ()
+        txt = cp.as_complete_tune ()
+        assert txt.strip () == abc.strip ()
+    # end def test_logparse_with_cf
+
     def test_gene_decode_8_44 (self):
         header = self.abcheader + '[V:CantusFirmus] D8 |F8 |E8 |D8 |\n'
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()

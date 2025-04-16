@@ -1183,6 +1183,7 @@ class Tune:
         kw = {}
         voices = {}
         barlen = None
+        vinfo_seen = False
         for lineno, line in enumerate (itr):
             line = line.strip ()
             if not line:
@@ -1213,6 +1214,7 @@ class Tune:
                 unit = kw ['unit']
                 if line.startswith ('['):
                     vinfo, rest = line.split (None, 1)
+                    vinfo_seen = True
                 else:
                     vinfo = None
                     rest  = line
@@ -1239,6 +1241,10 @@ class Tune:
                     if b not in voices: # pragma: no cover
                         print ('Warning: Undeclared voice "%s"' % b)
                         voices [b] = Voice (b)
+                    if vinfo_seen is True:
+                        vinfo_seen = b
+                elif vinfo_seen:
+                    b = vinfo_seen
                 else:
                     b = None
                     if not voices:
