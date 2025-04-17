@@ -378,41 +378,34 @@ class Contrapunctus:
         # We iterate over the bars in each tune.
         # cf: Cantus Firmus (Object of class 'Bar')
         # cp: Contrapunctus (Object of class 'Bar')
-        for cf, cp in zip (tune.iter (0), tune.iter (1)):
+        last_cf_obj = last_cp_obj = None
+        for cf_obj, cp_obj in tune.voices_iter ():
+            cf = cf_obj.bar
+            cp = cp_obj.bar
             assert cp.voice.id == 'Contrapunctus'
             assert cf.voice.id == 'CantusFirmus'
-            cf_obj = cf.objects [0]
 
-            if not self.args.no_check_cf:
+            if not self.args.no_check_cf and last_cf_obj is not cf_obj:
+                last_cf_obj = cf_obj
                 for check in self.melody_checks_cf:
-                    for obj in cf.objects:
-                        b, u = check.check (obj)
-                        if b:
-                            badness *= b
-                        ugliness += u
-                        self.explain (check)
+                    b, u = check.check (cf_obj)
+                    if b:
+                        badness *= b
+                    ugliness += u
+                    self.explain (check)
             bsum = usum = 0
-            for cp_obj in cp.objects:
+            if last_cp_obj is not cp_obj:
+                last_cp_obj = cp_obj
                 for check in self.melody_checks_cp:
                     b, u = check.check (cp_obj)
                     bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
                     self.explain (check)
-                for check in self.harmony_checks:
-                    b, u = check.check (cf_obj, cp_obj)
-                    bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
-                    usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
-                    self.explain (check)
-
-                # 1.4: Avoid moving in parallel fourths (In practice
-                # Palestrina and others frequently allowed themselves such
-                # progressions, especially if they do not involve the lowest
-                # of the parts)
-
-                # Don't get carried away :-)
-                # 0.2.5: "The interval of a tenth should not be exceeded
-                # between two adjacent parts unless by necessity." We limit
-                # this to a ninth.
+            for check in self.harmony_checks:
+                b, u = check.check (cf_obj, cp_obj)
+                bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
+                usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
+                self.explain (check)
 
             ugliness += usum
             if bsum:

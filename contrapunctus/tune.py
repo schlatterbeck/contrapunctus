@@ -263,6 +263,10 @@ class Halftone:
             return self.name
     # end def as_abc
 
+    def diff (self, other):
+        return self.offset - other.offset
+    # end def diff
+
     def enharmonic_equivalent (self):
         """ We return the enharmonic equivalent of the current Halftone.
             Note that we only do this for tones with a flat or sharp
@@ -595,6 +599,27 @@ class Bar_Object:
         return self.duration
     # end def length
     __len__ = length
+
+    def overlaps (self, other):
+        """ Check if two bar objects overlap. For now we do not take
+            bindings into account, which means we get no overlap if not
+            in same bar.
+        """
+        assert self.duration  > 0
+        assert other.duration > 0
+        if self.bar is not None and other.bar is not None:
+            if self.bar.idx != other.bar.idx:
+                return False
+        s_b = self.offset
+        o_b = other.offset
+        s_e = self.offset  + self.duration
+        o_e = other.offset + other.duration
+        if o_b <= s_b and o_e > s_b:
+            return True
+        if s_b <= o_b < s_e:
+            return True
+        return False
+    # end def overlaps
 
     def register (self, bar, offset, idx):
         assert self.offset is None
@@ -958,7 +983,7 @@ class Bar:
 
     @property
     def next (self):
-        if not self.idx:
+        if self.idx is None:
             return None
         if len (self.voice.bars) <= self.idx + 1:
             return None
@@ -1408,6 +1433,23 @@ class Tune:
         for bar in self.voices [voice_idx].bars:
             yield bar
     # end def iter
+
+    def voices_iter (self):
+        """ Iterate over all voices of this Tune returning tuples of bar_object
+            Everytime a tone changes a different tuple is returned.
+        """
+        objs = [v.bars [0].objects [0] for v in self.voices]
+        idx  = [(o.bar.idx, o.offset + o.duration) for o in objs]
+        yield tuple (objs)
+        while sum (o.is_last for o in objs) < len (objs):
+            midx = min (idx)
+            for n, i in enumerate (idx):
+                if i == midx:
+                    assert objs [n].next is not None
+                    objs [n] = o = objs [n].next
+                    idx  [n] = (o.bar.idx, o.offset + o.duration)
+            yield tuple (objs)
+    # end def voices_iter
 
     def transpose (self, steps):
         fifth = transpose_steps_to_fifth (steps)

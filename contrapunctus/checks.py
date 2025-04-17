@@ -224,22 +224,6 @@ class Check_Harmony (Check):
             )
     # end def compute_description
 
-    def cf_iter (self):
-        """ In the new scheme it can occur that the CF has *several*
-            bar objects in parallel to the given cp_obj (in the CP).
-        """
-        assert self.cp_obj is not None
-        bidx   = self.cp_obj.bar.idx
-        eoff   = self.cp_obj.offset + self.cp_obj.duration
-        cf_obj = self.cf_obj.bar.get_by_offset (self.cp_obj)
-        while True:
-            if cf_obj and cf_obj.bar.idx == bidx and cf_obj.offset < eoff:
-                yield cf_obj
-                cf_obj = cf_obj.next
-                continue
-            break
-    # end def cf_iter
-
 # end class Check_Harmony
 
 class Check_Harmony_Interval (Check_Harmony):
@@ -261,27 +245,18 @@ class Check_Harmony_Interval (Check_Harmony):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        # First compute *real* cf_obj: It is only valid if it is the
-        # only object in the bar. We now allow more than one object in a
-        # bar.
-        cf_obj = self.cf_obj = cf_obj.bar.get_by_offset (cp_obj)
-        # This would only happen if the CF bar is empty
-        if cf_obj is None:
-            return False # pragma: no cover
         if self.not_first and (cf_obj.is_first and cp_obj.is_first):
             return False
-        self.cp_obj = cp_obj
-        for cf_obj in self.cf_iter ():
-            if self.not_last and (cp_obj.is_last and cf_obj.is_last):
-                continue
-            self.cf_obj = cf_obj
-            d = self.compute_interval (cf_obj, cp_obj)
-            if d is not None and d in self.interval:
-                return True
+        if self.not_last and (cp_obj.is_last and cf_obj.is_last):
+            return False
+        d = self.compute_interval (cf_obj, cp_obj)
+        if d is not None and d in self.interval:
+            return True
         return False
     # end def _check
 
     def compute_interval (self, cf_obj, cp_obj):
+        assert cf_obj.overlaps (cp_obj)
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
         if not getattr (cf_obj, 'halftone', None):
@@ -309,25 +284,47 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
     def _check (self, cf_obj, cp_obj):
         """ We check the first two objects *which are not a Pause*
         """
-        cf_obj = cf_obj.bar.get_by_offset (cp_obj)
+        assert cf_obj.overlaps (cp_obj)
         if cf_obj.is_pause or cp_obj.is_pause:
             return False
-        # Check if everything *before* cp_obj is a pause
-        p_cp_obj = cp_obj
-        while not p_cp_obj.is_first:
-            p_cp_obj = p_cp_obj.prev
-            # Happens only during testing/searching when the previous
-            # bar has no objects:
-            if p_cp_obj is None:
+        cpp = self.is_first_non_pause (cp_obj)
+        cfp = self.is_first_non_pause (cf_obj)
+        if not cpp and not cfp:
+            return False
+        if cpp and not cfp:
+            if not self.is_first_non_pause (cf_obj, cp_obj.bar, cp_obj.offset):
                 return False
-            p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
-            if not p_cp_obj.is_pause and not p_cf_obj.is_pause:
+        if cfp and not cpp:
+            if not self.is_first_non_pause (cp_obj, cf_obj.bar, cf_obj.offset):
                 return False
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d not in self.interval:
             return True
         return False
     # end def _check
+
+    def is_first_non_pause (self, obj, bar = None, offset = None):
+        if obj.is_pause:
+            return False
+        # Check if everything *before* obj is a pause
+        # If baridx and offset if given only up to that point (backwards)
+        p_obj = obj
+        while not p_obj.is_first:
+            if bar is not None:
+                assert offset is not None
+                if p_obj.bar.idx < bar.idx:
+                    return True
+                if p_obj.bar.idx == bar.idx and p_obj.offset <= offset:
+                    return True
+            p_obj = p_obj.prev
+            # Happens only during testing/searching when the previous
+            # bar has no objects:
+            if p_obj is None:
+                return False
+            if not p_obj.is_pause:
+                return False
+        return True
+    # end def is_first_non_pause
 
 # end def Check_Harmony_First_Interval
 
@@ -342,12 +339,9 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        self.cp_obj = cp_obj
-        self.cf_obj = cf_obj
-        for cf_obj in self.cf_iter ():
-            d = self.compute_interval (cf_obj, cp_obj)
-            if d is not None and d > self.maximum:
-                return True
+        d = self.compute_interval (cf_obj, cp_obj)
+        if d is not None and d > self.maximum:
+            return True
         return False
     # end def _check
 
@@ -364,12 +358,9 @@ class Check_Harmony_Interval_Min (Check_Harmony_Interval):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        self.cf_obj = cf_obj
-        self.cp_obj = cp_obj
-        for cf_obj in self.cf_iter ():
-            d = self.compute_interval (cf_obj, cp_obj)
-            if d is not None and d < self.minimum:
-                return True
+        d = self.compute_interval (cf_obj, cp_obj)
+        if d is not None and d < self.minimum:
+            return True
         return False
     # end def _check
 
@@ -383,29 +374,28 @@ class Check_Melody_Jump_2 (Check_Harmony):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        self.cf_obj = cf_obj
+        assert cf_obj.overlaps (cp_obj)
         self.cp_obj = cp_obj
+        self.cf_obj = cf_obj
         p_cp_obj    = cp_obj.prev
         if not p_cp_obj:
             return False
-        for cf_obj in self.cf_iter ():
-            p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
-            # This would only happen if the CF bar is empty
-            if not p_cf_obj:
-                continue # pragma: no cover
-            self.cf_obj = cf_obj
-            if not getattr (cf_obj, 'halftone', None):
-                continue
-            if not getattr (p_cf_obj, 'halftone', None):
-                continue
-            if not getattr (cp_obj, 'halftone', None):
-                continue
-            if not getattr (p_cp_obj, 'halftone', None):
-                continue
-            d1 = cf_obj.halftone.offset - p_cf_obj.halftone.offset
-            d2 = cp_obj.halftone.offset - p_cp_obj.halftone.offset
-            if d1 > self.limit and d2 > self.limit:
-                return True
+        p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+        # This would only happen if the CF bar is empty
+        if not p_cf_obj:
+            return False # pragma: no cover
+        if not getattr (cf_obj, 'halftone', None):
+            return False
+        if not getattr (p_cf_obj, 'halftone', None):
+            return False
+        if not getattr (cp_obj, 'halftone', None):
+            return False
+        if not getattr (p_cp_obj, 'halftone', None):
+            return False
+        d1 = cf_obj.halftone.offset - p_cf_obj.halftone.offset
+        d2 = cp_obj.halftone.offset - p_cp_obj.halftone.offset
+        if d1 > self.limit and d2 > self.limit:
+            return True
         return False
     # end def _check
 
@@ -432,44 +422,48 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
+        """ We need to take the prev object which is nearer to the
+            current time (i.e. the *latest* prev object), otherwise we
+            do not correctly determine a movement.
+        """
+        assert cf_obj.overlaps (cp_obj)
         p_cp_obj = cp_obj.prev
+        p_cf_obj = cf_obj.prev
+        if not p_cp_obj and not p_cf_obj:
+            return False
         if not p_cp_obj:
+            p_cp_obj = cp_obj.bar.get_by_offset (p_cf_obj)
+        elif not p_cf_obj:
+            p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+        else:
+            cp_tuple = (p_cp_obj.bar.idx, p_cp_obj.offset)
+            cf_tuple = (p_cf_obj.bar.idx, p_cf_obj.offset)
+            if cp_tuple < cf_tuple:
+                p_cp_obj = cp_obj.bar.get_by_offset (p_cf_obj)
+            else:
+                assert cf_tuple <= cp_tuple
+                p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
+        # This indicates an empty previous bar and should only happen in tests
+        if not p_cp_obj or not p_cf_obj:
             return False
-        p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
-        if not p_cf_obj:
-            return False
-        self.cf_obj = cf_obj
-        self.cp_obj = cp_obj
-        for cf_obj in self.cf_iter ():
-            self.cf_obj = cf_obj
-            d = self.compute_interval (cf_obj, cp_obj)
-            if d is None:
-                continue
-            # An empty interval matches everything
-            if  (   (not self.interval or d in self.interval)
-                and self.direction_check ()
-                ):
-                if not self.only_repeat or self.prev_match:
-                    self.prev_match = True
-                    return True
-        return False
-    # end def _check
-
-    def compute_interval (self, cf_obj, cp_obj):
-        p_cp_obj = cp_obj.prev
-        p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
-        if not getattr (cf_obj, 'halftone', None):
-            return
-        if not getattr (cp_obj, 'halftone', None):
-            return
         if not getattr (p_cf_obj, 'halftone', None):
-            return
+            return False
         if not getattr (p_cp_obj, 'halftone', None):
-            return
+            return False
+        d = self.compute_interval (cf_obj, cp_obj)
+        if d is None:
+            return False
         self.dir_cf = sgn (cf_obj.halftone.offset - p_cf_obj.halftone.offset)
         self.dir_cp = sgn (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
-        return super ().compute_interval (cf_obj, cp_obj)
-    # end def compute_interval
+        # An empty interval matches everything
+        if  (   (not self.interval or d in self.interval)
+            and self.direction_check ()
+            ):
+            if not self.only_repeat or self.prev_match:
+                self.prev_match = True
+                return True
+        return False
+    # end def _check
 
     def direction_check (self):
         if self.dir == 'same':

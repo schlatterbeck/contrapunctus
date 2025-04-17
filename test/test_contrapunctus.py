@@ -28,6 +28,7 @@ import contrapunctus.tune
 import contrapunctus.circle
 import contrapunctus.gentune
 import contrapunctus.gregorian
+from fractions import Fraction
 from pga.testsupport import PGA_Test_Instrumentation
 from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 from contrapunctus.tune import Key
@@ -165,6 +166,26 @@ class Test_Contrapunctus:
         t.add (v3)
         return t
     # end def build_tune
+
+    def build_min_tune (self):
+        t = Tune \
+            ( title  = 'Test tune'
+            , meter  = Meter (4, 4)
+            , key    = 'C'
+            , unit   = Fraction (8)
+            )
+        v = Voice \
+            ( id        = 'CantusFirmus'
+            , name      = 'Cantus Firmus'
+            )
+        t.add (v)
+        v = Voice \
+            ( id        = 'Contrapunctus'
+            , name      = 'Contrapunctus'
+            )
+        t.add (v)
+        return t
+    # end def build_min_tune
 
     def test_tune (self):
         tune = self.build_tune ()
@@ -382,6 +403,79 @@ class Test_Contrapunctus:
         b, u = check.check (b_cf3.objects [0], b_cp3.objects [0])
         assert b == 0
     # end def test_check_harmony_history
+
+    def test_check_harmony_history_sixth (self):
+        check = checks.Check_Harmony_History \
+            ( "For sext (sixth) don't allow several in a row"
+            , interval    = (8, 9)
+            , ugliness    = 3
+            )
+        tune = self.build_min_tune ()
+        cf = tune.voices [0]
+        cp = tune.voices [1]
+        b_cf1 = Bar (8, 8)
+        cf.add (b_cf1)
+        b_cf1.add (Tone (halftone ('F'), 8))
+        b_cf2 = Bar (8, 8)
+        cf.add (b_cf2)
+        b_cf2.add (Tone (halftone ('F'), 4))
+        b_cf2.add (Tone (halftone ('E'), 2))
+        b_cf2.add (Tone (halftone ('D'), 2))
+        b_cf3 = Bar (8, 8)
+        cf.add (b_cf3)
+        b_cf3.add (Tone (halftone ('E'), 8))
+        b_cf4 = Bar (8, 8)
+        cf.add (b_cf4)
+        b_cf4.add (Tone (halftone ('D'), 8))
+
+        b_cp1 = Bar (8, 8)
+        cp.add (b_cp1)
+        b_cp1.add (Tone (halftone ('c'), 8))
+        b_cp2 = Bar (8, 8)
+        cp.add (b_cp2)
+        b_cp2.add (Tone (halftone ('d'), 2))
+        b_cp2.add (Tone (halftone ('d'), 2))
+        b_cp2.add (Tone (halftone ('B'), 4))
+        b_cp3 = Bar (8, 8)
+        cp.add (b_cp3)
+        b_cp3.add (Tone (halftone ('^c'), 8))
+        b_cp4 = Bar (8, 8)
+        cp.add (b_cp4)
+        b_cp4.add (Tone (halftone ('d'), 8))
+
+        b, u = check.check (b_cf1.objects [0], b_cp1.objects [0])
+        assert u == 0
+        b, u = check.check (b_cf2.objects [0], b_cp2.objects [0])
+        d = b_cp2.objects [0].halftone.diff (b_cf2.objects [0].halftone)
+        assert d == 9
+        assert u == 0
+        b, u = check.check (b_cf2.objects [0], b_cp2.objects [1])
+        d = b_cp2.objects [1].halftone.diff (b_cf2.objects [0].halftone)
+        assert d == 9
+        assert u == 3
+        b, u = check.check (b_cf2.objects [1], b_cp2.objects [2])
+        d = b_cp2.objects [2].halftone.diff (b_cf2.objects [1].halftone)
+        assert d == 7
+        assert u == 0
+        b, u = check.check (b_cf2.objects [2], b_cp2.objects [2])
+        d = b_cp2.objects [2].halftone.diff (b_cf2.objects [2].halftone)
+        assert d == 9
+        assert u == 0
+        b, u = check.check (b_cf3.objects [0], b_cp3.objects [0])
+        d = b_cp3.objects [0].halftone.diff (b_cf3.objects [0].halftone)
+        assert d == 9
+        assert u == 3
+        b, u = check.check (b_cf4.objects [0], b_cp4.objects [0])
+        d = b_cp4.objects [0].halftone.diff (b_cf4.objects [0].halftone)
+        assert d == 12
+        assert u == 0
+        # Check the same using voices_iter
+        uu = []
+        for cfo, cpo in tune.voices_iter ():
+            b, u = check.check (cfo, cpo)
+            uu.append (u)
+        assert uu == [0, 0, 3, 0, 0, 3, 0]
+    # end def test_check_harmony_history_sixth
 
     def test_check_harmony_melody_direction_same (self):
         check = checks.Check_Harmony_Melody_Direction \
@@ -723,15 +817,18 @@ class Test_Contrapunctus:
             , interval = (0, 7, 12)
             , badness  = 100
             )
-        v1  = Voice (id = 'CF')
+        tune = self.build_min_tune ()
+        v1  = tune.voices [0]
         b11 = Bar (8, 8)
+        b11.add (Tone (halftone ('C'), 8))
         v1.add (b11)
         b12 = Bar (8, 8)
         b12.add (Tone (halftone ('f'), 4))
         b12.add (Tone (halftone ('g'), 4))
         v1.add (b12)
-        v2 = Voice (id = 'CP')
+        v2 = tune.voices [1]
         b21 = Bar (8, 8)
+        b21.add (Tone (halftone ('C'), 8))
         v2.add (b21)
         b22 = Bar (8, 8)
         b22.add (Tone (halftone ('g'), 4))
@@ -739,11 +836,53 @@ class Test_Contrapunctus:
         v2.add (b22)
         b, u = check.check (b12.objects [0], b22.objects [0])
         assert b == 0
-        b11.add (Tone (halftone ('g'), 8))
-        b21.add (Tone (halftone ('f'), 8))
+        b, u = check.check (b12.objects [1], b22.objects [1])
+        assert b == 0
+
+        # Same test but with pause in first bar
+        tune = self.build_min_tune ()
+        v1  = tune.voices [0]
+        b11 = Bar (8, 8)
+        b11.add (Pause (8))
+        v1.add (b11)
+        b12 = Bar (8, 8)
+        b12.add (Tone (halftone ('f'), 4))
+        b12.add (Tone (halftone ('g'), 4))
+        v1.add (b12)
+        v2 = tune.voices [1]
+        b21 = Bar (8, 8)
+        b21.add (Pause (8))
+        v2.add (b21)
+        b22 = Bar (8, 8)
+        b22.add (Tone (halftone ('g'), 4))
+        b22.add (Tone (halftone ('f'), 4))
+        v2.add (b22)
+        b, u = check.check (b12.objects [0], b22.objects [0])
+        assert b == 100
+        b, u = check.check (b12.objects [1], b22.objects [1])
+        assert b == 0
+
+        # Same test but also with pause in second bar
+        tune = self.build_min_tune ()
+        v1  = tune.voices [0]
+        b11 = Bar (8, 8)
+        b11.add (Pause (8))
+        v1.add (b11)
+        b12 = Bar (8, 8)
+        b12.add (Pause (4))
+        b12.add (Tone (halftone ('g'), 4))
+        v1.add (b12)
+        v2 = tune.voices [1]
+        b21 = Bar (8, 8)
+        b21.add (Pause (8))
+        v2.add (b21)
+        b22 = Bar (8, 8)
+        b22.add (Tone (halftone ('g'), 4))
+        b22.add (Tone (halftone ('f'), 4))
+        v2.add (b22)
         b, u = check.check (b12.objects [0], b22.objects [0])
         assert b == 0
-        b, u = check.check (b11.objects [0], b21.objects [0])
+        b, u = check.check (b12.objects [1], b22.objects [1])
         assert b == 100
     # end def test_check_harmony_first_interval
 
@@ -753,8 +892,9 @@ class Test_Contrapunctus:
             , interval = (0, 7, 12)
             , badness  = 100
             )
-        v_cf  = Voice ()
-        v_cp  = Voice ()
+        tune  = self.build_min_tune ()
+        v_cf  = tune.voices [0]
+        v_cp  = tune.voices [1]
 
         bcf0  = Bar (8, 8)
         v_cf.add (bcf0)
@@ -800,6 +940,30 @@ class Test_Contrapunctus:
         assert b == 0
     # end def test_check_harmony_first_interval_complex
 
+    def test_check_harmony_first_interval_cp3 (self):
+        check = checks.Check_Harmony_First_Interval \
+            ( 'unison, octave, fifth'
+            , interval = (0, 7, 12)
+            , badness  = 100
+            )
+        tune  = self.build_min_tune ()
+        v_cf  = tune.voices [0]
+        v_cp  = tune.voices [1]
+        v_cf.add (Bar (8, 8))
+        v_cf.bars [0].add (Tone (halftone ('D'), 8))
+        v_cp.add (Bar (8, 8))
+        v_cp.bars [0].add (Tone (halftone ('A'), 2))
+        v_cp.bars [0].add (Tone (halftone ('B'), 2))
+        v_cp.bars [0].add (Tone (halftone ('b'), 4))
+        b_cf = v_cf.bars [0]
+        b_cp = v_cp.bars [0]
+        b, u = check.check (b_cf.objects [0], b_cp.objects [0])
+        assert b == 0
+        b, u = check.check (b_cf.objects [0], b_cp.objects [1])
+        assert b == 0
+        b, u = check.check (b_cf.objects [0], b_cp.objects [2])
+        assert b == 0
+    # end def test_check_harmony_first_interval_cp3
 
     def test_dorian_hypodorian (self):
         dorian = ['D', 'E', 'F', 'G', 'A', 'B', 'c']
@@ -1052,27 +1216,6 @@ class Test_Contrapunctus:
         assert cnt == 1
     # end def test_parse_gene_with_empty_line
 
-    def test_cf_iter (self):
-        k    = Key.get ('D')
-        v_cf = Voice ('cf')
-        v_cp = Voice ('cp')
-        b_cf = Bar.from_string (k, 8, 'A2 ^F2 ^F4')
-        v_cf.add (b_cf)
-        v_cf.add (Bar.from_string (k, 8, 'G2 E2 E4'))
-        v_cf.add (Bar.from_string (k, 8, 'D2 ^F2 A2 A2'))
-        v_cf.add (Bar.from_string (k, 8, 'D8'))
-        b_cp = Bar.from_string (k, 8, 'D8')
-        v_cp.add (b_cp)
-        v_cp.add (Bar (8))
-        v_cp.add (Bar (8))
-        v_cp.add (Bar (8))
-        check = checks.Check_Harmony ('test', 1, 1)
-        check.cp_obj = b_cp.objects [0]
-        check.cf_obj = b_cf.objects [0]
-        l = list (check.cf_iter ())
-        assert len (l) == 3
-    # end def test_cf_iter
-
     def test_gene_roundtrip_with_cf_abc (self):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         args = cmd.parse_args (['-v', '-v'])
@@ -1085,6 +1228,35 @@ class Test_Contrapunctus:
         txt = cp.as_complete_tune ().strip ()
         assert txt == abc
     # end def test_gene_roundtrip_with_cf_abc
+
+    def test_overlap (self):
+        b1  = Bar (8, 8)
+        b1.idx = 0
+        p11 = Pause (4)
+        p12 = Pause (4)
+        b1.add (p11)
+        b1.add (p12)
+        b2  = Bar (8, 8)
+        b2.idx = 0
+        p21 = Pause (2)
+        p22 = Pause (4)
+        p23 = Pause (2)
+        b2.add (p21)
+        b2.add (p22)
+        b2.add (p23)
+        assert p11.overlaps (p21)
+        assert p11.overlaps (p22)
+        assert not p11.overlaps (p23)
+        assert not p12.overlaps (p21)
+        assert p12.overlaps (p22)
+        assert p12.overlaps (p23)
+        assert p21.overlaps (p11)
+        assert not p21.overlaps (p12)
+        assert p22.overlaps (p11)
+        assert p22.overlaps (p12)
+        assert not p23.overlaps (p11)
+        assert p23.overlaps (p12)
+    # end def test_overlap
 
 # end class Test_Contrapunctus
 
