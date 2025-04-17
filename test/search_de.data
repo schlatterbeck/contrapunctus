@@ -4,6 +4,7 @@ Command-line options:
 --pop-size=10        --random-seed=9      --tune-length=12
 --use-de             --verbose            --verbose
 
+Best index: 8: 1.93016250000e+14
 Iter: 10 Evals: 110
 X: 1
 M: 4/4
@@ -42,6 +43,7 @@ K: DDor
 
 Iter #     Field      Value
 20         Best       4.279736e+13
+Best index: 8: 4.27973625000e+13
 Iter: 20 Evals: 210
 X: 1
 M: 4/4
@@ -80,6 +82,7 @@ K: DDor
 
 Iter #     Field      Value
 30         Best       3.234330e+13
+Best index: 8: 3.23433000000e+13
 Iter: 30 Evals: 310
 X: 1
 M: 4/4
@@ -118,6 +121,7 @@ K: DDor
 
 Iter #     Field      Value
 40         Best       4.421714e+12
+Best index: 7: 4.42171406250e+12
 Iter: 40 Evals: 410
 X: 1
 M: 4/4
@@ -156,6 +160,7 @@ K: DDor
 
 Iter #     Field      Value
 50         Best       3.432000e+10
+Best index: 3: 3.43200000000e+10
 Iter: 50 Evals: 510
 X: 1
 M: 4/4
@@ -194,6 +199,7 @@ K: DDor
 
 Iter #     Field      Value
 60         Best       9.413750e+09
+Best index: 3: 9.41375000000e+09
 Iter: 60 Evals: 610
 X: 1
 M: 4/4
@@ -232,6 +238,7 @@ K: DDor
 
 Iter #     Field      Value
 70         Best       3.675000e+09
+Best index: 5: 3.67500000000e+09
 Iter: 70 Evals: 710
 X: 1
 M: 4/4
@@ -270,6 +277,7 @@ K: DDor
 
 Iter #     Field      Value
 80         Best       3.273486e+07
+Best index: 6: 3.27348632812e+07
 Iter: 80 Evals: 810
 X: 1
 M: 4/4
@@ -308,6 +316,7 @@ K: DDor
 
 Iter #     Field      Value
 90         Best       1.652344e+07
+Best index: 5: 1.65234375000e+07
 Iter: 90 Evals: 910
 X: 1
 M: 4/4
@@ -346,6 +355,7 @@ K: DDor
 
 Iter #     Field      Value
 100        Best       1.038750e+07
+Best index: 5: 1.03875000000e+07
 Iter: 100 Evals: 1010
 X: 1
 M: 4/4
@@ -384,6 +394,7 @@ K: DDor
 
 Iter #     Field      Value
 110        Best       1.038750e+07
+Best index: 5: 1.03875000000e+07
 Iter: 110 Evals: 1110
 X: 1
 M: 4/4
@@ -422,6 +433,7 @@ K: DDor
 
 Iter #     Field      Value
 120        Best       6.976547e+06
+Best index: 3: 6.97654687500e+06
 Iter: 120 Evals: 1210
 X: 1
 M: 4/4
@@ -460,6 +472,7 @@ K: DDor
 
 Iter #     Field      Value
 130        Best       6.976547e+06
+Best index: 3: 6.97654687500e+06
 Iter: 130 Evals: 1310
 X: 1
 M: 4/4
@@ -498,6 +511,7 @@ K: DDor
 
 Iter #     Field      Value
 140        Best       4.513975e+05
+Best index: 6: 4.51397460938e+05
 Iter: 140 Evals: 1410
 X: 1
 M: 4/4
@@ -536,6 +550,7 @@ K: DDor
 
 Iter #     Field      Value
 150        Best       2.957432e+05
+Best index: 6: 2.95743164062e+05
 Iter: 150 Evals: 1510
 X: 1
 M: 4/4
@@ -574,6 +589,7 @@ K: DDor
 
 Iter #     Field      Value
 160        Best       2.801777e+05
+Best index: 6: 2.80177734375e+05
 Iter: 160 Evals: 1610
 X: 1
 M: 4/4
@@ -612,6 +628,7 @@ K: DDor
 
 Iter #     Field      Value
 170        Best       1.413650e+05
+Best index: 3: 1.41365000000e+05
 Iter: 170 Evals: 1710
 X: 1
 M: 4/4
@@ -650,6 +667,7 @@ K: DDor
 
 Iter #     Field      Value
 180        Best       1.106250e+05
+Best index: 5: 1.10625000000e+05
 Iter: 180 Evals: 1810
 X: 1
 M: 4/4
@@ -688,6 +706,7 @@ K: DDor
 
 Iter #     Field      Value
 190        Best       1.106250e+05
+Best index: 5: 1.10625000000e+05
 Iter: 190 Evals: 1910
 X: 1
 M: 4/4
@@ -726,6 +745,7 @@ K: DDor
 
 Iter #     Field      Value
 200        Best       7.875000e+04
+Best index: 5: 7.87500000000e+04
 Iter: 200 Evals: 2010
 X: 1
 M: 4/4
@@ -764,6 +784,7 @@ K: DDor
 
 Iter #     Field      Value
 210        Best       3.973696e+04
+Best index: 6: 3.97369628906e+04
 Iter: 210 Evals: 2110
 X: 1
 M: 4/4
@@ -802,6 +823,7 @@ K: DDor
 
 Iter #     Field      Value
 220        Best       3.973696e+04
+Best index: 6: 3.97369628906e+04
 Iter: 220 Evals: 2210
 X: 1
 M: 4/4
@@ -840,6 +862,7 @@ K: DDor
 
 Iter #     Field      Value
 230        Best       2.278500e+04
+Best index: 3: 2.27850000000e+04
 Iter: 230 Evals: 2310
 X: 1
 M: 4/4
@@ -878,6 +901,7 @@ K: DDor
 
 Iter #     Field      Value
 240        Best       2.150000e+04
+Best index: 5: 2.15000000000e+04
 Iter: 240 Evals: 2410
 X: 1
 M: 4/4
@@ -916,6 +940,7 @@ K: DDor
 
 Iter #     Field      Value
 250        Best       2.150000e+04
+Best index: 5: 2.15000000000e+04
 Iter: 250 Evals: 2510
 X: 1
 M: 4/4
@@ -954,6 +979,7 @@ K: DDor
 
 Iter #     Field      Value
 260        Best       2.150000e+04
+Best index: 5: 2.15000000000e+04
 Iter: 260 Evals: 2610
 X: 1
 M: 4/4
@@ -992,6 +1018,7 @@ K: DDor
 
 Iter #     Field      Value
 270        Best       2.287500e+03
+Best index: 5: 2.28750000000e+03
 Iter: 270 Evals: 2710
 X: 1
 M: 4/4
@@ -1030,6 +1057,7 @@ K: DDor
 
 Iter #     Field      Value
 280        Best       2.287500e+03
+Best index: 5: 2.28750000000e+03
 Iter: 280 Evals: 2810
 X: 1
 M: 4/4
@@ -1068,6 +1096,7 @@ K: DDor
 
 Iter #     Field      Value
 290        Best       2.287500e+03
+Best index: 5: 2.28750000000e+03
 Iter: 290 Evals: 2910
 X: 1
 M: 4/4
@@ -1106,6 +1135,7 @@ K: DDor
 
 Iter #     Field      Value
 300        Best       2.287500e+03
+Best index: 5: 2.28750000000e+03
 Iter: 300 Evals: 3010
 X: 1
 M: 4/4
@@ -1144,6 +1174,7 @@ K: DDor
 
 Iter #     Field      Value
 310        Best       2.287500e+03
+Best index: 5: 2.28750000000e+03
 Iter: 310 Evals: 3110
 X: 1
 M: 4/4
@@ -1182,6 +1213,7 @@ K: DDor
 
 Iter #     Field      Value
 320        Best       2.287500e+03
+Best index: 5: 2.28750000000e+03
 Iter: 320 Evals: 3210
 X: 1
 M: 4/4
@@ -1220,6 +1252,7 @@ K: DDor
 
 Iter #     Field      Value
 330        Best       2.287500e+03
+Best index: 5: 2.28750000000e+03
 Iter: 330 Evals: 3310
 X: 1
 M: 4/4
@@ -1258,6 +1291,7 @@ K: DDor
 
 Iter #     Field      Value
 340        Best       2.287500e+03
+Best index: 5: 2.28750000000e+03
 Iter: 340 Evals: 3410
 X: 1
 M: 4/4
@@ -1296,6 +1330,7 @@ K: DDor
 
 Iter #     Field      Value
 350        Best       2.027137e+03
+Best index: 6: 2.02713671875e+03
 Iter: 350 Evals: 3510
 X: 1
 M: 4/4
@@ -1334,6 +1369,7 @@ K: DDor
 
 Iter #     Field      Value
 360        Best       8.869922e+02
+Best index: 6: 8.86992187500e+02
 Iter: 360 Evals: 3610
 X: 1
 M: 4/4
@@ -1372,6 +1408,7 @@ K: DDor
 
 Iter #     Field      Value
 370        Best       8.869922e+02
+Best index: 6: 8.86992187500e+02
 Iter: 370 Evals: 3710
 X: 1
 M: 4/4
@@ -1410,6 +1447,7 @@ K: DDor
 
 Iter #     Field      Value
 380        Best       5.382422e+02
+Best index: 6: 5.38242187500e+02
 Iter: 380 Evals: 3810
 X: 1
 M: 4/4
@@ -1448,6 +1486,7 @@ K: DDor
 
 Iter #     Field      Value
 390        Best       5.346875e+02
+Best index: 6: 5.34687500000e+02
 Iter: 390 Evals: 3910
 X: 1
 M: 4/4
@@ -1486,6 +1525,7 @@ K: DDor
 
 Iter #     Field      Value
 400        Best       4.265000e+02
+Best index: 6: 4.26500000000e+02
 Iter: 400 Evals: 4010
 X: 1
 M: 4/4
@@ -1524,6 +1564,7 @@ K: DDor
 
 Iter #     Field      Value
 410        Best       3.665000e+02
+Best index: 6: 3.66500000000e+02
 Iter: 410 Evals: 4110
 X: 1
 M: 4/4
@@ -1562,6 +1603,7 @@ K: DDor
 
 Iter #     Field      Value
 420        Best       3.665000e+02
+Best index: 6: 3.66500000000e+02
 Iter: 420 Evals: 4210
 X: 1
 M: 4/4
@@ -1600,6 +1642,7 @@ K: DDor
 
 Iter #     Field      Value
 430        Best       1.432500e+02
+Best index: 6: 1.43250000000e+02
 Iter: 430 Evals: 4310
 X: 1
 M: 4/4
@@ -1638,6 +1681,7 @@ K: DDor
 
 Iter #     Field      Value
 440        Best       1.432500e+02
+Best index: 6: 1.43250000000e+02
 Iter: 440 Evals: 4410
 X: 1
 M: 4/4
@@ -1676,6 +1720,7 @@ K: DDor
 
 Iter #     Field      Value
 450        Best       1.432500e+02
+Best index: 6: 1.43250000000e+02
 Iter: 450 Evals: 4510
 X: 1
 M: 4/4
@@ -1714,6 +1759,7 @@ K: DDor
 
 Iter #     Field      Value
 460        Best       1.432500e+02
+Best index: 6: 1.43250000000e+02
 Iter: 460 Evals: 4610
 X: 1
 M: 4/4
@@ -1752,6 +1798,7 @@ K: DDor
 
 Iter #     Field      Value
 470        Best       1.432500e+02
+Best index: 6: 1.43250000000e+02
 Iter: 470 Evals: 4710
 X: 1
 M: 4/4
@@ -1790,6 +1837,7 @@ K: DDor
 
 Iter #     Field      Value
 480        Best       1.432500e+02
+Best index: 6: 1.43250000000e+02
 Iter: 480 Evals: 4810
 X: 1
 M: 4/4
@@ -1828,6 +1876,7 @@ K: DDor
 
 Iter #     Field      Value
 490        Best       1.432500e+02
+Best index: 6: 1.43250000000e+02
 Iter: 490 Evals: 4910
 X: 1
 M: 4/4
@@ -1866,6 +1915,7 @@ K: DDor
 
 Iter #     Field      Value
 500        Best       2.812500e+01
+Best index: 2: 2.81250000000e+01
 Iter: 500 Evals: 5010
 X: 1
 M: 4/4
@@ -1904,6 +1954,7 @@ K: DDor
 
 Iter #     Field      Value
 510        Best       2.812500e+01
+Best index: 2: 2.81250000000e+01
 Iter: 510 Evals: 5110
 X: 1
 M: 4/4
@@ -1942,6 +1993,7 @@ K: DDor
 
 Iter #     Field      Value
 520        Best       2.812500e+01
+Best index: 2: 2.81250000000e+01
 Iter: 520 Evals: 5210
 X: 1
 M: 4/4
@@ -1980,6 +2032,7 @@ K: DDor
 
 Iter #     Field      Value
 530        Best       2.812500e+01
+Best index: 2: 2.81250000000e+01
 Iter: 530 Evals: 5310
 X: 1
 M: 4/4
@@ -2018,6 +2071,7 @@ K: DDor
 
 Iter #     Field      Value
 540        Best       2.812500e+01
+Best index: 2: 2.81250000000e+01
 Iter: 540 Evals: 5410
 X: 1
 M: 4/4
@@ -2056,6 +2110,7 @@ K: DDor
 
 Iter #     Field      Value
 550        Best       2.812500e+01
+Best index: 2: 2.81250000000e+01
 Iter: 550 Evals: 5510
 X: 1
 M: 4/4
@@ -2094,6 +2149,7 @@ K: DDor
 
 Iter #     Field      Value
 560        Best       2.812500e+01
+Best index: 2: 2.81250000000e+01
 Iter: 560 Evals: 5610
 X: 1
 M: 4/4
@@ -2132,6 +2188,7 @@ K: DDor
 
 Iter #     Field      Value
 570        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 570 Evals: 5710
 X: 1
 M: 4/4
@@ -2170,6 +2227,7 @@ K: DDor
 
 Iter #     Field      Value
 580        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 580 Evals: 5810
 X: 1
 M: 4/4
@@ -2208,6 +2266,7 @@ K: DDor
 
 Iter #     Field      Value
 590        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 590 Evals: 5910
 X: 1
 M: 4/4
@@ -2246,6 +2305,7 @@ K: DDor
 
 Iter #     Field      Value
 600        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 600 Evals: 6010
 X: 1
 M: 4/4
@@ -2284,6 +2344,7 @@ K: DDor
 
 Iter #     Field      Value
 610        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 610 Evals: 6110
 X: 1
 M: 4/4
@@ -2322,6 +2383,7 @@ K: DDor
 
 Iter #     Field      Value
 620        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 620 Evals: 6210
 X: 1
 M: 4/4
@@ -2360,6 +2422,7 @@ K: DDor
 
 Iter #     Field      Value
 630        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 630 Evals: 6310
 X: 1
 M: 4/4
@@ -2398,6 +2461,7 @@ K: DDor
 
 Iter #     Field      Value
 640        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 640 Evals: 6410
 X: 1
 M: 4/4
@@ -2436,6 +2500,7 @@ K: DDor
 
 Iter #     Field      Value
 650        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 650 Evals: 6510
 X: 1
 M: 4/4
@@ -2474,6 +2539,7 @@ K: DDor
 
 Iter #     Field      Value
 660        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 660 Evals: 6610
 X: 1
 M: 4/4
@@ -2512,6 +2578,7 @@ K: DDor
 
 Iter #     Field      Value
 670        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 670 Evals: 6710
 X: 1
 M: 4/4
@@ -2550,6 +2617,7 @@ K: DDor
 
 Iter #     Field      Value
 680        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 680 Evals: 6810
 X: 1
 M: 4/4
@@ -2588,6 +2656,7 @@ K: DDor
 
 Iter #     Field      Value
 690        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 690 Evals: 6910
 X: 1
 M: 4/4
@@ -2626,6 +2695,7 @@ K: DDor
 
 Iter #     Field      Value
 700        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 700 Evals: 7010
 X: 1
 M: 4/4
@@ -2664,6 +2734,7 @@ K: DDor
 
 Iter #     Field      Value
 710        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 710 Evals: 7110
 X: 1
 M: 4/4
@@ -2702,6 +2773,7 @@ K: DDor
 
 Iter #     Field      Value
 720        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 720 Evals: 7210
 X: 1
 M: 4/4
@@ -2740,6 +2812,7 @@ K: DDor
 
 Iter #     Field      Value
 730        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 730 Evals: 7310
 X: 1
 M: 4/4
@@ -2778,6 +2851,7 @@ K: DDor
 
 Iter #     Field      Value
 740        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 740 Evals: 7410
 X: 1
 M: 4/4
@@ -2816,6 +2890,7 @@ K: DDor
 
 Iter #     Field      Value
 750        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 750 Evals: 7510
 X: 1
 M: 4/4
@@ -2854,6 +2929,7 @@ K: DDor
 
 Iter #     Field      Value
 760        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 760 Evals: 7610
 X: 1
 M: 4/4
@@ -2892,6 +2968,7 @@ K: DDor
 
 Iter #     Field      Value
 770        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 770 Evals: 7710
 X: 1
 M: 4/4
@@ -2930,6 +3007,7 @@ K: DDor
 
 Iter #     Field      Value
 780        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 780 Evals: 7810
 X: 1
 M: 4/4
@@ -2968,6 +3046,7 @@ K: DDor
 
 Iter #     Field      Value
 790        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 790 Evals: 7910
 X: 1
 M: 4/4
@@ -3006,6 +3085,7 @@ K: DDor
 
 Iter #     Field      Value
 800        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 800 Evals: 8010
 X: 1
 M: 4/4
@@ -3044,6 +3124,7 @@ K: DDor
 
 Iter #     Field      Value
 810        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 810 Evals: 8110
 X: 1
 M: 4/4
@@ -3082,6 +3163,7 @@ K: DDor
 
 Iter #     Field      Value
 820        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 820 Evals: 8210
 X: 1
 M: 4/4
@@ -3120,6 +3202,7 @@ K: DDor
 
 Iter #     Field      Value
 830        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 830 Evals: 8310
 X: 1
 M: 4/4
@@ -3158,6 +3241,7 @@ K: DDor
 
 Iter #     Field      Value
 840        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 840 Evals: 8410
 X: 1
 M: 4/4
@@ -3196,6 +3280,7 @@ K: DDor
 
 Iter #     Field      Value
 850        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 850 Evals: 8510
 X: 1
 M: 4/4
@@ -3234,6 +3319,7 @@ K: DDor
 
 Iter #     Field      Value
 860        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 860 Evals: 8610
 X: 1
 M: 4/4
@@ -3272,6 +3358,7 @@ K: DDor
 
 Iter #     Field      Value
 870        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 870 Evals: 8710
 X: 1
 M: 4/4
@@ -3310,6 +3397,7 @@ K: DDor
 
 Iter #     Field      Value
 880        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 880 Evals: 8810
 X: 1
 M: 4/4
@@ -3348,6 +3436,7 @@ K: DDor
 
 Iter #     Field      Value
 890        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 890 Evals: 8910
 X: 1
 M: 4/4
@@ -3386,6 +3475,7 @@ K: DDor
 
 Iter #     Field      Value
 900        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 900 Evals: 9010
 X: 1
 M: 4/4
@@ -3424,6 +3514,7 @@ K: DDor
 
 Iter #     Field      Value
 910        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 910 Evals: 9110
 X: 1
 M: 4/4
@@ -3462,6 +3553,7 @@ K: DDor
 
 Iter #     Field      Value
 920        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 920 Evals: 9210
 X: 1
 M: 4/4
@@ -3500,6 +3592,7 @@ K: DDor
 
 Iter #     Field      Value
 930        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 930 Evals: 9310
 X: 1
 M: 4/4
@@ -3538,6 +3631,7 @@ K: DDor
 
 Iter #     Field      Value
 940        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 940 Evals: 9410
 X: 1
 M: 4/4
@@ -3576,6 +3670,7 @@ K: DDor
 
 Iter #     Field      Value
 950        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 950 Evals: 9510
 X: 1
 M: 4/4
@@ -3614,6 +3709,7 @@ K: DDor
 
 Iter #     Field      Value
 960        Best       2.250000e+01
+Best index: 2: 2.25000000000e+01
 Iter: 960 Evals: 9610
 X: 1
 M: 4/4
@@ -3652,6 +3748,7 @@ K: DDor
 
 Iter #     Field      Value
 970        Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 970 Evals: 9710
 X: 1
 M: 4/4
@@ -3690,6 +3787,7 @@ K: DDor
 
 Iter #     Field      Value
 980        Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 980 Evals: 9810
 X: 1
 M: 4/4
@@ -3728,6 +3826,7 @@ K: DDor
 
 Iter #     Field      Value
 990        Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 990 Evals: 9910
 X: 1
 M: 4/4
@@ -3766,6 +3865,7 @@ K: DDor
 
 Iter #     Field      Value
 1000       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1000 Evals: 10010
 X: 1
 M: 4/4
@@ -3804,6 +3904,7 @@ K: DDor
 
 Iter #     Field      Value
 1010       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1010 Evals: 10110
 X: 1
 M: 4/4
@@ -3842,6 +3943,7 @@ K: DDor
 
 Iter #     Field      Value
 1020       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1020 Evals: 10210
 X: 1
 M: 4/4
@@ -3880,6 +3982,7 @@ K: DDor
 
 Iter #     Field      Value
 1030       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1030 Evals: 10310
 X: 1
 M: 4/4
@@ -3918,6 +4021,7 @@ K: DDor
 
 Iter #     Field      Value
 1040       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1040 Evals: 10410
 X: 1
 M: 4/4
@@ -3956,6 +4060,7 @@ K: DDor
 
 Iter #     Field      Value
 1050       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1050 Evals: 10510
 X: 1
 M: 4/4
@@ -3994,6 +4099,7 @@ K: DDor
 
 Iter #     Field      Value
 1060       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1060 Evals: 10610
 X: 1
 M: 4/4
@@ -4032,6 +4138,7 @@ K: DDor
 
 Iter #     Field      Value
 1070       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1070 Evals: 10710
 X: 1
 M: 4/4
@@ -4070,6 +4177,7 @@ K: DDor
 
 Iter #     Field      Value
 1080       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1080 Evals: 10810
 X: 1
 M: 4/4
@@ -4108,6 +4216,7 @@ K: DDor
 
 Iter #     Field      Value
 1090       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1090 Evals: 10910
 X: 1
 M: 4/4
@@ -4146,6 +4255,7 @@ K: DDor
 
 Iter #     Field      Value
 1100       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1100 Evals: 11010
 X: 1
 M: 4/4
@@ -4184,6 +4294,7 @@ K: DDor
 
 Iter #     Field      Value
 1110       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1110 Evals: 11110
 X: 1
 M: 4/4
@@ -4222,6 +4333,7 @@ K: DDor
 
 Iter #     Field      Value
 1120       Best       1.772500e+01
+Best index: 8: 1.77250000000e+01
 Iter: 1120 Evals: 11210
 X: 1
 M: 4/4
@@ -4260,6 +4372,7 @@ K: DDor
 
 Iter #     Field      Value
 1130       Best       1.637500e+01
+Best index: 8: 1.63750000000e+01
 Iter: 1130 Evals: 11310
 X: 1
 M: 4/4
@@ -4298,6 +4411,7 @@ K: DDor
 
 Iter #     Field      Value
 1140       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1140 Evals: 11410
 X: 1
 M: 4/4
@@ -4336,6 +4450,7 @@ K: DDor
 
 Iter #     Field      Value
 1150       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1150 Evals: 11510
 X: 1
 M: 4/4
@@ -4374,6 +4489,7 @@ K: DDor
 
 Iter #     Field      Value
 1160       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1160 Evals: 11610
 X: 1
 M: 4/4
@@ -4412,6 +4528,7 @@ K: DDor
 
 Iter #     Field      Value
 1170       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1170 Evals: 11710
 X: 1
 M: 4/4
@@ -4450,6 +4567,7 @@ K: DDor
 
 Iter #     Field      Value
 1180       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1180 Evals: 11810
 X: 1
 M: 4/4
@@ -4488,6 +4606,7 @@ K: DDor
 
 Iter #     Field      Value
 1190       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1190 Evals: 11910
 X: 1
 M: 4/4
@@ -4526,6 +4645,7 @@ K: DDor
 
 Iter #     Field      Value
 1200       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1200 Evals: 12010
 X: 1
 M: 4/4
@@ -4564,6 +4684,7 @@ K: DDor
 
 Iter #     Field      Value
 1210       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1210 Evals: 12110
 X: 1
 M: 4/4
@@ -4602,6 +4723,7 @@ K: DDor
 
 Iter #     Field      Value
 1220       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1220 Evals: 12210
 X: 1
 M: 4/4
@@ -4640,6 +4762,7 @@ K: DDor
 
 Iter #     Field      Value
 1230       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1230 Evals: 12310
 X: 1
 M: 4/4
@@ -4678,6 +4801,7 @@ K: DDor
 
 Iter #     Field      Value
 1240       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1240 Evals: 12410
 X: 1
 M: 4/4
@@ -4716,6 +4840,7 @@ K: DDor
 
 Iter #     Field      Value
 1250       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1250 Evals: 12510
 X: 1
 M: 4/4
@@ -4754,6 +4879,7 @@ K: DDor
 
 Iter #     Field      Value
 1260       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1260 Evals: 12610
 X: 1
 M: 4/4
@@ -4792,6 +4918,7 @@ K: DDor
 
 Iter #     Field      Value
 1270       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1270 Evals: 12710
 X: 1
 M: 4/4
@@ -4830,6 +4957,7 @@ K: DDor
 
 Iter #     Field      Value
 1280       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1280 Evals: 12810
 X: 1
 M: 4/4
@@ -4868,6 +4996,7 @@ K: DDor
 
 Iter #     Field      Value
 1290       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1290 Evals: 12910
 X: 1
 M: 4/4
@@ -4906,6 +5035,7 @@ K: DDor
 
 Iter #     Field      Value
 1300       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1300 Evals: 13010
 X: 1
 M: 4/4
@@ -4944,6 +5074,7 @@ K: DDor
 
 Iter #     Field      Value
 1310       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1310 Evals: 13110
 X: 1
 M: 4/4
@@ -4982,6 +5113,7 @@ K: DDor
 
 Iter #     Field      Value
 1320       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1320 Evals: 13210
 X: 1
 M: 4/4
@@ -5020,6 +5152,7 @@ K: DDor
 
 Iter #     Field      Value
 1330       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1330 Evals: 13310
 X: 1
 M: 4/4
@@ -5058,6 +5191,7 @@ K: DDor
 
 Iter #     Field      Value
 1340       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1340 Evals: 13410
 X: 1
 M: 4/4
@@ -5096,6 +5230,7 @@ K: DDor
 
 Iter #     Field      Value
 1350       Best       7.781250e+00
+Best index: 6: 7.78125000000e+00
 Iter: 1350 Evals: 13510
 X: 1
 M: 4/4
@@ -5134,6 +5269,7 @@ K: DDor
 
 Iter #     Field      Value
 1360       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1360 Evals: 13610
 X: 1
 M: 4/4
@@ -5172,6 +5308,7 @@ K: DDor
 
 Iter #     Field      Value
 1370       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1370 Evals: 13710
 X: 1
 M: 4/4
@@ -5210,6 +5347,7 @@ K: DDor
 
 Iter #     Field      Value
 1380       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1380 Evals: 13810
 X: 1
 M: 4/4
@@ -5248,6 +5386,7 @@ K: DDor
 
 Iter #     Field      Value
 1390       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1390 Evals: 13910
 X: 1
 M: 4/4
@@ -5286,6 +5425,7 @@ K: DDor
 
 Iter #     Field      Value
 1400       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1400 Evals: 14010
 X: 1
 M: 4/4
@@ -5324,6 +5464,7 @@ K: DDor
 
 Iter #     Field      Value
 1410       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1410 Evals: 14110
 X: 1
 M: 4/4
@@ -5362,6 +5503,7 @@ K: DDor
 
 Iter #     Field      Value
 1420       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1420 Evals: 14210
 X: 1
 M: 4/4
@@ -5400,6 +5542,7 @@ K: DDor
 
 Iter #     Field      Value
 1430       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1430 Evals: 14310
 X: 1
 M: 4/4
@@ -5438,6 +5581,7 @@ K: DDor
 
 Iter #     Field      Value
 1440       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1440 Evals: 14410
 X: 1
 M: 4/4
@@ -5476,6 +5620,7 @@ K: DDor
 
 Iter #     Field      Value
 1450       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1450 Evals: 14510
 X: 1
 M: 4/4
@@ -5514,6 +5659,7 @@ K: DDor
 
 Iter #     Field      Value
 1460       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1460 Evals: 14610
 X: 1
 M: 4/4
@@ -5552,6 +5698,7 @@ K: DDor
 
 Iter #     Field      Value
 1470       Best       3.000000e+00
+Best index: 3: 3.00000000000e+00
 Iter: 1470 Evals: 14710
 X: 1
 M: 4/4
@@ -5590,6 +5737,7 @@ K: DDor
 
 Iter #     Field      Value
 1480       Best       2.250000e+00
+Best index: 2: 2.25000000000e+00
 Iter: 1480 Evals: 14810
 X: 1
 M: 4/4
@@ -5628,6 +5776,7 @@ K: DDor
 
 Iter #     Field      Value
 1490       Best       2.250000e+00
+Best index: 2: 2.25000000000e+00
 Iter: 1490 Evals: 14910
 X: 1
 M: 4/4
@@ -5666,6 +5815,7 @@ K: DDor
 
 Iter #     Field      Value
 1500       Best       2.250000e+00
+Best index: 2: 2.25000000000e+00
 Iter: 1500 Evals: 15010
 X: 1
 M: 4/4
@@ -5704,6 +5854,7 @@ K: DDor
 
 Iter #     Field      Value
 1510       Best       2.250000e+00
+Best index: 2: 2.25000000000e+00
 Iter: 1510 Evals: 15110
 X: 1
 M: 4/4
@@ -5742,6 +5893,7 @@ K: DDor
 
 Iter #     Field      Value
 1520       Best       2.250000e+00
+Best index: 2: 2.25000000000e+00
 Iter: 1520 Evals: 15210
 X: 1
 M: 4/4
@@ -5780,6 +5932,7 @@ K: DDor
 
 Iter #     Field      Value
 1530       Best       2.250000e+00
+Best index: 2: 2.25000000000e+00
 Iter: 1530 Evals: 15310
 X: 1
 M: 4/4
@@ -5818,6 +5971,7 @@ K: DDor
 
 Iter #     Field      Value
 1540       Best       2.250000e+00
+Best index: 2: 2.25000000000e+00
 Iter: 1540 Evals: 15410
 X: 1
 M: 4/4
@@ -5856,6 +6010,7 @@ K: DDor
 
 Iter #     Field      Value
 1550       Best       2.250000e+00
+Best index: 2: 2.25000000000e+00
 Iter: 1550 Evals: 15510
 X: 1
 M: 4/4
@@ -5894,6 +6049,7 @@ K: DDor
 
 Iter #     Field      Value
 1560       Best       1.800000e+00
+Best index: 2: 1.80000000000e+00
 Iter: 1560 Evals: 15610
 X: 1
 M: 4/4
@@ -5932,6 +6088,7 @@ K: DDor
 
 Iter #     Field      Value
 1570       Best       1.800000e+00
+Best index: 2: 1.80000000000e+00
 Iter: 1570 Evals: 15710
 X: 1
 M: 4/4
@@ -5970,6 +6127,7 @@ K: DDor
 
 Iter #     Field      Value
 1580       Best       1.800000e+00
+Best index: 2: 1.80000000000e+00
 Iter: 1580 Evals: 15810
 X: 1
 M: 4/4
@@ -6012,6 +6170,7 @@ Command-line options:
 --pop-size=10        --random-seed=9      --tune-length=12
 --use-de             --verbose            --verbose
 
+Best index: 2: 1.00000000000e+00
 Iter: 1586 Evals: 15870
 X: 1
 M: 4/4

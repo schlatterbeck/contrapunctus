@@ -37,6 +37,9 @@ all: $(VERSIONPY)
 %.abc: %.log
 	$(CMD_CONTRAPUNCTUS) -vv -b -g $< > $@
 
+%.abc: %.data
+	$(CMD_CONTRAPUNCTUS) -vv -b -g $< > $@
+
 clean:
 	rm -f MANIFEST Version.py README.html VERSION
 	rm -rf ${CLEAN} *.egg-info __pycache__ $(PACKAGE)/__pycache__

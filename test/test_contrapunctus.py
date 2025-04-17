@@ -641,19 +641,20 @@ class Test_Contrapunctus:
     def test_logparse_with_cf (self):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         log  = 'test/search_de_cf_haenschen.data'
+        abc  = 'test/search_de_cf_haenschen.abc'
         args = cmd.parse_args (['-v', '-v', '-b', '-g', log])
         cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         cp.from_gene ()
         txt  = cp.as_complete_tune ()
-        with open ('test/cf_haenschen.abc') as f:
-            abc = f.read ()
-        assert txt.strip () == abc.strip ()
+        with open (abc) as f:
+            abc_content = f.read ()
+        assert txt.strip () == abc_content.strip ()
         # roundtrip test, note the missing -b ('best') option
-        args = cmd.parse_args (['-v', '-v', '-g' 'test/cf_haenschen.abc'])
+        args = cmd.parse_args (['-v', '-v', '-g', abc])
         cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         cp.from_gene ()
         txt = cp.as_complete_tune ()
-        assert txt.strip () == abc.strip ()
+        assert txt.strip () == abc_content.strip ()
     # end def test_logparse_with_cf
 
     def test_gene_decode_8_44 (self):

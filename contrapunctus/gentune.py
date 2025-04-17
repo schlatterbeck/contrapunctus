@@ -378,28 +378,30 @@ class Contrapunctus:
         # We iterate over the bars in each tune.
         # cf: Cantus Firmus (Object of class 'Bar')
         # cp: Contrapunctus (Object of class 'Bar')
-        last_cf_obj = last_cp_obj = None
+        last_cf_obj = last_cp_obj = last_bar_obj = None
         bsum = usum = 0
         for cf_obj, cp_obj in tune.voices_iter ():
             cf = cf_obj.bar
             cp = cp_obj.bar
             assert cp.voice.id == 'Contrapunctus'
             assert cf.voice.id == 'CantusFirmus'
+            assert cf.idx == cp.idx
 
-            if last_cf_obj is not cf_obj:
+            if last_bar_obj is not cp:
                 ugliness += usum
                 if bsum:
                     assert bsum > 1
                     badness *= bsum
                 bsum = usum = 0
+                last_bar_obj = cp
+            if not self.args.no_check_cf and last_cf_obj is not cf_obj:
                 last_cf_obj = cf_obj
-                if not self.args.no_check_cf:
-                    for check in self.melody_checks_cf:
-                        b, u = check.check (cf_obj)
-                        if b:
-                            badness *= b
-                        ugliness += u
-                        self.explain (check)
+                for check in self.melody_checks_cf:
+                    b, u = check.check (cf_obj)
+                    if b:
+                        badness *= b
+                    ugliness += u
+                    self.explain (check)
             if last_cp_obj is not cp_obj:
                 last_cp_obj = cp_obj
                 for check in self.melody_checks_cp:
