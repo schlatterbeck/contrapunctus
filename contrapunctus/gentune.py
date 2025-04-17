@@ -379,21 +379,27 @@ class Contrapunctus:
         # cf: Cantus Firmus (Object of class 'Bar')
         # cp: Contrapunctus (Object of class 'Bar')
         last_cf_obj = last_cp_obj = None
+        bsum = usum = 0
         for cf_obj, cp_obj in tune.voices_iter ():
             cf = cf_obj.bar
             cp = cp_obj.bar
             assert cp.voice.id == 'Contrapunctus'
             assert cf.voice.id == 'CantusFirmus'
 
-            if not self.args.no_check_cf and last_cf_obj is not cf_obj:
+            if last_cf_obj is not cf_obj:
+                ugliness += usum
+                if bsum:
+                    assert bsum > 1
+                    badness *= bsum
+                bsum = usum = 0
                 last_cf_obj = cf_obj
-                for check in self.melody_checks_cf:
-                    b, u = check.check (cf_obj)
-                    if b:
-                        badness *= b
-                    ugliness += u
-                    self.explain (check)
-            bsum = usum = 0
+                if not self.args.no_check_cf:
+                    for check in self.melody_checks_cf:
+                        b, u = check.check (cf_obj)
+                        if b:
+                            badness *= b
+                        ugliness += u
+                        self.explain (check)
             if last_cp_obj is not cp_obj:
                 last_cp_obj = cp_obj
                 for check in self.melody_checks_cp:
@@ -407,10 +413,10 @@ class Contrapunctus:
                 usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
                 self.explain (check)
 
-            ugliness += usum
-            if bsum:
-                assert bsum > 1
-                badness *= bsum
+        ugliness += usum
+        if bsum:
+            assert bsum > 1
+            badness *= bsum
         return ugliness * badness
     # end def evaluate
 
@@ -825,8 +831,9 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
             , pop_size      = args.pop_size
             , num_replace   = args.pop_size * 9 // 10
             , print_options = [pga.PGA_REPORT_STRING]
-            , stopping_rule_types = [pga.PGA_STOP_MAXITER]
             , max_GA_iter   = args.max_generations
+            , print_frequency     = args.print_frequency
+            , stopping_rule_types = [pga.PGA_STOP_MAXITER]
             )
         typ = int
         if args.use_de:
@@ -874,6 +881,9 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
         if not self.prefix_printed or self.stop_reached:
             print (self.as_args (force = True), file = file)
             self.prefix_printed = True
+        bestidx = self.get_best_index (pga.PGA_OLDPOP)
+        eval    = self.get_evaluation (bestidx, pga.PGA_OLDPOP)
+        print ('Best index: %d: %.11e' % (bestidx, eval), file = file)
         evalstr = 'Iter: %s Evals: %s' % (self.GA_iter, self.eval_count)
         print (evalstr, file = file)
         print (self.as_tune (p, pop), file = file)
@@ -1168,6 +1178,12 @@ def contrapunctus_cmd (argv = None):
         , help    = "Population size default for DE: %d for GA: %d"
                   % Contrapunctus.pop_default
         , type    = int
+        )
+    cmd.add_argument \
+        ( "--print-frequency"
+        , help    = "Print frequency, default=%(default)s"
+        , type    = int
+        , default = 10
         )
     cmd.add_argument \
         ( "-R", "--random-seed"
