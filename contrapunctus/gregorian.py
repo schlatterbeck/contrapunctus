@@ -91,4 +91,13 @@ hypolydian     = Gregorian (lydian.ambitus, offset = -3)
 mixolydian     = Gregorian (['G', 'A', 'B', 'c', 'd', 'e', 'f'])
 hypomixolydian = Gregorian (mixolydian.ambitus, offset = -3)
 
-__all__ = ['dorian', 'hypodorian']
+gregorian_modes = dict \
+    ( dorian     = (dorian,     hypodorian)
+    , phrygian   = (phrygian,   hypophrygian)
+    , lydian     = (lydian,     hypolydian)
+    , mixolydian = (mixolydian, hypomixolydian)
+    )
+
+__all__ = [ 'dorian', 'hypodorian', 'phrygian', 'hypophrygian', 'lydian'
+          , 'hypolydian', 'mixolydian', 'hypomixolydian', 'gregorian_modes'
+          ]

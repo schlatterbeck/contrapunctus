@@ -26,7 +26,7 @@ import pga
 import random
 import itertools
 from   .tune      import Tune, Bar, Tone
-from   .gregorian import dorian
+from   .gregorian import gregorian_modes
 from   .checks    import checks
 from   .rhythm    import *
 from   argparse   import ArgumentParser
@@ -129,6 +129,7 @@ class Contrapunctus:
     def __init__ (self, cmd, args):
         self.cmd           = cmd
         self.args          = args
+        self.mode          = gregorian_modes [args.gregorian_mode]
         self.orig_args     = None
         self.do_explain    = False
         self.explanation   = []
@@ -551,7 +552,7 @@ class Contrapunctus:
             else:
                 nbar = bar.copy ()
             cp.replace (bd.bar_idx (b), nbar)
-            nbar.add (Tone (dorian [a], bd.tone_idx (b, t)))
+            nbar.add (Tone (self.mode [0][a], bd.tone_idx (b, t)))
             tsum = sum (bd.tone_idx (b, x) for x in range (t))
             assert nbar.objects [-1].offset == tsum
             sidx = cp.bars [bd.bar_idx (0)].idx
@@ -593,8 +594,8 @@ class Contrapunctus:
         for k in range (self.tunelength - 1):
             b  = Bar (8, 8)
             cp.add (b)
-        cp.bars [-2].add (Tone (dorian.subsemitonium, 8))
-        cp.bars [-1].add (Tone (dorian [7], 8))
+        cp.bars [-2].add (Tone (self.mode [0].subsemitonium, 8))
+        cp.bars [-1].add (Tone (self.mode [0][7], 8))
         off = self.cplength - 1
         pos = -22 + 1
         seq = range (self.init [pos][0], self.init [pos][1] + 1)
@@ -980,6 +981,12 @@ def contrapunctus_cmd (argv = None):
     cmd.add_argument \
         ( "-g", "--gene-file"
         , help    = "Read gene-file and output phenotype, no searching"
+        )
+    cmd.add_argument \
+        ( "--gregorian_mode"
+        , help    = "Gregorian mode, default=%(default)s"
+        , default = 'dorian'
+        , choices = gregorian_modes.keys ()
         )
     cmd.add_argument \
         ( "-l", "--tune-length"

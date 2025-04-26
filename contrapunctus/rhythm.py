@@ -22,7 +22,6 @@
 # ****************************************************************************
 
 from .tune      import Tune, Voice, Bar, Meter, Tone
-from .gregorian import dorian, hypodorian
 
 class Rhythm:
     """ The encapsulates the rhythm generation. We specify all the
@@ -129,7 +128,7 @@ class Rhythm_Semibreve (Rhythm):
         else:
             cf = Voice (id = 'CantusFirmus', name = 'Cantus Firmus')
             b  = Bar (8, 8)
-            b.add (Tone (hypodorian.finalis, 8))
+            b.add (Tone (self.parent.mode [1].finalis, 8))
             cf.add (b)
         tune.add (cf)
         for i in range (self.cflength):
@@ -137,7 +136,7 @@ class Rhythm_Semibreve (Rhythm):
                 return tune
             a = self.parent.get_fixed_allele (p, pop, i)
             b = Bar (8, 8)
-            b.add (Tone (hypodorian [a], 8))
+            b.add (Tone (self.parent.mode [1][a], 8))
             cf.add (b)
         # 0.1.1: "The final must be approached by step. If the final is
         # approached from below, then the leading tone must be raised in
@@ -150,10 +149,10 @@ class Rhythm_Semibreve (Rhythm):
         # consonance" is also achived by hard-coding the last tone.
         if not self.parent.cantus_firmus:
             b  = Bar (8, 8)
-            b.add (Tone (hypodorian.step2, 8))
+            b.add (Tone (self.parent.mode [1].step2, 8))
             cf.add (b)
             b  = Bar (8, 8)
-            b.add (Tone (hypodorian.finalis, 8))
+            b.add (Tone (self.parent.mode [1].finalis, 8))
             cf.add (b)
         cp  = Voice (id = 'Contrapunctus', name = 'Contrapunctus')
         tune.add (cp)
@@ -171,44 +170,44 @@ class Rhythm_Semibreve (Rhythm):
                 return tune
             l = 1 << v [0]
             assert 2 <= l <= 8
-            b.add (Tone (dorian [v [1]], l))
+            b.add (Tone (self.parent.mode [0][v [1]], l))
             boff += l
             if boff == 2:
                 if maxidx is not None and off + 3 > maxidx:
                     return tune
                 l = 1 << v [2]
                 assert 1 <= l <= 2
-                b.add (Tone (dorian [v [3]], l))
+                b.add (Tone (self.parent.mode [0][v [3]], l))
                 boff += l
             if boff == 3:
                 if maxidx is not None and off + 4 > maxidx:
                     return tune
-                b.add (Tone (dorian [v [4]], 1))
+                b.add (Tone (self.parent.mode [0][v [4]], 1))
                 boff += 1
             if boff == 4:
                 if maxidx is not None and off + 6 > maxidx:
                     return tune
                 l = 1 << v [5]
                 assert 2 <= l <= 4
-                b.add (Tone (dorian [v [6]], l))
+                b.add (Tone (self.parent.mode [0][v [6]], l))
                 boff += l
             if boff == 5: # pragma: no cover
                 # Probably never reached, prev tone may not be len 1
                 if maxidx is not None and off + 7 > maxidx:
                     return tune
-                b.add (Tone (dorian [v [7]], 1))
+                b.add (Tone (self.parent.mode [0][v [7]], 1))
                 boff += 1
             if boff == 6:
                 if maxidx is not None and off + 9 > maxidx:
                     return tune
                 l = 1 << v [8]
                 assert 1 <= l <= 2
-                b.add (Tone (dorian [v [9]], l))
+                b.add (Tone (self.parent.mode [0][v [9]], l))
                 boff += l
             if boff == 7:
                 if maxidx is not None and off + 10 > maxidx:
                     return tune
-                b.add (Tone (dorian [v [10]], 1))
+                b.add (Tone (self.parent.mode [0][v [10]], 1))
                 boff += 1
         b  = Bar (8, 8)
         # 0.1.1: "The final must be approached by step. If the final is
@@ -218,10 +217,10 @@ class Rhythm_Semibreve (Rhythm):
         # on D a C# is necessary at the cadence." We achieve this by
         # hard-coding the tone prior to the final to be the
         # subsemitonium for the contrapunctus.
-        b.add (Tone (dorian.subsemitonium, 8))
+        b.add (Tone (self.parent.mode [0].subsemitonium, 8))
         cp.add (b)
         b  = Bar (8, 8)
-        b.add (Tone (dorian [7], 8))
+        b.add (Tone (self.parent.mode [0][7], 8))
         cp.add (b)
         return tune
     # end def phenotype
