@@ -25,9 +25,10 @@ import sys
 import pga
 import random
 import itertools
-from   .tune      import Tune, Voice, Bar, Meter, Tone, halftone, sgn
-from   .gregorian import dorian, hypodorian
+from   .tune      import Tune, Bar, Tone
+from   .gregorian import dorian
 from   .checks    import checks
+from   .rhythm    import *
 from   argparse   import ArgumentParser
 from   copy       import deepcopy
 # Backwards compatibility:
@@ -115,34 +116,8 @@ class Contrapunctus:
 
         The first voice in the gene is the cantus firmus, the second
         voice is the contrapunctus.
-        Length of the automatically-generated voices
-        Now that we allow up to 1/8 notes the gene for the first voice
-        is longer.
-        A bar can contain at most 14 notes:
-        - A 'heavy' position must not contain 1/8
-        - so we have at least 2*1/4 for the heavy position
-        - and the rest 1/8 makes 16/8 - 2*1/4 = 12/8
-        We have for each note in a bar:
-        - length of note (or pause, for now we do not generate a pause)
-        - the length can only be 16, 12, 8, 6, 4, 3, 2, 1
-        But we only use one bar (8/8) and we bind the second note if
-        it is the same pitch (maybe with some probability). The gene
-        coding is:
-        - log_2 of the length (left out if there is only 1 possibility)
-        - pitch for each note
-        Thats 7 pairs of genes (where the length is sometimes left out):
-        - 1-3 (8, 4, 2)/8, the heavy position has at least 1/4
-        - pitch 0-7
-        - 0-1 (2 or 1)/8 for first 1/4 light position
-        - pitch 0-7
-        - pitch 0-7 (1/8 light can only be 1/8, so no length)
-        - 1-2 (4, 2)/8, the half-heavy position has at least 1/4
-        - pitch 0-7
-        - UNUSED pitch 0-7 (1/8 light can only be 1/8)
-        - 0-1 (2 or 1)/8
-        - pitch 0-7
-        - pitch 0-7 (1/8 light can only be 1/8)
-        if the previous note is longer some of the genes are not used
+        The length of notes in a bar are now factored into Rhythm
+        modules. See rhythm.py.
     """
 
     pop_default = (10, 500)
@@ -159,7 +134,7 @@ class Contrapunctus:
         self.explanation   = []
         self._tune         = None # for given cantus firmus
         self.cantus_firmus = None
-        self._tunelength   = args.tune_length
+        self.rhythm        = Rhythm_Semibreve (self, args.tune_length)
         assert args.tune_length > 3
         if not args.pop_size and not args.optimize_depth_first:
             if args.use_de:
@@ -178,9 +153,19 @@ class Contrapunctus:
                 tune = tune.transpose (args.transpose_cf)
             self.tune = tune
         if not getattr (self, 'init', None):
-            self.set_init ()
+            self.init = self.rhythm.compute_init ()
         self.get_checks ()
     # end def __init__
+
+    @property
+    def cflength (self):
+        return self.rhythm.cflength
+    # end def cflength
+
+    @property
+    def cplength (self):
+        return self.rhythm.cplength
+    # end def cplength
 
     @property
     def tune (self):
@@ -212,13 +197,13 @@ class Contrapunctus:
 
     @property
     def tunelength (self):
-        return self._tunelength
+        return self.rhythm.tunelength
     # end def tunelength
 
     @tunelength.setter
     def tunelength (self, tl):
-        self._tunelength = tl
-        self.set_init ()
+        self.rhythm.tunelength = tl
+        self.init = self.rhythm.compute_init ()
         if getattr (self, 'gene', None):
             self.fix_gene_length ()
     # end def tunelength
@@ -431,17 +416,9 @@ class Contrapunctus:
 
     def fix_gene (self):
         for i in range (len (self.init)):
-            a = self.get_allele (1, pga.PGA_NEWPOP, i)
-            v = self.from_allele (a, i)
-            self.set_allele (1, pga.PGA_NEWPOP, i, v)
+            a = self.get_fixed_allele (1, pga.PGA_NEWPOP, i)
+            self.set_allele (1, pga.PGA_NEWPOP, i, a)
     # end def fix_gene
-
-    def from_allele (self, v, i):
-        v = int (v)
-        if v > self.init [i][1]:
-            return self.init [i][1]
-        return v
-    # end def from_allele
 
     def from_gene (self):
         with Infile (self.args.gene_file) as f:
@@ -553,120 +530,15 @@ class Contrapunctus:
             [c for c in self.harmony_checks if hasattr (c, 'reset')]
     # end def get_checks
 
+    def get_fixed_allele (self, p, pop, idx):
+        v = int (self.get_allele (p, pop, idx))
+        if self.args.fix_gene and v > self.init [idx][1]:
+            return self.init [idx][1]
+        return v
+    # end def get_fixed_allele
+
     def phenotype (self, p, pop, maxidx = None):
-        tune = Tune \
-            ( number = 1
-            , meter  = Meter (4, 4)
-            , Q      = '1/4=200'
-            , key    = 'DDor'
-            , unit   = 8
-            , score  = '(Contrapunctus) (CantusFirmus)'
-            )
-        if self.cantus_firmus:
-            cf = self.cantus_firmus.copy ()
-            assert self.cflength == 0
-        else:
-            cf = Voice (id = 'CantusFirmus', name = 'Cantus Firmus')
-            b  = Bar (8, 8)
-            b.add (Tone (hypodorian.finalis, 8))
-            cf.add (b)
-        tune.add (cf)
-        for i in range (self.cflength):
-            if maxidx is not None and i > maxidx:
-                return tune
-            a = self.get_allele (p, pop, i)
-            if self.args.fix_gene:
-                a = self.from_allele (a, i)
-            b = Bar (8, 8)
-            b.add (Tone (hypodorian [a], 8))
-            cf.add (b)
-        # 0.1.1: "The final must be approached by step. If the final is
-        # approached from below, then the leading tone must be raised in
-        # a minor key (Dorian, Hypodorian, Aeolian, Hypoaeolian), but
-        # not in Phrygian or Hypophrygian mode. Thus, in the Dorian mode
-        # on D a C# is necessary at the cadence." We achieve this by
-        # hard-coding the tone prior to the final to be the step2 for
-        # the cantus firmus
-        # 1.1: "The counterpoint must begin and end on a perfect
-        # consonance" is also achived by hard-coding the last tone.
-        if not self.cantus_firmus:
-            b  = Bar (8, 8)
-            b.add (Tone (hypodorian.step2, 8))
-            cf.add (b)
-            b  = Bar (8, 8)
-            b.add (Tone (hypodorian.finalis, 8))
-            cf.add (b)
-        cp  = Voice (id = 'Contrapunctus', name = 'Contrapunctus')
-        tune.add (cp)
-        for i in range (self.cplength):
-            off  = i * 11 + self.cflength
-            boff = 0 # offset in bar
-            v = []
-            for j in range (11):
-                idx = j + off
-                a = self.get_allele (p, pop, idx)
-                if self.args.fix_gene:
-                    a = self.from_allele (a, idx)
-                v.append (a)
-            b = Bar (8, 8)
-            cp.add (b)
-            if maxidx is not None and off + 1 > maxidx:
-                return tune
-            l = 1 << v [0]
-            assert 2 <= l <= 8
-            b.add (Tone (dorian [v [1]], l))
-            boff += l
-            if boff == 2:
-                if maxidx is not None and off + 3 > maxidx:
-                    return tune
-                l = 1 << v [2]
-                assert 1 <= l <= 2
-                b.add (Tone (dorian [v [3]], l))
-                boff += l
-            if boff == 3:
-                if maxidx is not None and off + 4 > maxidx:
-                    return tune
-                b.add (Tone (dorian [v [4]], 1))
-                boff += 1
-            if boff == 4:
-                if maxidx is not None and off + 6 > maxidx:
-                    return tune
-                l = 1 << v [5]
-                assert 2 <= l <= 4
-                b.add (Tone (dorian [v [6]], l))
-                boff += l
-            if boff == 5: # pragma: no cover
-                # Probably never reached, prev tone may not be len 1
-                if maxidx is not None and off + 7 > maxidx:
-                    return tune
-                b.add (Tone (dorian [v [7]], 1))
-                boff += 1
-            if boff == 6:
-                if maxidx is not None and off + 9 > maxidx:
-                    return tune
-                l = 1 << v [8]
-                assert 1 <= l <= 2
-                b.add (Tone (dorian [v [9]], l))
-                boff += l
-            if boff == 7:
-                if maxidx is not None and off + 10 > maxidx:
-                    return tune
-                b.add (Tone (dorian [v [10]], 1))
-                boff += 1
-        b  = Bar (8, 8)
-        # 0.1.1: "The final must be approached by step. If the final is
-        # approached from below, then the leading tone must be raised in
-        # a minor key (Dorian, Hypodorian, Aeolian, Hypoaeolian), but
-        # not in Phrygian or Hypophrygian mode. Thus, in the Dorian mode
-        # on D a C# is necessary at the cadence." We achieve this by
-        # hard-coding the tone prior to the final to be the
-        # subsemitonium for the contrapunctus.
-        b.add (Tone (dorian.subsemitonium, 8))
-        cp.add (b)
-        b  = Bar (8, 8)
-        b.add (Tone (dorian [7], 8))
-        cp.add (b)
-        return tune
+        return self.rhythm.phenotype (p, pop, maxidx)
     # end def phenotype
 
     def _run_cf_end_check (self, bd, bar = None, b = 0, t = 0):
@@ -778,31 +650,6 @@ class Contrapunctus:
         return True
     # end def run_cp_checks
 
-    def set_init (self):
-        if self.cantus_firmus is None:
-            self.cflength = self.tunelength - 3
-        else:
-            self.cflength = 0
-        self.cplength   = self.tunelength - 2
-        init            = []
-        # Can't use '[[0, 7]] * cflength' due to aliasing
-        for i in range (self.cflength):
-            init.append ([0, 7])
-        for i in range (self.cplength):
-            init.append ([1,  3]) # duration heavy
-            init.append ([0,  7]) # pitch
-            init.append ([0,  1]) # duration light 1/4
-            init.append ([0,  7]) # pitch
-            init.append ([0,  7]) # pitch light 1/8
-            init.append ([1,  2]) # duration half-heavy 1/4 or 1/2
-            init.append ([0,  7]) # pitch
-            init.append ([0,  7]) # pitch light 1/8
-            init.append ([0,  1]) # duration light 1/4
-            init.append ([0,  7]) # pitch
-            init.append ([0,  7]) # pitch light 1/8
-        self.init = init
-    # end def set_init
-
     def verify_cantus_firmus (self):
         if not self.cantus_firmus:
             return True
@@ -868,7 +715,7 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
         if getattr (self, 'init', None):
             raise ValueError \
                 ('Not possible to set tunelength after init') # pragma: no cover
-        self._tunelength = tl
+        self.rhythm.tunelength = tl
     # end def tunelength
 
     @tune.setter
