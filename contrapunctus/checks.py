@@ -561,27 +561,55 @@ magi_melody_checks_cp = \
         ( "no big sixth, no downwards little sixth"
         , signed = True
         , interval = (9, -8)
-        , badness = 10.0
+        , badness = 1.5
         )
     , Check_Melody_Interval
         ( "0.1.2: no Devils interval"
         , interval = (6,)
-        , badness  = 10.0
+        , badness  = 1.7
         )
     , Check_Melody_History
         ("0.1.2: No consecutive unison (Prim) allowed"
         , interval    = (0,)
-        , badness     = 10.0
+        , badness     = 1.1
         , octave      = False
         )
     , Check_Melody_Interval
         ( "0.1.2: no seventh (Septime)"
         , interval = (10, 11)
-        , badness  = 10.0
+        , badness  = 1.5
         )
-    , Check_Melody_Jump
-        ( "Jump"
-        , badness = 10.0
+#Wenn du eine kleine Sext oder Oktave springst, muss davor und danach eine 
+#Gegenbewegung stattfinden. Aber auch Terz- Quart- und Quintsprünge in die 
+#Gegenbewegung sind erlaubt.laMotte1981, S. 69ff.
+#Bei Terz, Quint und Quart-Sprüngen, darf dieselbe Bewegungsrichtung stehen. 
+#Dabei soll bei Bewegung aufwärts das größere Intervall beginnen, bei 
+#Abwärtsbewegung das kleinere.
+    , Check_Melody_laMotte_Jump 
+        ( badness = 1.5
+        )
+#Achteln dürfen nicht durch Sprünge erreicht werden. Und nach einem Achtel muss
+#auch ein Schritt stehen. (Ganter S.90)
+    , Check_Melody_Avoid_Eighth_Jump
+        ( note_length  = (1,)
+        , badness      = 1.5
+        )
+    , Check_Melody_Quarter_Jump
+        ( "Für Sprünge werden Halbe und größere Noten bevorzugt (Daniel S.78)"
+        , note_length  = (2,)
+        , badness      = 1.1
+        )
+    , Check_Melody_Interval     
+        ( "Wenn zwei Vierteln auf leichter Taktzeit stehen und danach und"
+          " davor längere Notenwerte sind, fallen sie schrittweise nach"
+          " unten. (Daniel S.118)
+        , note_length   = (2,)
+        , next_length   = (2,)
+        , next2_length  = (4, 6, 8, 12, 16)
+        , interval      = -1
+        , bar_position  = (5, 13)
+        , next_interval = -1
+        , badness       = 1.4
         )
     ]
 old_harmony_checks = \
@@ -766,12 +794,12 @@ magi_harmony_checks = \
     , Check_Harmony_History
         ( "For sext (sixth) don't allow several in a row"
         , interval = (8, 9)
-        , ugliness = 3
+        , ugliness = 1.1
         )
     , Check_Harmony_History
         ( "For terz (third) don't allow several in a row"
         , interval = (3, 4)
-        , ugliness = 3
+        , ugliness = 1.1
         )
     , Check_Harmony_Melody_Direction
         ( "Generally it's better that voices move in opposite"
@@ -779,6 +807,48 @@ magi_harmony_checks = \
         , interval = () # All
         , dir      = 'same'
         , ugliness = 0.1
+        )
+    , Check_Passing_Tone
+        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
+          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
+          " Dissonanz sein, solange sie auf leichte Zeit steht."
+          " Ausnahme= harter Durchgang (halbschwer).
+          "HALBE:"
+        , interval       = (2, 3, 6, 10, 11)
+        , octave         = True
+        , jump           = False
+        , direction      = 'same'
+        , next_direction = 'same'
+        , note_length    = (4,)
+        , bar_position   = (5, 13)
+        )
+    , Check_Passing_Tone
+        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
+          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
+          " Dissonanz sein, solange sie auf leichte Zeit steht."
+          " Ausnahme= harter Durchgang (halbschwer).
+          "VIERTEL:"
+        , interval       = (2, 3, 6, 10, 11)
+        , octave         = True
+        , jump           = False
+        , direction      = 'same'
+        , next_direction = 'same'
+        , note_length    = (2,)
+        , bar_position   = (3, 5, 7, 11, 13, 15)
+        )
+    , Check_Passing_Tone
+        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
+          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
+          " Dissonanz sein, solange sie auf leichte Zeit steht."
+          " Ausnahme= harter Durchgang (halbschwer).
+          "ACHTELN:"
+        , interval       = (2, 3, 6, 10, 11)
+        , octave         = True
+        , jump           = False
+        , direction      = 'same'
+        , next_direction = 'same'
+        , note_length    = (1,)
+        , FIXME
         )
     ]
 
