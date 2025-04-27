@@ -82,6 +82,8 @@ class Gregorian (object):
 
 # end class Gregorian
 
+ionian         = Gregorian (['C', 'D', 'E', 'F', 'G', 'A', 'B'])
+hypoionian     = Gregorian (ionian.ambitus, offset = -3)
 dorian         = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'c'])
 hypodorian     = Gregorian (dorian.ambitus, offset = -3)
 phrygian       = Gregorian (['E', 'F', 'G', 'A', 'B', 'c', 'd'])
@@ -90,14 +92,24 @@ lydian         = Gregorian (['F', 'G', 'A', 'B', 'c', 'd', 'e'])
 hypolydian     = Gregorian (lydian.ambitus, offset = -3)
 mixolydian     = Gregorian (['G', 'A', 'B', 'c', 'd', 'e', 'f'])
 hypomixolydian = Gregorian (mixolydian.ambitus, offset = -3)
+aeolian        = Gregorian (['A', 'B', 'c', 'd', 'e', 'f', 'g'])
+hypoaeolian    = Gregorian (aeolian.ambitus, offset = -3)
+locrian        = Gregorian (['B', 'c', 'd', 'e', 'f', 'g', 'a'])
+hypolocrian    = Gregorian (locrian.ambitus, offset = -3)
+
 
 gregorian_modes = dict \
-    ( dorian     = (dorian,     hypodorian)
+    ( ionian     = (ionian,     hypoionian)
+    , dorian     = (dorian,     hypodorian)
     , phrygian   = (phrygian,   hypophrygian)
     , lydian     = (lydian,     hypolydian)
     , mixolydian = (mixolydian, hypomixolydian)
+    , aeolian    = (aeolian,    hypoaeolian)
+    , locrian    = (locrian,    hypolocrian)
     )
 
 __all__ = [ 'dorian', 'hypodorian', 'phrygian', 'hypophrygian', 'lydian'
           , 'hypolydian', 'mixolydian', 'hypomixolydian', 'gregorian_modes'
+          , 'ionian', 'hypoionian', 'aeolian', 'hypoaeolian'
+          , 'locrian', 'hypolocrian'
           ]
