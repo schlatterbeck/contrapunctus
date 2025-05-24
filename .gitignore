@@ -8,6 +8,7 @@ Out.ps
 *.pdf
 *.out
 *.log
+.aider*
 .coverage*
 .nfs*
 *.egg-info

@@ -581,7 +581,7 @@ magi_melody_checks_cp = \
         )
 #Wenn du eine kleine Sext oder Oktave springst, muss davor und danach eine 
 #Gegenbewegung stattfinden. Aber auch Terz- Quart- und Quintsprünge in die 
-#Gegenbewegung sind erlaubt.laMotte1981, S. 69ff.
+#Gegenbewegung sind erlaubt. laMotte 1981, S. 69ff.
 #Bei Terz, Quint und Quart-Sprüngen, darf dieselbe Bewegungsrichtung stehen. 
 #Dabei soll bei Bewegung aufwärts das größere Intervall beginnen, bei 
 #Abwärtsbewegung das kleinere.
@@ -602,7 +602,7 @@ magi_melody_checks_cp = \
     , Check_Melody_Interval     
         ( "Wenn zwei Vierteln auf leichter Taktzeit stehen und danach und"
           " davor längere Notenwerte sind, fallen sie schrittweise nach"
-          " unten. (Daniel S.118)
+          " unten. (Daniel S.118)"
         , note_length   = (2,)
         , next_length   = (2,)
         , next2_length  = (4, 6, 8, 12, 16)
@@ -812,7 +812,7 @@ magi_harmony_checks = \
         ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
           " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
           " Dissonanz sein, solange sie auf leichte Zeit steht."
-          " Ausnahme= harter Durchgang (halbschwer).
+          " Ausnahme= harter Durchgang (halbschwer)."
           "HALBE:"
         , interval       = (2, 3, 6, 10, 11)
         , octave         = True
@@ -826,7 +826,7 @@ magi_harmony_checks = \
         ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
           " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
           " Dissonanz sein, solange sie auf leichte Zeit steht."
-          " Ausnahme= harter Durchgang (halbschwer).
+          " Ausnahme= harter Durchgang (halbschwer)."
           "VIERTEL:"
         , interval       = (2, 3, 6, 10, 11)
         , octave         = True
@@ -840,7 +840,7 @@ magi_harmony_checks = \
         ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
           " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
           " Dissonanz sein, solange sie auf leichte Zeit steht."
-          " Ausnahme= harter Durchgang (halbschwer).
+          " Ausnahme= harter Durchgang (halbschwer)."
           "ACHTELN:"
         , interval       = (2, 3, 6, 10, 11)
         , octave         = True
@@ -848,7 +848,7 @@ magi_harmony_checks = \
         , direction      = 'same'
         , next_direction = 'same'
         , note_length    = (1,)
-        , FIXME
+        #, FIXME
         )
     ]
 
