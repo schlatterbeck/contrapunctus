@@ -508,11 +508,13 @@ def halftone (tone):
 class Bar_Object:
     """ Base class of all objects that go into a Bar
     """
+    is_tone = is_pause = False
 
     def __init__ (self, duration):
         super ().__init__ ()
         assert duration == int (duration)
         self.duration = int (duration)
+        assert isinstance (self.duration, int)
         # offset in Bar (parent), filled when inserting into Bar
         self.offset   = None
         # Index into Bar (parent)
@@ -530,6 +532,19 @@ class Bar_Object:
         return Tone.from_string (accidentals, s)
     # end def from_string
 
+    def __len__ (self):
+        """ If this object is bound to the previous or next one we
+            return the full length of both objects
+        """
+        assert isinstance (self.duration, int)
+        if self.is_bound:
+            return len (self.prev)
+        if self.bind:
+            assert self.next and isinstance (self.next.duration, int)
+            return self.duration + self.next.duration
+        return self.duration
+    # end def __len__
+
     def __str__ (self):
         name = self.__class__.__name__
         return \
@@ -540,32 +555,57 @@ class Bar_Object:
     __repr__ = __str__
 
     @property
-    def abslen (self):
+    def fract_len (self):
         try:
             unit = self.bar.voice.tune.unit
         except AttributeError:
             return None
         return len (self) / unit
-    # end def abslen
+    # end def fract_len
+
+    @property
+    def is_bound (self):
+        """ This bar object is bound to the previous one, this is currently
+            not implemented for Pause (two consecutive Pause objects would
+            probably considered bound)
+        """
+        if self.prev and self.prev.bind:
+            return True
+        return False
+    # end def is_bound
+
+    @property
+    def length (self):
+        return len (self)
+    # end def length
 
     @property
     def next (self):
         if self.bar.objects [-1] is self:
+            assert self._next is None
             # An empty next bar may exist during testing/searching
             if self.bar.next is None or not self.bar.next.objects:
                 return None
-            return self.bar.next.objects [0]
+            obj = self.bar.next.objects [0]
+            if obj.is_bound:
+                return obj.next
+            return obj
         else:
+            assert not self.bind
             return self._next
     # end def next
 
     @property
     def prev (self):
         if self.offset == 0:
+            assert self._prev is None
             # An empty prev bar may exist during testing/searching
             if self.bar.prev is None or not self.bar.prev.objects:
                 return None
-            return self.bar.prev.objects [-1]
+            obj = self.bar.prev.objects [-1]
+            if obj.bind:
+                return obj.prev
+            return obj
         else:
             return self._prev
     # end def prev
@@ -585,20 +625,9 @@ class Bar_Object:
         return False
     # end def is_last
 
-    @property
-    def is_pause (self):
-        return isinstance (self, Pause)
-    # end def is_pause
-
     def copy (self):
         return self.__class__ (self.duration)
     # end def copy
-
-    def length (self):
-        assert isinstance (self.duration, int)
-        return self.duration
-    # end def length
-    __len__ = length
 
     def overlaps (self, other):
         """ Check if two bar objects overlap. For now we do not take
@@ -637,6 +666,7 @@ class Bar_Object:
 # end class Bar_Object
 
 class Tone (Bar_Object):
+    is_tone = True
 
     def __init__ (self, halftone, duration, bind = False):
         super ().__init__ (duration)
@@ -679,12 +709,12 @@ class Tone (Bar_Object):
             key = None
         b = ['', '-'][self.bind]
         e = ' '
-        # No trailing space when not last and abslen <= 1/8
+        # No trailing space when not last and fract_len <= 1/8
         eights = Fraction (1, 8)
-        if not self.is_last and self.abslen and self.abslen <= eights:
-            if self.next and self.next.abslen <= eights:
+        if not self.is_last and self.fract_len and self.fract_len <= eights:
+            if self.next and self.next.fract_len <= eights:
                 e = ''
-        return "%s%s%s%s" % (self.halftone.as_abc (key), self.length (), b, e)
+        return "%s%s%s%s" % (self.halftone.as_abc (key), self.duration, b, e)
     # end def as_abc
 
     def copy (self):
@@ -703,6 +733,7 @@ class Tone (Bar_Object):
 # end class Tone
 
 class Pause (Bar_Object):
+    is_pause = True
 
     @classmethod
     def from_string (cls, s):
@@ -712,7 +743,7 @@ class Pause (Bar_Object):
     # end def from_string
 
     def as_abc (self):
-        return "z%s " % (self.length ())
+        return "z%s " % (self.duration)
     # end def as_abc
 
 # end class Pause
@@ -991,7 +1022,7 @@ class Bar:
     # end def next
 
     def add (self, bar_object):
-        if self.dur_sum + bar_object.length () > self.duration:
+        if self.dur_sum + bar_object.duration > self.duration:
             raise ValueError \
                 ( "Overfull bar: %s + %s > %s"
                 % (self.dur_sum, bar_object.duration, self.duration)
@@ -1001,7 +1032,7 @@ class Bar:
             prev = self.objects [-1]
             bar_object._prev = prev
             prev._next = bar_object
-        self.dur_sum += bar_object.length ()
+        self.dur_sum += bar_object.duration
         self.objects.append (bar_object)
     # end def add
 
@@ -1040,7 +1071,8 @@ class Bar:
                     ('Cannot set length to %s for %s' % (newlen, bo)) \
                         # pragma: no cover
             if not dry_run:
-                bo.duration = newlen
+                assert newlen == int (newlen)
+                bo.duration = int (newlen)
         if not dry_run:
             self.unit     = newunit
             self.duration = newdur
@@ -1439,7 +1471,7 @@ class Tune:
             Everytime a tone changes a different tuple is returned.
         """
         objs = [v.bars [0].objects [0] for v in self.voices]
-        idx  = [(o.bar.idx, o.offset + o.duration) for o in objs]
+        idx  = [(o.bar.idx, o.offset + o.length) for o in objs]
         yield tuple (objs)
         while sum (o.is_last for o in objs) < len (objs):
             midx = min (idx)
