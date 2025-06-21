@@ -24,6 +24,9 @@
 from textwrap import fill as text_wrap
 from .tune    import sgn, Pause
 
+# Used for default argument when None is a valid value
+DEFAULT_ARG = -1
+
 class Check:
     """ Super class of all checks
         This gets the description of the check.
@@ -85,14 +88,6 @@ class History_Mixin:
 
     def _check (self, *args, **kw):
         result = super ()._check (*args, **kw)
-        # It's a single tone if bound to previous one
-        # We keep the history in this case
-        # (Must be after super call above, otherwise self.current is not
-        # yet defined and self.current doesn't exist in harmony checks)
-        if isinstance (self, Check_Melody_Interval):
-            prev = self.current.prev
-            if prev and prev.bind:
-                return False
         if self.prev_match and result:
             return True
         self.prev_match = result
@@ -112,14 +107,33 @@ class Check_Melody (Check):
     """
     def __init__ \
         ( self, desc, interval
-        , badness = 0, ugliness = 0
-        , signed      = False
-        , octave      = True
+        , badness       = 0
+        , ugliness      = 0
+        , signed        = False
+        , octave        = True
+        , bar_position  = None
+        , note_length   = None
+        , next_length   = None
+        , next2_length  = None
+        , prev_length   = None
+        , prev2_length  = None
+        , next_interval = None
+        , prev_interval = None
         ):
         super ().__init__ (desc, badness, ugliness)
-        self.interval    = set (interval)
-        self.signed      = signed
-        self.octave      = octave
+        self.interval      = set (interval)
+        self.signed        = signed
+        self.octave        = octave
+        self.bar_position  = bar_position
+        self.note_length   = note_length
+        self.next_length   = next_length
+        self.next2_length  = next2_length
+        self.prev_length   = prev_length
+        self.prev2_length  = prev2_length
+        self.next_interval = next_interval
+        self.prev_interval = prev_interval
+        # signed and octave flags may not currently be combined
+        assert not (self.signed and self.octave)
     # end def __init__
 
     def compute_description (self):
@@ -131,19 +145,46 @@ class Check_Melody (Check):
             )
     # end def compute_description
 
-    def compute_interval (self):
-        prev = self.current.prev
-        if not getattr (self.current, 'halftone', None):
+    def compute_interval (self, current = DEFAULT_ARG):
+        if current is DEFAULT_ARG:
+            current = self.current
+        if current is None:
             return
-        if not getattr (prev, 'halftone', None):
+        prev = current.prev
+        if not prev or not current.is_tone or not prev.is_tone:
             return
-        d = self.current.halftone.offset - prev.halftone.offset
+        d = current.halftone.offset - prev.halftone.offset
         if not self.signed:
             d = abs (d)
         if self.octave:
+            assert d >= 0
             d %= 12
         return d
     # end def compute_interval
+
+    def timing_check (self, current):
+        """ Check if bar position, note length and next/prev note
+            lengths are matching, return True if this rule applies in
+            this regard
+        """
+        if self.bar_position and current.offset not in self.bar_position:
+            return False
+        if self.note_length and current.length not in self.note_length:
+            return False
+        if self.next_length and self.next:
+            if self.next.length not in self.next_length:
+                return False
+            if self.next2_length and self.next.next:
+                if self.next.next.length not in self.next2_length:
+                    return False
+        if self.prev_length and self.prev:
+            if self.prev.length not in self.prev_length:
+                return False
+            if self.prev2_length and self.prev.prev:
+                if self.prev.prev.length not in self.prev2_length:
+                    return False
+        return True
+    # end def timing_check
 
 # end class Check_Melody
 
@@ -154,17 +195,20 @@ class Check_Melody_Interval (Check_Melody):
     """
 
     def _check (self, current):
+        if not self.timing_check (current):
+            return
         self.current = current
-        prev = current.prev
-        if not prev:
-            return False
         d = self.compute_interval ()
         if d is not None and d in self.interval:
-            # It's a single tone if bound to previous one
-            prev = self.current.prev
-            if prev and prev.bind:
-                return False
             return True
+        if self.next_interval:
+            d = self.compute_interval (self.next)
+            if d is not None and d in self.next_interval:
+                return True
+        if self.prev_interval:
+            d = self.compute_interval (self.prev)
+            if d is not None and d in self.prev_interval:
+                return True
     # end def _check
 
 # end class Check_Melody_Interval
@@ -208,6 +252,128 @@ class Check_Melody_Jump (Check_Melody_History):
     # end def reset
 
 # end class Check_Melody_Jump
+
+class Check_Melody_Avoid_Eighth_Jump (Check_Melody_Interval):
+    """ Eighth notes should not be reached by jumps and should be
+        followed by step. (Ganter p. 90)
+        We also allow a pause after or before a jump. And the check also
+        doesn't match when the jump is the first or last thing in a tune.
+        Note that the note length here by default is 1 (one eighth).
+    """
+
+    def __init__ (self, desc, note_length = (1,), badness = 0, ugliness = 0):
+        super ().__init__ (desc, (), badness, ugliness, True, False)
+        self.note_length = note_length
+    # end def __init__
+
+    def _check (self, current):
+        self.current = current
+
+        # Check if current note fits the given length (typically 1/8)
+        if current.length in self.note_length and current.is_tone:
+            # Check if reached by jump
+            if current.prev and current.prev.is_tone:
+                prev_interval = abs \
+                    (current.halftone.offset - current.prev.halftone.offset)
+                if prev_interval > 2:  # More than a step
+                    self.msg = "Eighth note should not be reached by a jump"
+                    return True
+
+            # Check if followed by jump
+            # 1/8 never has a bind to the next note
+            assert not self.bind
+            if current.next and current.next.is_tone:
+                next_interval = abs \
+                    (current.next.halftone.offset - current.halftone.offset)
+                if next_interval > 2:  # More than a step
+                    self.msg = "Eighth note should be followed by a step"
+                    return True
+        return False
+    # end def _check
+
+# end class Check_Melody_Avoid_Eighth_Jump
+
+class Check_Melody_Note_Length_Jump (Check_Melody_Interval):
+    """ Jumps are preferred on half notes or longer (Daniel S.78)
+    """
+
+    def __init__ (self, desc, note_length = (1, 2), badness=0, ugliness=0):
+        super ().__init__ (desc, (), badness, ugliness, True, False)
+        self.note_length = note_length
+    # end def __init__
+
+    def _check (self, current):
+        self.current = current
+
+        # No check if this is a pause
+        if not current.is_tone:
+            return False
+        # Check if current note is involved in a jump
+        if current.prev and current.prev.is_tone:
+            interval = abs \
+                (current.halftone.offset - current.prev.halftone.offset)
+            if interval > 2:  # It's a jump
+                # Check if note length is shorter than preferred
+                if current.length in self.note_length:
+                    return True
+        return False
+    # end def _check
+
+# end class Check_Melody_Note_Length_Jump
+
+class Check_Melody_laMotte_Jump (Check_Melody_Jump):
+    """ Implements laMotte's rules for jumps:
+        - When jumping a minor sixth or octave, there must be a contrary
+          motion before and after
+        - For third, fourth and fifth jumps, movement in the same
+          direction is allowed
+        - For upward movement, the larger interval should come first
+        - For downward movement, the smaller interval should come first
+        laMotte 1981, p. 69ff
+    """
+
+    def _check (self, current):
+        self.current = current
+        if not current.prev or not current.next:
+            return False
+
+        d = self.compute_interval ()
+        if d is None:
+            return False
+
+        next_d = current.next.halftone.offset - current.halftone.offset
+
+        # Check for sixth or octave jumps
+        if abs (d) == 8 or abs (d) == 9 or abs (d) == 12:
+            prev_d = 0
+            if current.prev.prev:
+                prev = current.prev
+                prev_d = prev.halftone.offset - prev.prev.halftone.offset
+
+            # Check if there's contrary motion before and after
+            if sgn (d) == sgn (prev_d) or sgn (d) == sgn (next_d):
+                self.msg = "For sixth or octave jumps, " \
+                           "there must be contrary motion before and after"
+                return True
+
+        # Check for third, fourth, fifth jumps in same direction
+        elif abs (d) in (3, 4, 5, 7):
+            # If same direction, check interval size rules
+            if sgn (d) == sgn (next_d) and abs (next_d) > 1:
+                # Upward: larger interval should come first:
+                if d > 0 and abs (d) < abs (next_d):
+                    self.msg = "For upward movement, " \
+                               "the larger interval should come first"
+                    return True
+                # Downward: smaller interval should come first
+                elif d < 0 and abs (d) > abs (next_d):
+                    self.msg = "For downward movement, " \
+                               "the smaller interval should come first"
+                    return True
+        return False
+    # end def _check
+
+# end class Check_Melody_laMotte_Jump
 
 class Check_Harmony (Check):
 
@@ -259,9 +425,7 @@ class Check_Harmony_Interval (Check_Harmony):
         assert cf_obj.overlaps (cp_obj)
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
-        if not getattr (cf_obj, 'halftone', None):
-            return
-        if not getattr (cp_obj, 'halftone', None):
+        if not cf_obj.is_tone or not cp_obj.is_tone:
             return
         self.cft    = cf_obj.halftone.offset
         self.cpt    = cp_obj.halftone.offset
@@ -384,13 +548,9 @@ class Check_Melody_Jump_2 (Check_Harmony):
         # This would only happen if the CF bar is empty
         if not p_cf_obj:
             return False # pragma: no cover
-        if not getattr (cf_obj, 'halftone', None):
+        if not cf_obj.is_tone or not p_cf_obj.is_tone:
             return False
-        if not getattr (p_cf_obj, 'halftone', None):
-            return False
-        if not getattr (cp_obj, 'halftone', None):
-            return False
-        if not getattr (p_cp_obj, 'halftone', None):
+        if not cp_obj.is_tone or not p_cp_obj.is_tone:
             return False
         d1 = cf_obj.halftone.offset - p_cf_obj.halftone.offset
         d2 = cp_obj.halftone.offset - p_cp_obj.halftone.offset
@@ -484,6 +644,84 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
 
 # end class Check_Harmony_Melody_Direction
 
+# This still needs work, especially since we want this to be an
+# *exception* to existing rules. For this we need a framework or we need
+# to fold it into (all?) harmony checks.
+# class Check_Harmony_Passing_Tone (Check_Harmony_Interval):
+#     """ If a note is reached by step and left by step in the *same*
+#         direction, it can be a dissonance as long as it's on a weak
+#         beat. Exception: hard passing tone (half-strong).
+#     """
+# 
+#     def __init__ \
+#         ( self, desc, interval
+#         , octave = True
+#         , jump = False
+#         , direction = 'same'
+#         , next_direction = 'same'
+#         , note_length = (2,)
+#         , bar_position = None
+#         , badness = 0, ugliness = 0
+#         ):
+#         super ().__init__ (desc, interval, badness, ugliness, octave)
+#         self.jump           = jump
+#         self.direction      = direction
+#         self.next_direction = next_direction
+#         self.note_length    = note_length
+#         self.bar_position   = bar_position
+#     # end def __init__
+# 
+#     def _check (self, cf_obj, cp_obj):
+#         assert cf_obj.overlaps (cp_obj)
+#         self.cf_obj = cf_obj
+#         self.cp_obj = cp_obj
+# 
+#         # Check if it's a dissonance
+#         d = self.compute_interval (cf_obj, cp_obj)
+#         if d is None or d not in self.interval:
+#             return False
+# 
+#         # Check note length
+#         if not hasattr (cp_obj, 'duration') or cp_obj.duration not in self.note_length:
+#             return False
+# 
+#         # Check bar position if specified
+#         if self.bar_position is not None:
+#             if not hasattr (cp_obj, 'offset') or cp_obj.offset not in self.bar_position:
+#                 return False
+# 
+#         # Check if reached by step
+#         p_cp_obj = cp_obj.prev
+#         if not p_cp_obj or not hasattr (p_cp_obj, 'halftone') or not hasattr (cp_obj, 'halftone'):
+#             return False
+# 
+#         prev_interval = abs (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
+#         if (self.jump and prev_interval <= 2) or (not self.jump and prev_interval > 2):
+#             return False
+# 
+#         # Check if left by step in same direction
+#         n_cp_obj = cp_obj.next
+#         if not n_cp_obj or not hasattr (n_cp_obj, 'halftone'):
+#             return False
+# 
+#         next_interval = abs (n_cp_obj.halftone.offset - cp_obj.halftone.offset)
+#         if (self.jump and next_interval <= 2) or (not self.jump and next_interval > 2):
+#             return False
+# 
+#         # Check direction
+#         prev_dir = sgn (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
+#         next_dir = sgn (n_cp_obj.halftone.offset - cp_obj.halftone.offset)
+# 
+#         if self.direction == 'same' and prev_dir != next_dir:
+#             return False
+#         elif self.direction == 'different' and prev_dir == next_dir:
+#             return False
+# 
+#         # If we got here, it's a valid passing tone, so we don't flag it
+#         return False
+#     # end def _check
+# # end class Check_Harmony_Passing_Tone
+
 # 0.1.2: "Permitted melodic intervals are the perfect fourth, fifth,
 # and octave, as well as the major and minor second, major and minor
 # third, and ascending minor sixth. The ascending minor sixth must
@@ -559,9 +797,10 @@ old_melody_checks_cp = \
 magi_melody_checks_cp = \
     [ Check_Melody_Interval
         ( "no big sixth, no downwards little sixth"
-        , signed = True
+        , signed  = True
+        , octave  = False
         , interval = (9, -8)
-        , badness = 1.5
+        , badness  = 1.5
         )
     , Check_Melody_Interval
         ( "0.1.2: no Devils interval"
@@ -579,36 +818,32 @@ magi_melody_checks_cp = \
         , interval = (10, 11)
         , badness  = 1.5
         )
-#Wenn du eine kleine Sext oder Oktave springst, muss davor und danach eine 
-#Gegenbewegung stattfinden. Aber auch Terz- Quart- und Quintsprünge in die 
-#Gegenbewegung sind erlaubt. laMotte 1981, S. 69ff.
-#Bei Terz, Quint und Quart-Sprüngen, darf dieselbe Bewegungsrichtung stehen. 
-#Dabei soll bei Bewegung aufwärts das größere Intervall beginnen, bei 
-#Abwärtsbewegung das kleinere.
-    , Check_Melody_laMotte_Jump 
-        ( badness = 1.5
+    , Check_Melody_laMotte_Jump
+        ( "Jump according to laMotte rules"
+        , badness = 1.5
         )
-#Achteln dürfen nicht durch Sprünge erreicht werden. Und nach einem Achtel muss
-#auch ein Schritt stehen. (Ganter S.90)
     , Check_Melody_Avoid_Eighth_Jump
-        ( note_length  = (1,)
+        ( "Eighth should not be reached by jumps and should be followed by step"
         , badness      = 1.5
         )
-    , Check_Melody_Quarter_Jump
-        ( "Für Sprünge werden Halbe und größere Noten bevorzugt (Daniel S.78)"
-        , note_length  = (2,)
+    , Check_Melody_Note_Length_Jump
+        ( "Jumps are preferred on half notes or longer"
+        , note_length  = (1, 2)
         , badness      = 1.1
         )
-    , Check_Melody_Interval     
+    , Check_Melody_Interval
         ( "Wenn zwei Vierteln auf leichter Taktzeit stehen und danach und"
           " davor längere Notenwerte sind, fallen sie schrittweise nach"
           " unten. (Daniel S.118)"
+        , signed        = True
+        , octave        = False
         , note_length   = (2,)
         , next_length   = (2,)
         , next2_length  = (4, 6, 8, 12, 16)
-        , interval      = -1
+        , prev_length   = (4, 6, 8, 12, 16)
+        , interval      = (-1, -2)
         , bar_position  = (5, 13)
-        , next_interval = -1
+        , next_interval = (-1, -2)
         , badness       = 1.4
         )
     ]
@@ -808,48 +1043,48 @@ magi_harmony_checks = \
         , dir      = 'same'
         , ugliness = 0.1
         )
-    , Check_Passing_Tone
-        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
-          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
-          " Dissonanz sein, solange sie auf leichte Zeit steht."
-          " Ausnahme= harter Durchgang (halbschwer)."
-          "HALBE:"
-        , interval       = (2, 3, 6, 10, 11)
-        , octave         = True
-        , jump           = False
-        , direction      = 'same'
-        , next_direction = 'same'
-        , note_length    = (4,)
-        , bar_position   = (5, 13)
-        )
-    , Check_Passing_Tone
-        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
-          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
-          " Dissonanz sein, solange sie auf leichte Zeit steht."
-          " Ausnahme= harter Durchgang (halbschwer)."
-          "VIERTEL:"
-        , interval       = (2, 3, 6, 10, 11)
-        , octave         = True
-        , jump           = False
-        , direction      = 'same'
-        , next_direction = 'same'
-        , note_length    = (2,)
-        , bar_position   = (3, 5, 7, 11, 13, 15)
-        )
-    , Check_Passing_Tone
-        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
-          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
-          " Dissonanz sein, solange sie auf leichte Zeit steht."
-          " Ausnahme= harter Durchgang (halbschwer)."
-          "ACHTELN:"
-        , interval       = (2, 3, 6, 10, 11)
-        , octave         = True
-        , jump           = False
-        , direction      = 'same'
-        , next_direction = 'same'
-        , note_length    = (1,)
-        #, FIXME
-        )
+#    , Check_Harmony_Passing_Tone
+#        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
+#          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
+#          " Dissonanz sein, solange sie auf leichte Zeit steht."
+#          " Ausnahme= harter Durchgang (halbschwer)."
+#          "HALBE:"
+#        , interval       = (2, 3, 6, 10, 11)
+#        , octave         = True
+#        , jump           = False
+#        , direction      = 'same'
+#        , next_direction = 'same'
+#        , note_length    = (4,)
+#        , bar_position   = (5, 13)
+#        )
+#    , Check_Harmony_Passing_Tone
+#        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
+#          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
+#          " Dissonanz sein, solange sie auf leichte Zeit steht."
+#          " Ausnahme= harter Durchgang (halbschwer)."
+#          "VIERTEL:"
+#        , interval       = (2, 3, 6, 10, 11)
+#        , octave         = True
+#        , jump           = False
+#        , direction      = 'same'
+#        , next_direction = 'same'
+#        , note_length    = (2,)
+#        , bar_position   = (3, 5, 7, 11, 13, 15)
+#        )
+#    , Check_Harmony_Passing_Tone
+#        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
+#          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
+#          " Dissonanz sein, solange sie auf leichte Zeit steht."
+#          " Ausnahme= harter Durchgang (halbschwer)."
+#          "ACHTELN:"
+#        , interval       = (2, 3, 6, 10, 11)
+#        , octave         = True
+#        , jump           = False
+#        , direction      = 'same'
+#        , next_direction = 'same'
+#        , note_length    = (1,)
+#        , bar_position   = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
+#        )
     ]
 
 checks = dict \

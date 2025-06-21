@@ -562,10 +562,15 @@ class Test_Contrapunctus:
             , badness  = 10
             , octave   = False
             )
+        tune = self.build_min_tune ()
+        cf = tune.voices [0]
+        cp = tune.voices [1]
         bar = Bar (8, 8)
+        cf.add (bar)
         t1  = Tone (halftone ('D'), 8, bind = True)
         bar.add (t1)
         bar = Bar (8, 8)
+        cf.add (bar)
         t2  = Tone (halftone ('D'), 4)
         bar.add (t2)
         t3  = Tone (halftone ('D'), 4)
