@@ -46,9 +46,10 @@ class Gregorian (object):
     ^c
     """
 
-    def __init__ (self, ambitus, offset = 0):
+    def __init__ (self, ambitus, key, offset = 0):
         assert len (ambitus) == 7
         self.ambitus = [halftone (x) for x in ambitus]
+        self.key     = key
         self.offset  = offset
     # end def __init__
 
@@ -82,20 +83,20 @@ class Gregorian (object):
 
 # end class Gregorian
 
-ionian         = Gregorian (['C', 'D', 'E', 'F', 'G', 'A', 'B'])
-hypoionian     = Gregorian (ionian.ambitus, offset = -3)
-dorian         = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'c'])
-hypodorian     = Gregorian (dorian.ambitus, offset = -3)
-phrygian       = Gregorian (['E', 'F', 'G', 'A', 'B', 'c', 'd'])
-hypophrygian   = Gregorian (phrygian.ambitus, offset = -3)
-lydian         = Gregorian (['F', 'G', 'A', 'B', 'c', 'd', 'e'])
-hypolydian     = Gregorian (lydian.ambitus, offset = -3)
-mixolydian     = Gregorian (['G', 'A', 'B', 'c', 'd', 'e', 'f'])
-hypomixolydian = Gregorian (mixolydian.ambitus, offset = -3)
-aeolian        = Gregorian (['A', 'B', 'c', 'd', 'e', 'f', 'g'])
-hypoaeolian    = Gregorian (aeolian.ambitus, offset = -3)
-locrian        = Gregorian (['B', 'c', 'd', 'e', 'f', 'g', 'a'])
-hypolocrian    = Gregorian (locrian.ambitus, offset = -3)
+ionian         = Gregorian (['C', 'D', 'E', 'F', 'G', 'A', 'B'], key = 'C')
+hypoionian     = Gregorian (ionian.ambitus, ionian.key, offset = -3)
+dorian         = Gregorian (['D', 'E', 'F', 'G', 'A', 'B', 'c'], key = 'DDor')
+hypodorian     = Gregorian (dorian.ambitus, dorian.key, offset = -3)
+phrygian       = Gregorian (['E', 'F', 'G', 'A', 'B', 'c', 'd'], key = 'EPhr')
+hypophrygian   = Gregorian (phrygian.ambitus, phrygian.key, offset = -3)
+lydian         = Gregorian (['F', 'G', 'A', 'B', 'c', 'd', 'e'], key = 'FLyd')
+hypolydian     = Gregorian (lydian.ambitus, lydian.key, offset = -3)
+mixolydian     = Gregorian (['G', 'A', 'B', 'c', 'd', 'e', 'f'], key = 'GMix')
+hypomixolydian = Gregorian (mixolydian.ambitus, mixolydian.key, offset = -3)
+aeolian        = Gregorian (['A', 'B', 'c', 'd', 'e', 'f', 'g'], key = 'Am')
+hypoaeolian    = Gregorian (aeolian.ambitus, aeolian.key, offset = -3)
+locrian        = Gregorian (['B', 'c', 'd', 'e', 'f', 'g', 'a'], key = 'BLoc')
+hypolocrian    = Gregorian (locrian.ambitus, locrian.key, offset = -3)
 
 
 gregorian_modes = dict \

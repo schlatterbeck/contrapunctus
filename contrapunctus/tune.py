@@ -564,6 +564,11 @@ class Bar_Object:
     # end def fract_len
 
     @property
+    def is_dotted (self):
+        return self.length % 3 == 0
+    # end def is_dotted
+
+    @property
     def is_bound (self):
         """ This bar object is bound to the previous one, this is currently
             not implemented for Pause (two consecutive Pause objects would
