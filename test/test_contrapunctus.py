@@ -1340,6 +1340,194 @@ class Test_Contrapunctus:
             assert (b == exp)
     # end def test_akzentparallele_octave
 
+    def generic_exception_harmony_passing_tone (self, abc, expect):
+        """ Test the Exception_Harmony_Passing_Tone class
+            This tests passing tones that are reached by step and left
+            by step in the same direction.
+        """
+        # Without exception, this should trigger (assuming it's a dissonance)
+        check = checks.Check_Harmony_Interval \
+            ( "Test dissonance"
+            , interval = (1, 2, 5, 6, 10, 11)
+            , octave   = True
+            , badness  = 10.0
+            )
+        # Create a test check for now without the passing tone exception
+        passing_tone_exception = checks.Exception_Harmony_Passing_Tone \
+            ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+            , octave         = True
+            , note_length    = (2,)    # quarter notes
+            , bar_position   = (2, 4, 6, 10, 12, 14)
+            )
+
+        tune = Tune.from_iterator (abc)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp)
+
+        # Now with exception
+        check.exceptions.append (passing_tone_exception)
+        for cfo, cpo in tune.voices_iter ():
+            b, u = check.check (cfo, cpo)
+            assert (b == 0), "cfo: %s  cpo: %s" % (cfo, cpo)
+    # end def generic_exception_harmony_passing_tone
+
+    def test_exception_harmony_passing_tone (self):
+        abc_notation = dedent \
+            ("""
+             X: 1
+             M: 4/4
+             L: 1/8
+             K: C
+             %%score (Upper) (Lower)
+             V:Lower clef=bass
+             V:Upper
+             [V:Lower] C8 |
+             [V:Upper] E2 F2 G2 A2 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 10, 0, 0)
+        self.generic_exception_harmony_passing_tone (abc_notation, expect)
+    # end def test_exception_harmony_passing_tone
+
+    def test_exception_harmony_passing_tone_2 (self):
+        abc_notation = dedent \
+            ("""
+             X: 1
+             M: 4/4
+             L: 1/8
+             K: C
+             %%score (Upper) (Lower)
+             V:Lower clef=bass
+             V:Upper
+             [V:Lower] A,8 |
+             [V:Upper] A2 G2 F2 E2 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 10, 0, 0)
+        self.generic_exception_harmony_passing_tone (abc_notation, expect)
+    # end def test_exception_harmony_passing_tone_2
+
+    def test_exception_harmony_passing_tone_hd (self):
+        abc_notation = dedent \
+            ("""
+             X: 1
+             M: 4/4
+             L: 1/8
+             K: C
+             %%score (Contrapunctus) (CantusFirmus)
+             V:CantusFirmus clef=bass
+             V:Contrapunctus
+             [V:CantusFirmus] D8 |
+             [V:Contrapunctus] F4 G2 A2 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 10, 0)
+        self.generic_exception_harmony_passing_tone (abc_notation, expect)
+    # end def test_exception_harmony_passing_tone_hd
+
+    def test_exception_harmony_passing_tone_PT (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=treble
+             V:1 clef=treble
+             [V:1] B2 c2 d2 e2 |
+             [V:2] G8 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 10, 0, 0)
+        self.generic_exception_harmony_passing_tone (abc_notation, expect)
+    # end def test_exception_harmony_passing_tone_PT
+
+    def test_exception_harmony_passing_tone_PT_acc (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:Bb
+             V:2 clef=treble
+             V:1 clef=treble
+             [V:1] B6 c2 | d6 e2 | f8 |
+             [V:2] G8    | B8    | A8 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 10, 0, 10, 0)
+        self.generic_exception_harmony_passing_tone (abc_notation, expect)
+    # end def test_exception_harmony_passing_tone_PT_acc
+
+    def generic_exception_harmony_wechselnote (self, abc, expect):
+        """ Test the Exception_Harmony_Wechselnote class
+        """
+        # Without exception, this should trigger (assuming it's a dissonance)
+        check = checks.Check_Harmony_Interval \
+            ( "Test dissonance"
+            , interval = (1, 2, 5, 6, 10, 11)
+            , octave   = True
+            , badness  = 10.0
+            )
+        # Create a test check for now without the passing tone exception
+        wechselnote_exception = checks.Exception_Harmony_Wechselnote \
+            ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+            , octave         = True
+            , note_length    = (2,)    # quarter notes
+            , bar_position   = (2, 4, 6, 10, 12, 14)
+            )
+
+        tune = Tune.from_iterator (abc)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp)
+
+        # Now with exception
+        check.exceptions.append (wechselnote_exception)
+        for cfo, cpo in tune.voices_iter ():
+            b, u = check.check (cfo, cpo)
+            assert (b == 0), "cfo: %s  cpo: %s" % (cfo, cpo)
+    # end def generic_exception_harmony_wechselnote
+
+    def test_exception_harmony_wechselnote_WN (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=treble
+             V:1 clef=treble
+             [V:1] B2 A2 B4 |
+             [V:2] G8       |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 10, 0)
+        self.generic_exception_harmony_wechselnote (abc_notation, expect)
+    # end def test_exception_harmony_wechselnote_WN
+
+    def test_exception_harmony_wechselnote_WN_acc (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:D
+             V:2 clef=treble
+             V:1 clef=treble
+             [V:1] D6 E2 | F2 E2 F4 |
+             [V:2] B8    | A8       |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 0, 0, 10, 0)
+        self.generic_exception_harmony_wechselnote (abc_notation, expect)
+    # end def test_exception_harmony_wechselnote_WN_acc
+
 # end class Test_Contrapunctus
 
 class Base_Skip_Nonzero (PGA_Test_Instrumentation):
