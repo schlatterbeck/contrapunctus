@@ -397,16 +397,25 @@ class Check_Harmony_Interval (Check_Harmony):
     def __init__ \
         ( self, desc, interval
         , badness = 0, ugliness = 0
-        , octave    = False
-        , signed    = False
-        , not_first = False
-        , not_last  = False
+        , octave     = False
+        , signed     = False
+        , not_first  = False
+        , not_last   = False
+        , exceptions = None
         ):
-        self.interval  = interval
-        self.octave    = octave
-        self.signed    = signed
-        self.not_first = not_first
-        self.not_last  = not_last
+        self.interval   = set (interval or ())
+        self.octave     = octave
+        self.signed     = signed
+        self.not_first  = not_first
+        self.not_last   = not_last
+        self.exceptions = []
+        # Only keep applicable exceptions
+        for exc in (self.exceptions or []):
+            if not exc.interval or not self.interval:
+                self.exceptions.append (exc)
+                continue
+            if self.interval.intersection (exc.interval):
+                self.exceptions.append (exc)
         super ().__init__ (desc, badness, ugliness)
     # end def __init__
 
@@ -417,9 +426,19 @@ class Check_Harmony_Interval (Check_Harmony):
             return False
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d in self.interval:
+            if self.check_exceptions (cf_obj, cp_obj):
+                return False
             return True
         return False
     # end def _check
+
+    def check_exceptions (self, cf_obj, cp_obj):
+        """ Check if any exception applies """
+        for exception in self.exceptions:
+            if exception.applies (self, cf_obj, cp_obj):
+                return True
+        return False
+    # end def check_exceptions
 
     def compute_interval (self, cf_obj, cp_obj):
         assert cf_obj.overlaps (cp_obj)
@@ -644,83 +663,266 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
 
 # end class Check_Harmony_Melody_Direction
 
-# This still needs work, especially since we want this to be an
-# *exception* to existing rules. For this we need a framework or we need
-# to fold it into (all?) harmony checks.
-# class Check_Harmony_Passing_Tone (Check_Harmony_Interval):
-#     """ If a note is reached by step and left by step in the *same*
-#         direction, it can be a dissonance as long as it's on a weak
-#         beat. Exception: hard passing tone (half-strong).
-#     """
-# 
-#     def __init__ \
-#         ( self, desc, interval
-#         , octave = True
-#         , jump = False
-#         , direction = 'same'
-#         , next_direction = 'same'
-#         , note_length = (2,)
-#         , bar_position = None
-#         , badness = 0, ugliness = 0
-#         ):
-#         super ().__init__ (desc, interval, badness, ugliness, octave)
-#         self.jump           = jump
-#         self.direction      = direction
-#         self.next_direction = next_direction
-#         self.note_length    = note_length
-#         self.bar_position   = bar_position
-#     # end def __init__
-# 
-#     def _check (self, cf_obj, cp_obj):
-#         assert cf_obj.overlaps (cp_obj)
-#         self.cf_obj = cf_obj
-#         self.cp_obj = cp_obj
-# 
-#         # Check if it's a dissonance
-#         d = self.compute_interval (cf_obj, cp_obj)
-#         if d is None or d not in self.interval:
-#             return False
-# 
-#         # Check note length
-#         if not hasattr (cp_obj, 'duration') or cp_obj.duration not in self.note_length:
-#             return False
-# 
-#         # Check bar position if specified
-#         if self.bar_position is not None:
-#             if not hasattr (cp_obj, 'offset') or cp_obj.offset not in self.bar_position:
-#                 return False
-# 
-#         # Check if reached by step
-#         p_cp_obj = cp_obj.prev
-#         if not p_cp_obj or not hasattr (p_cp_obj, 'halftone') or not hasattr (cp_obj, 'halftone'):
-#             return False
-# 
-#         prev_interval = abs (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
-#         if (self.jump and prev_interval <= 2) or (not self.jump and prev_interval > 2):
-#             return False
-# 
-#         # Check if left by step in same direction
-#         n_cp_obj = cp_obj.next
-#         if not n_cp_obj or not hasattr (n_cp_obj, 'halftone'):
-#             return False
-# 
-#         next_interval = abs (n_cp_obj.halftone.offset - cp_obj.halftone.offset)
-#         if (self.jump and next_interval <= 2) or (not self.jump and next_interval > 2):
-#             return False
-# 
-#         # Check direction
-#         prev_dir = sgn (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
-#         next_dir = sgn (n_cp_obj.halftone.offset - cp_obj.halftone.offset)
-# 
-#         if self.direction == 'same' and prev_dir != next_dir:
-#             return False
-#         elif self.direction == 'different' and prev_dir == next_dir:
-#             return False
-# 
-#         # If we got here, it's a valid passing tone, so we don't flag it
-#         return False
-#     # end def _check
-# # end class Check_Harmony_Passing_Tone
+class Check_Harmony_Akzentparallelen (Check_Harmony_Interval):
+    """ Check for Akzentparallelen (accent parallels).
+        These are parallels of perfect consonant intervals (unisons, fifths,
+        and octaves) that occur from a strong beat in one measure to a strong
+        beat in the next measure, even when there is contrary motion on the
+        weak beats in between.
+        From Kontrapunkt im Selbststudium und Unterricht, Thomas Krämer, 2012
+        S. 89-90.
+    """
+
+    def __init__ (self, desc, badness = 0, ugliness = 0):
+        # Perfect consonant intervals: unison, fifth, octave
+        # (reduced to within octave because we set octave = True)
+        intervals = {0, 7}
+        super ().__init__ (desc, intervals, badness, ugliness, octave = True)
+        self.reset ()
+    # end def __init__
+
+    def _check (self, cf_obj, cp_obj):
+        """ Check for accent parallels between strong beats across measures """
+        assert cf_obj.overlaps (cp_obj)
+
+        # Only check on strong beats (offset 0 in a bar)
+        if cf_obj.offset != 0 or cp_obj.offset != 0:
+            return False
+
+        # Need both to be tones
+        if not cf_obj.is_tone or not cp_obj.is_tone:
+            return False
+
+        # Calculate current interval using parent's method with octave reduction
+        current_interval = self.compute_interval (cf_obj, cp_obj)
+        if current_interval is None:
+            return False
+
+        # Only check perfect consonant intervals (0=unison, 7=fifth)
+        # Note that multiple octaves reduce to unison
+        if current_interval not in self.interval:
+            return False
+
+        # Check if we have a previous strong beat interval that matches
+        if self.prev_strong_interval == current_interval:
+            assert self.prev_strong_interval in self.interval
+            # This is an Akzentparallel
+            return True
+
+        # Store current interval for next check
+        self.prev_strong_interval = current_interval
+        return False
+    # end def _check
+
+    def reset (self):
+        """ Reset the check state """
+        self.prev_strong_interval = None
+    # end def reset
+
+# end class Check_Harmony_Akzentparallelen
+
+class Harmony_Exception:
+    """ Base class for exceptions to harmony rules.
+        An exception can override a harmony check under certain conditions.
+    """
+
+    def __init__ (self, interval):
+        self.interval = set (interval)
+    # end def __init__
+
+    def applies (self, parent, cf_obj, cp_obj):
+        """ Check if this exception applies to the given objects.
+            Should be overridden by subclasses.
+            The 'parent' argument is the Check_Harmony_Interval instance.
+            Returns True if the exception applies
+            (i.e., the rule from which it is called should be ignored).
+        """
+        raise NotImplementedError ('Need applies method') # pragma: no cover
+    # end def applies
+
+# end class Harmony_Exception
+
+class Exception_Harmony_Passing_Tone (Harmony_Exception):
+    """ If a note is reached by step and left by step in the *same*
+        direction, it can be a dissonance as long as it's on a weak
+        beat. Exception: hard passing tone (half-strong).
+        From: Zweistimmiger Kontrapunkt -- Ein Lehrgang in 30 Lektionen,
+        Thomas Daniel, 2002, S. 112-120.
+    """
+
+    def __init__ \
+        ( self, interval
+        , octave         = True
+        , note_length    = (2,)
+        , bar_position   = None
+        ):
+        super ().__init__ (interval)
+        self.octave       = octave
+        self.note_length  = note_length
+        self.bar_position = bar_position
+    # end def __init__
+
+    def applies (self, parent, cf_obj, cp_obj):
+        assert cf_obj.overlaps (cp_obj)
+
+        # Check if it's a dissonance that this exception handles
+        d = parent.compute_interval (cf_obj, cp_obj)
+        if d is None or d not in self.interval:
+            return False
+
+        # Check note length
+        if cp_obj.length not in self.note_length:
+            return False
+
+        # Check bar position if specified
+        if self.bar_position is not None:
+            if cp_obj.offset not in self.bar_position:
+                return False
+
+        # Check if reached by step
+        p_cp_obj = cp_obj.prev
+        if not p_cp_obj or not p_cp_obj.is_tone or not cp_obj.is_tone:
+            return False
+
+        prev_interval = abs \
+            (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
+        if prev_interval > 2:
+            return False
+
+        # Check if left by step in same direction
+        n_cp_obj = cp_obj.next
+        if not n_cp_obj or not n_cp_obj.is_tone:
+            return False
+
+        next_interval = abs \
+            (n_cp_obj.halftone.offset - cp_obj.halftone.offset)
+        if next_interval > 2:
+            return False
+
+        # Check direction
+        prev_dir = sgn (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
+        next_dir = sgn (n_cp_obj.halftone.offset - cp_obj.halftone.offset)
+
+        if prev_dir != next_dir:
+            return False
+
+        # If we got here, it's a valid passing tone exception
+        return True
+    # end def applies
+
+# end class Exception_Harmony_Passing_Tone
+
+class Exception_Harmony_Wechselnote (Harmony_Exception):
+    """ Exception for Wechselnoten (changing tones).
+        These are melodic ornaments that can create dissonances but are allowed
+        when they follow specific melodic patterns:
+        - step away and back to same tone, dissonance on weak beat
+        - must be on weak beats and move by step
+        From: Zweistimmiger Kontrapunkt -- Ein Lehrgang in 30 Lektionen,
+        Thomas Daniel, 2002, S. 112-120.
+    """
+
+    def __init__ \
+        ( self, interval
+        , octave       = True
+        , note_length  = (1, 2)  # eighth and quarter notes typically
+        , bar_position = None    # weak beats only
+        ):
+        super ().__init__ (interval)
+        self.octave       = octave
+        self.note_length  = note_length
+        self.bar_position = bar_position
+    # end def __init__
+
+    def applies (self, parent, cf_obj, cp_obj):
+        assert cf_obj.overlaps (cp_obj)
+
+        # Check if it's a dissonance that this exception handles
+        d = parent.compute_interval (cf_obj, cp_obj)
+        if d is None or d not in self.interval:
+            return False
+
+        # Must be on weak beats if bar_position is specified
+        if self.bar_position is not None:
+            if cp_obj.offset not in self.bar_position:
+                return False
+
+        # Check note length (typically short ornamental notes)
+        if cp_obj.length not in self.note_length:
+            return False
+
+        # Need previous and next tones to check melodic pattern
+        p_cp_obj = cp_obj.prev
+        n_cp_obj = cp_obj.next
+        if not p_cp_obj or not n_cp_obj:
+            return False
+        # If anything is a pause we don't need to check further
+        if not p_cp_obj.is_tone or not cp_obj.is_tone or not n_cp_obj.is_tone:
+            return False
+
+        prev_interval = cp_obj.halftone.offset - p_cp_obj.halftone.offset
+        next_interval = n_cp_obj.halftone.offset - cp_obj.halftone.offset
+
+        # Both intervals must be steps (1 or 2 semitones)
+        if abs (prev_interval) <= 2 and abs (next_interval) <= 2:
+            # Wechselnote: step away and back
+            # (opposite directions, return to same or nearby tone)
+            if  (   sgn (prev_interval) != sgn (next_interval)
+                and prev_interval != 0 and next_interval != 0
+                ):
+                # Check if we return to the same tone or close to it
+                total_movement = abs \
+                    (p_cp_obj.halftone.offset - n_cp_obj.halftone.offset)
+                if total_movement <= 2:  # Returns to same or nearby tone
+                    return True
+
+        return False
+    # end def applies
+
+# end class Exception_Harmony_Wechselnote
+
+# Define passing tone exceptions
+passing_tone_exceptions = \
+    [ Exception_Harmony_Passing_Tone
+        ( interval       = (1, 2, 5, 6, 10, 11)
+        , octave         = True
+        , note_length    = (4,)
+        , bar_position   = (4, 12)
+        )
+    , Exception_Harmony_Passing_Tone
+        ( interval       = (1, 2, 5, 6, 10, 11)
+        , octave         = True
+        , note_length    = (2,)
+        , bar_position   = (2, 4, 6, 10, 12, 14)
+        )
+    , Exception_Harmony_Passing_Tone
+        ( interval       = (1, 2, 5, 6, 10, 11)
+        , octave         = True
+        , note_length    = (1,)
+        , bar_position   = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
+        )
+    , Exception_Harmony_Wechselnote
+        ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+        , octave         = True
+        , note_length    = (4,)  # half notes
+        # half-weak beats
+        , bar_position   = (4, 12)
+        )
+    , Exception_Harmony_Wechselnote
+        ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+        , octave         = True
+        , note_length    = (2,)  # quarter notes
+        # weak beats:
+        , bar_position   = (2, 4, 6, 10, 12, 14)
+        )
+    , Exception_Harmony_Wechselnote
+        ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+        , octave         = True
+        , note_length    = (1,)  # eighth notes
+        # weak beats:
+        , bar_position   = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
+        )
+    ]
 
 # 0.1.2: "Permitted melodic intervals are the perfect fourth, fifth,
 # and octave, as well as the major and minor second, major and minor
@@ -847,6 +1049,7 @@ magi_melody_checks_cp = \
         , badness       = 1.4
         )
     ]
+
 old_harmony_checks = \
     [ Check_Harmony_Interval
         ( "1.2: Use no unisons except at the beginning or end"
@@ -874,9 +1077,6 @@ old_harmony_checks = \
         , badness  = 10.0
         , octave   = True
         )
-    # 1.6: Attempt to keep any two adjacent parts within a tenth
-    # of each other, unless an exceptionally pleasing line can
-    # be written by moving outside of that range.
     , Check_Harmony_Interval_Max
         ( "max. 16"
         , maximum  = 16
@@ -959,33 +1159,34 @@ old_harmony_checks = \
 magi_harmony_checks = \
     [ Check_Harmony_Interval
         ( "1.2: Use no unisons except at the beginning or end"
-        , interval  = (0,)
-        , badness   = 10.0
-        , octave    = False
-        , not_first = True
-        , not_last  = True
+        , interval   = (0,)
+        , badness    = 10.0
+        , octave     = False
+        , not_first  = True
+        , not_last   = True
+        , exceptions = passing_tone_exceptions
         )
     , Check_Harmony_Interval
         ( "No Sekund"
         , interval = (1, 2)
         , badness  = 10.0
         , octave   = True
+        , exceptions = passing_tone_exceptions
         )
-    , Check_Harmony_Interval
+    , Check_Harmony_Interval \
         ( "Magdalena: 5/6 verboten"
         , interval = (5, 6)
         , badness  = 10.0
         , octave   = True
+        , exceptions = passing_tone_exceptions
         )
-    , Check_Harmony_Interval
+    , Check_Harmony_Interval \
         ( "Magdalena: 10/11 verboten"
         , interval = (10, 11)
         , badness  = 10.0
         , octave   = True
+        , exceptions = passing_tone_exceptions
         )
-    # 1.6: Attempt to keep any two adjacent parts within a tenth
-    # of each other, unless an exceptionally pleasing line can
-    # be written by moving outside of that range.
     , Check_Harmony_Interval_Max
         ( "Distance between voices should not exceed Duodezime"
         , maximum  = 19
@@ -1003,9 +1204,8 @@ magi_harmony_checks = \
         , badness  = 10.0
         )
     , Check_Harmony_Melody_Direction
-        ( "Magdalena: Ensure that"
-          " the last direction (from where is the fifth or octave"
-          " approached) is different."
+        ( "Magdalena: Ensure that the last direction"
+          " (from where is the fifth or octave approached) is different."
         , interval = (0, 7, 12)
         , dir      = 'same'
         , badness  = 9.0
@@ -1043,53 +1243,18 @@ magi_harmony_checks = \
         , dir      = 'same'
         , ugliness = 0.1
         )
-#    , Check_Harmony_Passing_Tone
-#        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
-#          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
-#          " Dissonanz sein, solange sie auf leichte Zeit steht."
-#          " Ausnahme= harter Durchgang (halbschwer)."
-#          "HALBE:"
-#        , interval       = (2, 3, 6, 10, 11)
-#        , octave         = True
-#        , jump           = False
-#        , direction      = 'same'
-#        , next_direction = 'same'
-#        , note_length    = (4,)
-#        , bar_position   = (5, 13)
-#        )
-#    , Check_Harmony_Passing_Tone
-#        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
-#          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
-#          " Dissonanz sein, solange sie auf leichte Zeit steht."
-#          " Ausnahme= harter Durchgang (halbschwer)."
-#          "VIERTEL:"
-#        , interval       = (2, 3, 6, 10, 11)
-#        , octave         = True
-#        , jump           = False
-#        , direction      = 'same'
-#        , next_direction = 'same'
-#        , note_length    = (2,)
-#        , bar_position   = (3, 5, 7, 11, 13, 15)
-#        )
-#    , Check_Harmony_Passing_Tone
-#        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
-#          " IN DIESELBE Richtung wieder verlassen wird, darf sie eine"
-#          " Dissonanz sein, solange sie auf leichte Zeit steht."
-#          " Ausnahme= harter Durchgang (halbschwer)."
-#          "ACHTELN:"
-#        , interval       = (2, 3, 6, 10, 11)
-#        , octave         = True
-#        , jump           = False
-#        , direction      = 'same'
-#        , next_direction = 'same'
-#        , note_length    = (1,)
-#        , bar_position   = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
-#        )
+    , Check_Harmony_Akzentparallelen
+        ( "2.1.9: Avoid Akzentparallelen"
+          " (accent parallels of perfect consonances)"
+        , badness = 5.0
+        )
     ]
 
 checks = dict \
     ( default = (old_melody_checks_cf, old_melody_checks_cp, old_harmony_checks)
-    , special = (magi_melody_checks_cf, magi_melody_checks_cp, magi_harmony_checks)
+    , special = ( magi_melody_checks_cf, magi_melody_checks_cp
+                , magi_harmony_checks
+                )
     )
 
 __all__ = ['checks']
