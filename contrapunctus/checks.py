@@ -701,13 +701,11 @@ class Check_Harmony_Akzentparallelen (Check_Harmony_Interval):
         # Only check perfect consonant intervals (0=unison, 7=fifth)
         # Note that multiple octaves reduce to unison
         if current_interval not in self.interval:
-            self.prev_strong_interval = current_interval
             return False
 
         # Check if we have a previous strong beat interval that matches
-        if (hasattr (self, 'prev_strong_interval') and
-            self.prev_strong_interval == current_interval and
-            self.prev_strong_interval in self.interval):
+        if self.prev_strong_interval == current_interval:
+            assert self.prev_strong_interval in self.interval
             # This is an Akzentparallel
             return True
 
