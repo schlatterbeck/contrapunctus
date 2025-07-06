@@ -29,6 +29,7 @@ import contrapunctus.circle
 import contrapunctus.gentune
 import contrapunctus.gregorian
 from fractions import Fraction
+from textwrap import dedent
 from pga.testsupport import PGA_Test_Instrumentation
 from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 from contrapunctus.tune import Key
@@ -1263,6 +1264,81 @@ class Test_Contrapunctus:
         assert not p23.overlaps (p11)
         assert p23.overlaps (p12)
     # end def test_overlap
+
+    def test_akzentparallele_prim (self):
+        check = checks.Check_Harmony_Akzentparallelen \
+            ( "Test Akzentparallele prim"
+            , badness  = 10.0
+            )
+        abc = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=treble
+             V:1 clef=treble
+             [V:1] B4 d4 | c8 |
+             [V:2] B8    | c8 |
+             """
+            ).strip ().split ('\n')
+        tune   = Tune.from_iterator (abc)
+        expect = (0, 0, 10)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp)
+    # end def test_akzentparallele_prim
+
+    def test_akzentparallele_quint (self):
+        check = checks.Check_Harmony_Akzentparallelen \
+            ( "Test Akzentparallele quint"
+            , badness  = 10.0
+            )
+        abc = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=treble
+             V:1 clef=treble
+             [V:1] G4 c4 | A4 f4 |
+             [V:2] C8    | D8    |
+             """
+            ).strip ().split ('\n')
+        tune   = Tune.from_iterator (abc)
+        expect = (0, 0, 10)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp)
+    # end def test_akzentparallele_quint
+
+    def test_akzentparallele_octave (self):
+        check = checks.Check_Harmony_Akzentparallelen \
+            ( "Test Akzentparallele quint"
+            , badness  = 10.0
+            )
+        abc = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=treble
+             V:1 clef=treble
+             [V:1] e4 b4 | g4 e4 |
+             [V:2] E8    | G8    |
+             """
+            ).strip ().split ('\n')
+        tune   = Tune.from_iterator (abc)
+        expect = (0, 0, 10)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp)
+    # end def test_akzentparallele_octave
 
 # end class Test_Contrapunctus
 

@@ -644,6 +644,66 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
 
 # end class Check_Harmony_Melody_Direction
 
+class Check_Harmony_Akzentparallelen (Check_Harmony_Interval):
+    """ Check for Akzentparallelen (accent parallels).
+        These are parallels of perfect consonant intervals (unisons, fifths,
+        and octaves) that occur from a strong beat in one measure to a strong
+        beat in the next measure, even when there is contrary motion on the
+        weak beats in between.
+        From Kontrapunkt im Selbststudium und Unterricht, Thomas Krämer, 2012
+        S. 89-90.
+    """
+
+    def __init__ (self, desc, badness = 0, ugliness = 0):
+        # Perfect consonant intervals: unison, fifth, octave
+        # (reduced to within octave because we set octave = True)
+        intervals = {0, 7}
+        super ().__init__ (desc, intervals, badness, ugliness, octave = True)
+        self.reset ()
+    # end def __init__
+
+    def _check (self, cf_obj, cp_obj):
+        """ Check for accent parallels between strong beats across measures """
+        assert cf_obj.overlaps (cp_obj)
+
+        # Only check on strong beats (offset 0 in a bar)
+        if cf_obj.offset != 0 or cp_obj.offset != 0:
+            return False
+
+        # Need both to be tones
+        if not cf_obj.is_tone or not cp_obj.is_tone:
+            return False
+
+        # Calculate current interval using parent's method with octave reduction
+        current_interval = self.compute_interval (cf_obj, cp_obj)
+        if current_interval is None:
+            return False
+
+        # Only check perfect consonant intervals (0=unison, 7=fifth)
+        # Note that multiple octaves reduce to unison
+        if current_interval not in self.interval:
+            self.prev_strong_interval = current_interval
+            return False
+
+        # Check if we have a previous strong beat interval that matches
+        if (hasattr (self, 'prev_strong_interval') and
+            self.prev_strong_interval == current_interval and
+            self.prev_strong_interval in self.interval):
+            # This is an Akzentparallel
+            return True
+
+        # Store current interval for next check
+        self.prev_strong_interval = current_interval
+        return False
+    # end def _check
+
+    def reset (self):
+        """ Reset the check state """
+        self.prev_strong_interval = None
+    # end def reset
+
+# end class Check_Harmony_Akzentparallelen
+
 # This still needs work, especially since we want this to be an
 # *exception* to existing rules. For this we need a framework or we need
 # to fold it into (all?) harmony checks.
@@ -1042,6 +1102,11 @@ magi_harmony_checks = \
         , interval = () # All
         , dir      = 'same'
         , ugliness = 0.1
+        )
+    , Check_Harmony_Akzentparallelen
+        ( "2.1.9: Avoid Akzentparallelen"
+          " (accent parallels of perfect consonances)"
+        , badness = 5.0
         )
 #    , Check_Harmony_Passing_Tone
 #        ( "Wenn eine Note schrittweise erreicht wird und schrittweise"
