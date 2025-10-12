@@ -4,21 +4,24 @@ TO DO
 Allgemein
 ---------
 
-- Takt auf zwei Ganze (Brevis)
++ Takt auf zwei Ganze (Brevis)
 - Kategorien für perfekte und imperfekte Konsonanzen und Dissonanzen machen
-- Bewegungsrichtungen definieren
-- Punktierte
++ Bewegungsrichtungen definieren
++ Punktierte
 - nicht ständig die Tonlänge ändern (mehr Gruppen von Achteln oder Vierteln)?
 - Synkopen (kurz-lang(-lang-lang-...)-kurz)
 
 - Notenmaterial (akzidenzien) und ambitus
-- Durchgang, Vorhalt, Wechselnote Regeln
++ Durchgang, Wechselnote Regeln
+- Vorhalt
 - Cambiata
 - Schlüsse und Zwischenkadenzen? -> Halbtonanschluss und Akzidenzien als
   Aufforderung zur Kadenz
 
   * verschiedene Varianten als Liste oder so
   * evtl. Markierung beim C.F.?
+- Wenn ein Cantus Firmus vorgegeben wird, sollte die Tonart erkannt
+  werden und auch das Resultat in dieser Tonart stehen
   
 Was dürfen Achteln und wieso steht das nirgends?
   
@@ -33,6 +36,9 @@ Done
 + diff und dist auf Melodie- und Melodie-/Harmonieintervalle umbenennen
 + erstes Intervall ist erstes Intervall, auch wenn erster Ton CF Pause ist
 + C.F. auch angeben zu können wäre gut
++ Oktav-Parallelen 
++ Quint-Parallelen (?)
++ Falsche Intervalle Modulo 12 (!) 
 
 wichtige Rand-/ Zwischennotizen
 --------------------------------

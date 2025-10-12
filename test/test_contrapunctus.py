@@ -1340,6 +1340,36 @@ class Test_Contrapunctus:
             assert (b == exp)
     # end def test_akzentparallele_octave
 
+    @pytest.mark.xfail
+    def test_klapperoktave (self):
+        check = checks.Check_Harmony_Akzentparallelen \
+            ( "Test Akzentparallele quint"
+            , badness  = 10.0
+            )
+        abc = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             Q: 1/4=280
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=treble
+             V:1 clef=bass
+             [V:1] z2 D2- | D2 C2 | D2 d2 | c2 e2- |$ e2 d2 | c2 B2- |
+                   B2 A2- | A2 E2 | D4 |
+             [V:2] D4 | C4 | B,4 | E4 |$ D4 | E4 | D4 | C4 | D4 |
+             """
+            ).strip ().split ('\n')
+        tune   = Tune.from_iterator (abc)
+        expect = (0, 0, 0)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            import pdb; pdb.set_trace ()
+            print (cfo, cpo)
+            b, u = check.check (cfo, cpo)
+            assert (b == exp)
+    # end def test_klapperoktave
+
     def generic_exception_harmony_passing_tone (self, abc, expect):
         """ Test the Exception_Harmony_Passing_Tone class
             This tests passing tones that are reached by step and left
@@ -1527,6 +1557,70 @@ class Test_Contrapunctus:
         expect = (0, 0, 0, 10, 0)
         self.generic_exception_harmony_wechselnote (abc_notation, expect)
     # end def test_exception_harmony_wechselnote_WN_acc
+
+    def generic_exception_cambiata (self, abc, expect):
+        """ Test the Exception_Harmony_Wechselnote class
+        """
+        # Without exception, this should trigger (assuming it's a dissonance)
+        check = checks.Check_Harmony_Interval \
+            ( "Test dissonance"
+            , interval = (1, 2, 5, 6, 10, 11)
+            , octave   = True
+            , badness  = 10.0
+            )
+        # Create a test check for now without the passing tone exception
+        cambiata_exception = checks.Exception_Harmony_Cambiata \
+            ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+            , octave         = True
+            )
+
+        tune = Tune.from_iterator (abc)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp), str (n)
+
+        # Now with exception
+        check.exceptions.append (cambiata_exception)
+        for n, (cfo, cpo) in enumerate (tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == 0), "cfo [%s]: %s  cpo: %s" % (n, cfo, cpo)
+    # end def generic_exception_cambiata
+
+    def test_exception_cambiata_1 (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] c6 B2 | G2 A2 B4 |
+             [V:2] C8    | B,8      |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 10, 0, 10, 0)
+        self.generic_exception_cambiata (abc_notation, expect)
+    # end def test_exception_cambiata_1
+
+    def test_exception_cambiata_2 (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] D,4 E,4 | A,4 G,4 | E,4 F,4 | G,8 |
+             [V:2] B,8     | C8-     | C8      | B,8 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 0, 0, 10, 0, 0, 0)
+        self.generic_exception_cambiata (abc_notation, expect)
+    # end def test_exception_cambiata_2
 
 # end class Test_Contrapunctus
 

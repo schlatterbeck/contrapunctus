@@ -881,6 +881,139 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
 
 # end class Exception_Harmony_Wechselnote
 
+class Exception_Harmony_Cambiata (Harmony_Exception):
+    """ Exception for Cambiata (Nota cambiata or Fuxsche Wechselnote).
+        The Cambiata is a five-tone melodic sequence where three tones
+        must be consonances and one or two can be dissonances. The first
+        and fifth tones must fall on strong beats and must be consonances.
+        The sequence has a fixed order.
+        
+        Descending form: first tone is higher than the last
+        step down, third down, step up, step up
+        Ascending form: first tone is lower than the last
+        step up, third up, step down, step down
+
+        Note that for note_length 6: Only the first tone may be 6 long.
+        
+        From Schoenberg's "Harmonielehre" p. 42
+        Zweite stehende Formel: Die Cambiata
+    """
+
+    def __init__ ( self, interval, octave = True):
+        super ().__init__ (interval)
+        self.octave       = octave
+    # end def __init__
+
+    def applies (self, parent, cf_obj, cp_obj):
+        current = cp_obj
+        for k in range (3):
+            current = current.prev
+            if current is None:
+                return False
+            cfo  = cf_obj.bar.get_by_offset (current)
+            if self.check_cambiata (parent, cfo, current):
+                return True
+        return False
+    # end def applies
+
+    def check_cambiata (self, parent, cf_obj, cp_obj):
+        """ We assume that we're called with the *first* tone of the cambiata
+        """
+        assert cf_obj.overlaps (cp_obj)
+
+        # Check if it's a tone
+        d = parent.compute_interval (cf_obj, cp_obj)
+        if d is None:
+            return False
+
+        # For Cambiata we need to check a sequence of 5 tones
+        # Get the current and next 4 tones
+        tones = []
+        current = cp_obj
+        tones.append (current)
+        
+        # Go forward 4 tones  
+        for _ in range (4):
+            if current.next and current.next.is_tone:
+                current = current.next
+                tones.append (current)
+            else:
+                break
+
+        # We need exactly 5 tones for a complete Cambiata
+        if len (tones) != 5:
+            return False
+
+        # Check note length
+        if tones [0].length not in [2, 4, 6]:
+            return False
+        if tones [4].length == 1:
+            return False
+        for idx in (1, 2, 3):
+            if tones [idx].length not in [2, 4]:
+                return False
+
+        # Check if first and last tones are on strong beats
+        first_tone = tones [0]
+        last_tone = tones [4]
+        
+        # Strong beats are typically at offset 0 and 8 in a 8/4 measure
+        strong_beats = {0, 4, 8, 12}
+        if first_tone.offset not in strong_beats:
+            return False
+        if last_tone.offset  not in strong_beats:
+            return False
+
+        # Cambiata patterns (descending and ascending forms)
+        # Descending: down step, down third, up step, up step
+        # Ascending: up step, up third, down step, down step
+        descending_pattern = [[-1, -2], [-3, -4], [ 1,  2], [ 1,  2]]
+        ascending_pattern  = [[ 1,  2], [ 3,  4], [-1, -2], [-1, -2]]
+
+        # Check the melodic pattern fits the characteristic Cambiata shape:
+        intervals = []
+        for i in range (len (tones) - 1):
+            interval = tones [i+1].halftone.offset - tones [i].halftone.offset
+            intervals.append (interval)
+
+        def matches_pattern (intervals, pattern):
+            if len (intervals) != len (pattern):
+                return False
+            for i, (actual, expected) in enumerate (zip (intervals, pattern)):
+                if actual not in expected:
+                    return False
+            return True
+        # end def matches_pattern
+
+        # Check if it matches either Cambiata pattern
+        if  (   not matches_pattern (intervals, descending_pattern)
+            and not matches_pattern (intervals, ascending_pattern)
+            ):
+            return False
+        # Verify that we have the right number of consonances/dissonances
+        # At most 2 dissonances allowed in the 5-tone sequence
+        # The first and last must be consonances
+        dissonance_count = 0
+        for n, tone in enumerate (tones):
+            # Find corresponding CF tone for harmony check
+            cf_tone = cf_obj.bar.get_by_offset (tone)
+            if cf_tone and cf_tone.is_tone and tone.is_tone:
+                interval = parent.compute_interval (cf_tone, tone)
+                if interval is not None and interval in self.interval:
+                    dissonance_count += 1
+                    # first and last must be consonances
+                    if n == 0 or n == 4:
+                        return False
+        
+        # Allow if we have at most 2 dissonances (and at least one)
+        if 0 < dissonance_count <= 2:
+            return True
+
+        return False
+    # end def check_cambiata
+
+# end class Exception_Harmony_Cambiata
+
 # Define passing tone exceptions
 passing_tone_exceptions = \
     [ Exception_Harmony_Passing_Tone
@@ -902,25 +1035,29 @@ passing_tone_exceptions = \
         , bar_position   = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
         )
     , Exception_Harmony_Wechselnote
-        ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+        ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
         , octave         = True
         , note_length    = (4,)  # half notes
         # half-weak beats
         , bar_position   = (4, 12)
         )
     , Exception_Harmony_Wechselnote
-        ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+        ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
         , octave         = True
         , note_length    = (2,)  # quarter notes
         # weak beats:
         , bar_position   = (2, 4, 6, 10, 12, 14)
         )
     , Exception_Harmony_Wechselnote
-        ( interval       = (1, 2, 5, 6, 10, 11)  # Common dissonances
+        ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
         , octave         = True
         , note_length    = (1,)  # eighth notes
         # weak beats:
         , bar_position   = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
+        )
+    , Exception_Harmony_Cambiata
+        ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
+        , octave         = True
         )
     ]
 
