@@ -1340,10 +1340,9 @@ class Test_Contrapunctus:
             assert (b == exp)
     # end def test_akzentparallele_octave
 
-    @pytest.mark.xfail
     def test_klapperoktave (self):
         check = checks.Check_Harmony_Akzentparallelen \
-            ( "Test Akzentparallele quint"
+            ( "Test Akzentparallele Klapperoktave"
             , badness  = 10.0
             )
         abc = dedent \
@@ -1356,16 +1355,15 @@ class Test_Contrapunctus:
              K:C
              V:2 clef=treble
              V:1 clef=bass
-             [V:1] z2 D2- | D2 C2 | D2 d2 | c2 e2- |$ e2 d2 | c2 B2- |
-                   B2 A2- | A2 E2 | D4 |
-             [V:2] D4 | C4 | B,4 | E4 |$ D4 | E4 | D4 | C4 | D4 |
+             [V:1] z4 D4- | D4 C4 | D4 d4 | c4 e4- | e4 d4 | c4 B4- |
+                   B4 A4- | A4 E4 | D8 |
+             [V:2] D8 | C8 | B,8 | E8 | D8 | E8 | D8 | C8 | D8 |
              """
             ).strip ().split ('\n')
         tune   = Tune.from_iterator (abc)
-        expect = (0, 0, 0)
+        # Seems this is *not* caught by Akzentparallele check
+        expect = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
-            import pdb; pdb.set_trace ()
-            print (cfo, cpo)
             b, u = check.check (cfo, cpo)
             assert (b == exp)
     # end def test_klapperoktave

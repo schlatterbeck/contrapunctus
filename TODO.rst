@@ -22,6 +22,9 @@ Allgemein
   * evtl. Markierung beim C.F.?
 - Wenn ein Cantus Firmus vorgegeben wird, sollte die Tonart erkannt
   werden und auch das Resultat in dieser Tonart stehen
+- Wenn CF mit L=1/4 oder anderen Werten vorgegeben wird sollte das in
+  1/8 umgerechnet werden (beim Einlesen). Für Regression-Tests (von CF +
+  CP) reichts wenn das nur in 1/8 geht.
   
 Was dürfen Achteln und wieso steht das nirgends?
   
