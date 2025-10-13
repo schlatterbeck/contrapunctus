@@ -1340,33 +1340,49 @@ class Test_Contrapunctus:
             assert (b == exp)
     # end def test_akzentparallele_octave
 
+    klapperoktave_abc = dedent \
+        ("""
+         X:1
+         %%score 1 2
+         Q: 1/4=280
+         L:1/8
+         M:4/4
+         K:C
+         V:2 clef=treble
+         V:1 clef=bass
+         [V:1] z4 D4- | D4 C4 | D4 d4 | c4 e4- | e4 d4 | c4 B4- |
+               B4 A4- | A4 E4 | D8 |
+         [V:2] D8 | C8 | B,8 | E8 | D8 | E8 | D8 | C8 | D8 |
+         """
+        ).strip ().split ('\n')
+    klapperoktave_tune = Tune.from_iterator (klapperoktave_abc)
+
     def test_klapperoktave (self):
         check = checks.Check_Harmony_Akzentparallelen \
             ( "Test Akzentparallele Klapperoktave"
             , badness  = 10.0
             )
-        abc = dedent \
-            ("""
-             X:1
-             %%score 1 2
-             Q: 1/4=280
-             L:1/8
-             M:4/4
-             K:C
-             V:2 clef=treble
-             V:1 clef=bass
-             [V:1] z4 D4- | D4 C4 | D4 d4 | c4 e4- | e4 d4 | c4 B4- |
-                   B4 A4- | A4 E4 | D8 |
-             [V:2] D8 | C8 | B,8 | E8 | D8 | E8 | D8 | C8 | D8 |
-             """
-            ).strip ().split ('\n')
-        tune   = Tune.from_iterator (abc)
+        tune = self.klapperoktave_tune
         # Seems this is *not* caught by Akzentparallele check
         expect = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
             b, u = check.check (cfo, cpo)
             assert (b == exp)
     # end def test_klapperoktave
+
+    def test_klapperoktave_sekund (self):
+        check = checks.Check_Harmony_Interval \
+            ( "Test Sekund"
+            , badness  = 10.0
+            , interval = (1, 2)
+            , octave   = True
+            )
+        tune = self.klapperoktave_tune
+        expect = (0, 0, 10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp), str (n)
+    # end def test_klapperoktave_sekund
 
     def generic_exception_harmony_passing_tone (self, abc, expect):
         """ Test the Exception_Harmony_Passing_Tone class
