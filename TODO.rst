@@ -5,16 +5,15 @@ Allgemein
 ---------
 
 + Takt auf zwei Ganze (Brevis)
-- Kategorien für perfekte und imperfekte Konsonanzen und Dissonanzen machen
 + Bewegungsrichtungen definieren
 + Punktierte
 - nicht ständig die Tonlänge ändern (mehr Gruppen von Achteln oder Vierteln)?
-- Synkopen (kurz-lang(-lang-lang-...)-kurz)
++ Synkopen (kurz-lang(-lang-lang-...)-kurz)
 
-- Notenmaterial (akzidenzien) und ambitus
++ Notenmaterial (akzidenzien) und ambitus
 + Durchgang, Wechselnote Regeln
-- Vorhalt
-- Cambiata
++ Vorhalt
++ Cambiata
 - Schlüsse und Zwischenkadenzen? -> Halbtonanschluss und Akzidenzien als
   Aufforderung zur Kadenz
 
@@ -27,8 +26,9 @@ Allgemein
   CP) reichts wenn das nur in 1/8 geht.
   
 Was dürfen Achteln und wieso steht das nirgends?
+Dürfen Achteln nicht jumpen? Haben wir das schon?
   
-- Ténor einbauen?
+[- Ténor einbauen?]
 - C.F. soll auch Halbe können (extra Regel für Synkopen?)
 
 Done
@@ -46,7 +46,7 @@ Done
 wichtige Rand-/ Zwischennotizen
 --------------------------------
 
-- Vorhalte:
++ Vorhalte:
 
   * bei Septim- und Quartvorhalten bleibt immer die Oberstimme liegen,
     Unterstimme schreitet zum nächsten Ton vor und erzeugt so Dissonanz
@@ -57,12 +57,12 @@ wichtige Rand-/ Zwischennotizen
   * z.B. c' und e', dann d' und fis' -> zwischen c' und fis' ü4 (Tritonus)
 
 - alterierte Töne nur bei Terz und Sext möglich
-- Viertel müssen auf leichte Zeit einsetzen (=leichte Halbe)
++ Viertel müssen auf leichte Zeit einsetzen (=leichte Halbe)
 
 Features
 --------
 
-- Allow specified --cantus-firmus tune to be transposed before use
++ Allow specified --cantus-firmus tune to be transposed before use
 - Better searching for CP for given CF for the last 4 bars, this
   currently uses a fixed combination of tone lengths
 
