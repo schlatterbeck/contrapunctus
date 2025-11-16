@@ -409,6 +409,7 @@ class Check_Harmony_Interval (Check_Harmony):
         self.not_first  = not_first
         self.not_last   = not_last
         self.exceptions = []
+        self.prev_interval = [None, None]
         # Only keep applicable exceptions
         for exc in (self.exceptions or []):
             if not exc.interval or not self.interval:
@@ -427,8 +428,11 @@ class Check_Harmony_Interval (Check_Harmony):
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d in self.interval:
             if self.check_exceptions (cf_obj, cp_obj):
+                self.prev_interval = [cf_obj, cp_obj]
                 return False
+            self.prev_interval = [cf_obj, cp_obj]
             return True
+        self.prev_interval = [cf_obj, cp_obj]
         return False
     # end def _check
 
@@ -1093,6 +1097,159 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
 
 # end class Exception_Harmony_Cambiata
 
+class Exception_Harmony_Suspension (Harmony_Exception):
+    """ Exception for Synkopendissonanz (suspension).
+        A suspension follows a three-step process:
+        1. Consonant preparation (at least a half note duration)
+        2. Becomes dissonant when the other voice moves on a strong beat
+        3. Resolves stepwise downward to consonance on the next weak beat
+
+        Fourth or seventh suspensions are always in the upper voice.
+        Second or ninth suspensions are always in the lower voice.
+
+        Ganter p. 53, 54, Spuller p. 12, 13
+    """
+
+    def __init__ (self, interval, octave = True):
+        super ().__init__ (interval)
+        self.octave = octave
+    # end def __init__
+
+    def applies (self, parent, cf_obj, cp_obj):
+        assert cf_obj.overlaps (cp_obj)
+
+        # Check if it's a dissonance that this exception handles
+        d = parent.compute_interval (cf_obj, cp_obj)
+        if d is None or d not in self.interval:
+            return False
+
+        # Must be on a strong beat (heavy half note position)
+        # Strong beats are at offset 0 and 8 in a 4/4 measure
+        strong_beats = {0, 8}
+        if cp_obj.offset not in strong_beats:
+            return False
+
+        # Must be at least a half note (minima) duration
+        if cp_obj.length < 4:  # 4 = half note in our system
+            return False
+
+        # Check voice leading rules based on interval type
+        if not self._check_voice_leading_rules (parent, cf_obj, cp_obj, d):
+            return False
+
+        # Step 1: Check consonant preparation
+        if not self._check_consonant_preparation (parent, cf_obj, cp_obj):
+            return False
+
+        # Step 2: Check that dissonance occurs when other voice moves
+        # This is already established: We know we have dissonance now,
+        # we know the last interval was not dissonant and we know the CP
+        # has not changed. So the CF must have moved.
+
+        # Step 3: Check stepwise downward resolution
+        if not self._check_stepwise_resolution (parent, cf_obj, cp_obj):
+            return False
+
+        return True
+    # end def applies
+
+    def _check_voice_leading_rules (self, parent, cf_obj, cp_obj, interval):
+        """ Check that fourth/seventh suspensions are in upper voice,
+            second/ninth suspensions are in lower voice
+        """
+        # Get the actual interval (not reduced to octave)
+        cf_offset = cf_obj.halftone.offset
+        cp_offset = cp_obj.halftone.offset
+        actual_interval = cp_offset - cf_offset
+
+        # Fourth (5 semitones) or seventh (10, 11 semitones) in upper voice
+        if interval in {5, 10, 11}:
+            return actual_interval > 0  # CP must be above CF
+
+        # Second (1, 2 semitones) or ninth (1, 2 reduced) in lower voice
+        elif interval in {1, 2}:
+            # Check if it's actually a ninth (second + octave) or second
+            return actual_interval < 0  # CP must be below CF for ninth or 2nd
+
+        return False
+    # end def _check_voice_leading_rules
+
+    def _check_consonant_preparation (self, parent, cf_obj, cp_obj):
+        """ Step 1: Check that the suspension tone was introduced consonantly
+            and held for at least a half note
+        """
+        # Check the *previous* interval: The cp_obj must be the same
+        # halftone.
+        prev_cp = parent.prev_interval [1]
+        if not prev_cp or not prev_cp.is_tone:
+            return False
+
+        # Must be the same pitch (tied or repeated)
+        if prev_cp.halftone != cp_obj.halftone:
+            return False
+
+        # The prev_cp must either be the same as cp_obj or bound to it
+        if prev_cp is not cp_obj and not prev_cp.bind:
+            return False
+
+        # Must be at least a half note duration for preparation
+        if prev_cp.length < 4:
+            return False
+
+        # Find the corresponding CF tone for the preparation
+        prev_cf = parent.prev_interval [0]
+        if not prev_cf or not prev_cf.is_tone:
+            return False
+
+        # The preparation must be consonant
+        prep_interval = parent.compute_interval (prev_cf, prev_cp)
+        if prep_interval is None:
+            return False
+
+        # Consonant intervals (unison, third, fifth, sixth, octave)
+        consonant_intervals = {0, 3, 4, 7, 8, 9}
+        return prep_interval in consonant_intervals
+    # end def _check_consonant_preparation
+
+    def _check_stepwise_resolution (self, parent, cf_obj, cp_obj):
+        """ Step 3: Check stepwise downward resolution to consonance
+            on the next weak beat
+        """
+        next_cp = cp_obj.next
+        if not next_cp or not next_cp.is_tone:
+            return False
+
+        # Must resolve on a weak beat (not 0 or 8)
+        weak_beats = {2, 4, 6, 10, 12, 14}
+        if next_cp.offset not in weak_beats:
+            return False
+
+        # Must resolve downward by step (1 or 2 semitones)
+        resolution_interval = cp_obj.halftone.offset - next_cp.halftone.offset
+        if resolution_interval not in {1, 2}:
+            return False
+
+        # Find corresponding CF tone for resolution
+        next_cf = cf_obj.bar.get_by_offset (next_cp)
+        if not next_cf or not next_cf.is_tone:
+            return False
+
+        # next cf must be the same as cf
+        if next_cf != cf_obj:
+            return False
+
+        # Resolution must be consonant
+        res_interval = parent.compute_interval (next_cf, next_cp)
+        if res_interval is None:
+            return False
+
+        # Consonant intervals
+        consonant_intervals = {0, 3, 4, 7, 8, 9}
+        return res_interval in consonant_intervals
+    # end def _check_stepwise_resolution
+
+# end class Exception_Harmony_Suspension
+
 # Define passing tone exceptions
 passing_tone_exceptions = \
     [ Exception_Harmony_Passing_Tone
@@ -1136,6 +1293,10 @@ passing_tone_exceptions = \
         )
     , Exception_Harmony_Cambiata
         ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
+        , octave         = True
+        )
+    , Exception_Harmony_Suspension
+        ( interval       = (1, 2, 5, 10, 11)  # dissonant intervals
         , octave         = True
         )
     ]

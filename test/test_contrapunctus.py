@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2022 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2017-2025 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # ****************************************************************************
@@ -1348,8 +1348,8 @@ class Test_Contrapunctus:
          L:1/8
          M:4/4
          K:C
-         V:2 clef=treble
-         V:1 clef=bass
+         V:2 clef=bass
+         V:1 clef=treble
          [V:1] z4 D4- | D4 C4 | D4 d4 | c4 e4- | e4 d4 | c4 B4- |
                B4 A4- | A4 E4 | D8 |
          [V:2] D8     | C8    | B,8   | E8     | D8    | E8     |
@@ -1648,6 +1648,54 @@ class Test_Contrapunctus:
         expect = (0, 0, 0, 10, 0, 0, 0)
         self.generic_exception_cambiata (abc_notation, expect)
     # end def test_exception_cambiata_2
+
+    def generic_exception_suspension (self, abc, expect, expect2):
+        """ Test the Exception_Harmony_Suspension class
+        """
+        # Without exception, this should trigger (assuming it's a dissonance)
+        check = checks.Check_Harmony_Interval \
+            ( "Test dissonance"
+            , interval = (1, 2, 5, 10, 11)
+            , octave   = True
+            , badness  = 10.0
+            )
+        # Create a test check for now without the passing tone exception
+        susp_exception = checks.Exception_Harmony_Suspension \
+            ( interval       = (1, 2, 5, 10, 11)  # Common dissonances
+            , octave         = True
+            )
+
+        tune = Tune.from_iterator (abc)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp), str (n)
+
+        # Now with exception
+        check.exceptions.append (susp_exception)
+        itr = enumerate (zip (expect2, tune.voices_iter ()))
+        for n, (exp, (cfo, cpo)) in itr:
+            b, u = check.check (cfo, cpo)
+            assert (b == exp), "cfo [%s]: %s  cpo: %s" % (n, cfo, cpo)
+    # end def generic_exception_suspension
+
+    def test_exception_suspension (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] z8  | D8- | D4 C4 | B4 A,4- | A,4 D4- | D4 ^C4 | D8- | D8  |
+             [V:2] D,8 | D,8 | E,8   | G,8     | F,8     | E,8    | D,8-| D,8 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 0, 10, 0, 0, 10, 0, 0, 10, 0, 0, 0)
+        exp2   = (0, 0,  0, 0, 0, 10, 0, 0,  0, 0, 0, 0)
+        self.generic_exception_suspension (abc_notation, expect, exp2)
+    # end def test_exception_suspension
 
 # end class Test_Contrapunctus
 
