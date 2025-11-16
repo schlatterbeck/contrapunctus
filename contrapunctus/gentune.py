@@ -644,6 +644,8 @@ class Contrapunctus:
                 c.reset ()
             for bcf, bcp in zip (*(v.bars [start:end] for v in tune.voices)):
                 for cp_obj in bcp.objects:
+                    if not bcf.objects [0].overlaps (cp_obj):
+                        continue
                     b, u = c.check (bcf.objects [0], cp_obj)
                     if b or (not self.args.allow_ugliness and u):
                         self.explain (c)

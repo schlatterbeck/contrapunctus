@@ -281,7 +281,7 @@ class Check_Melody_Avoid_Eighth_Jump (Check_Melody_Interval):
 
             # Check if followed by jump
             # 1/8 never has a bind to the next note
-            assert not self.bind
+            assert not self.current.bind
             if current.next and current.next.is_tone:
                 next_interval = abs \
                     (current.next.halftone.offset - current.halftone.offset)
