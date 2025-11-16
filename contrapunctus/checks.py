@@ -721,6 +721,85 @@ class Check_Harmony_Akzentparallelen (Check_Harmony_Interval):
 
 # end class Check_Harmony_Akzentparallelen
 
+class Check_Harmony_Nachschlagende_Parallelen (Check_Harmony_Interval):
+    """ Check for nachschlagende Parallelen (also called Klapperoktaven).
+        These are parallels of perfect consonant intervals (unisons, fifths,
+        and octaves) that occur when one voice moves from an unaccented beat
+        to an accented beat, creating parallel motion into perfect consonances.
+
+        Kontrapunkt im Selbststudium und Unterricht, Thomas Krämer, 2012, p. 108
+    """
+
+    def __init__ (self, desc, badness = 0, ugliness = 0):
+        # Perfect consonant intervals: unison, fifth, octave
+        # (reduced to within octave because we set octave = True)
+        intervals = {0, 7}
+        super ().__init__ (desc, intervals, badness, ugliness, octave = True)
+        self.reset ()
+    # end def __init__
+
+    def _check (self, cf_obj, cp_obj):
+        """ Check for nachschlagende parallels from weak to strong beats """
+        assert cf_obj.overlaps (cp_obj)
+
+        # Only check on weak beats
+        strong_beats = {0, 8}
+        if cp_obj.offset in strong_beats:
+            return False
+
+        # Need both to be tones
+        if not cf_obj.is_tone or not cp_obj.is_tone:
+            return False
+
+        # Calculate current interval using parent's method with octave reduction
+        current_interval = self.compute_interval (cf_obj, cp_obj)
+        if current_interval is None:
+            return False
+
+        # Only check perfect consonant intervals (0=unison, 7=fifth)
+        if current_interval not in self.interval:
+            return False
+
+        # Need next tone, we take the current note length and add twice
+        # that length. If that note that starts there is the same
+        # interval the check is positive.
+
+        duration = cp_obj.duration
+        if duration not in {4, 8}:
+            return False
+        next_offset = cp_obj.offset + 8
+        bar = cp_obj.bar
+        while (bar.duration <= next_offset):
+            next_offset -= bar.duration
+            bar = bar.next
+            if not bar:
+                return False
+        next_cp = bar.by_offset (next_offset)
+        next_cf = cf_obj.bar.get_by_offset (next_cp)
+
+        if not next_cf or not next_cp:
+            return False
+        if not next_cf.is_tone or not next_cp.is_tone:
+            return False
+
+        # Previous interval must also be a perfect consonance
+        next_interval = self.compute_interval (next_cf, next_cp)
+        if next_interval is None or next_interval not in self.interval:
+            return False
+
+        # Check that we have the same type of perfect consonance
+        if current_interval != next_interval:
+            return False
+
+        return True
+    # end def _check
+
+    def reset (self):
+        pass
+    # end def reset
+
+# end class Check_Harmony_Nachschlagende_Parallelen
+
 class Harmony_Exception:
     """ Base class for exceptions to harmony rules.
         An exception can override a harmony check under certain conditions.
@@ -887,14 +966,14 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
         must be consonances and one or two can be dissonances. The first
         and fifth tones must fall on strong beats and must be consonances.
         The sequence has a fixed order.
-        
+
         Descending form: first tone is higher than the last
         step down, third down, step up, step up
         Ascending form: first tone is lower than the last
         step up, third up, step down, step down
 
         Note that for note_length 6: Only the first tone may be 6 long.
-        
+
         From Schoenberg's "Harmonielehre" p. 42
         Zweite stehende Formel: Die Cambiata
     """
@@ -931,8 +1010,8 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
         tones = []
         current = cp_obj
         tones.append (current)
-        
-        # Go forward 4 tones  
+
+        # Go forward 4 tones
         for _ in range (4):
             if current.next and current.next.is_tone:
                 current = current.next
@@ -956,7 +1035,7 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
         # Check if first and last tones are on strong beats
         first_tone = tones [0]
         last_tone = tones [4]
-        
+
         # Strong beats are typically at offset 0 and 8 in a 8/4 measure
         strong_beats = {0, 4, 8, 12}
         if first_tone.offset not in strong_beats:
@@ -1004,7 +1083,7 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
                     # first and last must be consonances
                     if n == 0 or n == 4:
                         return False
-        
+
         # Allow if we have at most 2 dissonances (and at least one)
         if 0 < dissonance_count <= 2:
             return True
@@ -1381,9 +1460,14 @@ magi_harmony_checks = \
         , ugliness = 0.1
         )
     , Check_Harmony_Akzentparallelen
-        ( "2.1.9: Avoid Akzentparallelen"
+        ( "Avoid Akzentparallelen"
           " (accent parallels of perfect consonances)"
         , badness = 5.0
+        )
+    , Check_Harmony_Nachschlagende_Parallelen
+        ( "Avoid nachschlagende Parallelen (Klapperoktaven)"
+          " - parallels from weak to strong beats"
+        , badness = 4.0
         )
     ]
 

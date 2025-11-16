@@ -1090,6 +1090,13 @@ class Bar:
         return other
     # end def copy
 
+    def by_offset (self, offset):
+        assert offset < self.duration
+        pos = bisect_right (self.objects, offset, key = lambda x: x.offset) - 1
+        assert pos >= 0
+        return self.objects [pos]
+    # end def by_offset
+
     def get_by_offset (self, bar_object):
         """ Get a bar object matching another bar_object
             The intended use is for locating the bar_object which occurs
@@ -1103,9 +1110,7 @@ class Bar:
         offset = bar_object.offset
         if not len (bar.objects):
             return None
-        pos = bisect_right (bar.objects, offset, key = lambda x: x.offset) - 1
-        assert pos >= 0
-        return bar.objects [pos]
+        return bar.by_offset (offset)
     # end def get_by_offset
 
     def transpose (self, steps, key = 'C'):

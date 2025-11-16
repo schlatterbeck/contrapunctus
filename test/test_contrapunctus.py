@@ -1352,7 +1352,8 @@ class Test_Contrapunctus:
          V:1 clef=bass
          [V:1] z4 D4- | D4 C4 | D4 d4 | c4 e4- | e4 d4 | c4 B4- |
                B4 A4- | A4 E4 | D8 |
-         [V:2] D8 | C8 | B,8 | E8 | D8 | E8 | D8 | C8 | D8 |
+         [V:2] D8     | C8    | B,8   | E8     | D8    | E8     |
+               D8     | C8    | D8 |
          """
         ).strip ().split ('\n')
     klapperoktave_tune = Tune.from_iterator (klapperoktave_abc)
@@ -1381,8 +1382,20 @@ class Test_Contrapunctus:
         expect = (0, 0, 10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0)
         for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
             b, u = check.check (cfo, cpo)
-            assert (b == exp), str (n)
+            assert (b == exp)
     # end def test_klapperoktave_sekund
+
+    def test_klapperoktave_nachschlagend (self):
+        check = checks.Check_Harmony_Nachschlagende_Parallelen \
+            ( 'Nachschlagende Parallele'
+            , badness = 10.0
+            )
+        tune = self.klapperoktave_tune
+        expect = (0, 10, 0, 0, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0, 0, 0)
+        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+            b, u = check.check (cfo, cpo)
+            assert (b == exp), str (n)
+    # end def test_klapperoktave_nachschlagend
 
     def generic_exception_harmony_passing_tone (self, abc, expect):
         """ Test the Exception_Harmony_Passing_Tone class
