@@ -1694,6 +1694,7 @@ class Test_Contrapunctus:
              """
             ).strip ().split ('\n')
         expect = (0, 0, 10, 0, 0, 10, 0, 0, 10, 0, 0, 0)
+        # There is still a '10' because it is not on a strong beat
         exp2   = (0, 0,  0, 0, 0, 10, 0, 0,  0, 0, 0, 0)
         self.generic_exception_suspension (abc_notation, expect, exp2)
     # end def test_exception_suspension

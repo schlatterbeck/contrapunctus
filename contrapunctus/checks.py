@@ -1136,7 +1136,10 @@ class Exception_Harmony_Suspension (Harmony_Exception):
             return False
 
         # Step 1: Check consonant preparation
-        if not self._check_consonant_preparation (parent, cf_obj, cp_obj):
+        chk = self._check_consonant_preparation
+        if not (  chk (parent, cf_obj, cp_obj, False)
+               or chk (parent, cf_obj, cp_obj, True)
+               ):
             return False
 
         # Step 2: Check that dissonance occurs when other voice moves
@@ -1172,35 +1175,42 @@ class Exception_Harmony_Suspension (Harmony_Exception):
         return False
     # end def _check_voice_leading_rules
 
-    def _check_consonant_preparation (self, parent, cf_obj, cp_obj):
+    def _check_consonant_preparation (self, parent, cf_obj, cp_obj, use_cf):
         """ Step 1: Check that the suspension tone was introduced consonantly
             and held for at least a half note
         """
-        # Check the *previous* interval: The cp_obj must be the same
+        # Ether the CP or the CF changes and the other is kept equal
+        tone = cp_obj
+        if use_cf:
+            tone = cf_obj
+        # Check the *previous* interval: The tone must be the same
         # halftone.
-        prev_cp = parent.prev_interval [1]
-        if not prev_cp or not prev_cp.is_tone:
+        prev_tone = parent.prev_interval [(use_cf + 1) % 2]
+        if not prev_tone or not prev_tone.is_tone:
             return False
 
         # Must be the same pitch (tied or repeated)
-        if prev_cp.halftone != cp_obj.halftone:
+        if prev_tone.halftone != tone.halftone:
             return False
 
-        # The prev_cp must either be the same as cp_obj or bound to it
-        if prev_cp is not cp_obj and not prev_cp.bind:
+        # The prev_tone must either be the same as tone or bound to it
+        if prev_tone is not tone and not prev_tone.bind:
             return False
 
         # Must be at least a half note duration for preparation
-        if prev_cp.length < 4:
+        if prev_tone.length < 4:
             return False
 
         # Find the corresponding CF tone for the preparation
-        prev_cf = parent.prev_interval [0]
-        if not prev_cf or not prev_cf.is_tone:
+        prev_other = parent.prev_interval [use_cf]
+        if not prev_other or not prev_other.is_tone:
             return False
 
         # The preparation must be consonant
-        prep_interval = parent.compute_interval (prev_cf, prev_cp)
+        if use_cf:
+            prep_interval = parent.compute_interval (prev_tone, prev_other)
+        else:
+            prep_interval = parent.compute_interval (prev_other, prev_tone)
         if prep_interval is None:
             return False
 
