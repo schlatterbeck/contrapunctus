@@ -392,12 +392,12 @@ class Contrapunctus:
                 last_cp_obj = cp_obj
                 for check in self.melody_checks_cp:
                     b, u = check.check (cp_obj)
-                    bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
+                    bsum += b * len (cp_obj) ** 2
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
                     self.explain (check)
             for check in self.harmony_checks:
                 b, u = check.check (cf_obj, cp_obj)
-                bsum += b * len (cp_obj) ** 2 / cp_obj.bar.unit
+                bsum += b * len (cp_obj) ** 2
                 usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
                 self.explain (check)
 
