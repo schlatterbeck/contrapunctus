@@ -836,7 +836,7 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
     def __init__ \
         ( self, interval
         , octave         = True
-        , note_length    = (2,)
+        , note_length    = (1, 2)
         , bar_position   = None
         ):
         super ().__init__ (interval)
@@ -848,7 +848,6 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
     def applies (self, parent, cf_obj, cp_obj):
         assert cf_obj.overlaps (cp_obj)
 
-        # Check if it's a dissonance that this exception handles
         d = parent.compute_interval (cf_obj, cp_obj)
         if d is None or d not in self.interval:
             return False
@@ -869,17 +868,17 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
 
         prev_interval = abs \
             (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
-        if prev_interval > 2:
+        if prev_interval > 2 or prev_interval == 0:
             return False
 
-        # Check if left by step in same direction
+        # Check if left by step
         n_cp_obj = cp_obj.next
         if not n_cp_obj or not n_cp_obj.is_tone:
             return False
 
         next_interval = abs \
             (n_cp_obj.halftone.offset - cp_obj.halftone.offset)
-        if next_interval > 2:
+        if next_interval > 2 or next_interval == 0:
             return False
 
         # Check direction
@@ -920,7 +919,6 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
     def applies (self, parent, cf_obj, cp_obj):
         assert cf_obj.overlaps (cp_obj)
 
-        # Check if it's a dissonance that this exception handles
         d = parent.compute_interval (cf_obj, cp_obj)
         if d is None or d not in self.interval:
             return False
@@ -949,14 +947,14 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
         # Both intervals must be steps (1 or 2 semitones)
         if abs (prev_interval) <= 2 and abs (next_interval) <= 2:
             # Wechselnote: step away and back
-            # (opposite directions, return to same or nearby tone)
+            # (opposite directions, return to same tone)
             if  (   sgn (prev_interval) != sgn (next_interval)
                 and prev_interval != 0 and next_interval != 0
                 ):
-                # Check if we return to the same tone or close to it
+                # Check if we return to the same tone
                 total_movement = abs \
                     (p_cp_obj.halftone.offset - n_cp_obj.halftone.offset)
-                if total_movement <= 2:  # Returns to same or nearby tone
+                if total_movement == 0:  # Returns to same tone
                     return True
 
         return False
