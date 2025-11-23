@@ -554,6 +554,19 @@ class Bar_Object:
     __repr__ = __str__
 
     @property
+    def end_idx (self):
+        """ tuple of bar index and bar-object offset pointing to end of
+            current tone *including* bindings
+        """
+        obj = self
+        while obj.bind:
+            obj = obj.next
+        offset = obj.offset + obj.duration
+        assert offset <= obj.bar.duration
+        return (obj.bar.idx, offset)
+    # end def end_idx
+
+    @property
     def fract_len (self):
         try:
             unit = self.bar.voice.tune.unit
@@ -641,6 +654,15 @@ class Bar_Object:
         return False
     # end def is_last
 
+    @property
+    def is_last_with_bind (self):
+        if self.is_last:
+            return True
+        if self.bind and self.next.is_last:
+            return True
+        return False
+    # end def is_last_with_bind
+
     def copy (self):
         return self.__class__ (self.duration)
     # end def copy
@@ -673,8 +695,9 @@ class Bar_Object:
             return True
         if self.bind and self.next and self.next.overlaps (other):
             return True
-        if other.is_bound and other.prev and self.overlaps (other.prev):
+        if other.bind and other.next and self.overlaps (other.next):
             return True
+        return False
     # end def overlaps_with_bind
 
     def register (self, bar, offset, idx):
@@ -1503,15 +1526,16 @@ class Tune:
             Everytime a tone changes a different tuple is returned.
         """
         objs = [v.bars [0].objects [0] for v in self.voices]
-        idx  = [(o.bar.idx, o.offset + o.length) for o in objs]
+        idx  = [o.end_idx for o in objs]
         yield tuple (objs)
-        while sum (o.is_last for o in objs) < len (objs):
+        while sum (o.is_last_with_bind for o in objs) < len (objs):
+            # Note that argmin doesn't work here, multiple idx might match
             midx = min (idx)
             for n, i in enumerate (idx):
                 if i == midx:
-                    assert objs [n].next is not None
-                    objs [n] = o = objs [n].next
-                    idx  [n] = (o.bar.idx, o.offset + o.duration)
+                    assert objs [n].next_with_bind is not None
+                    objs [n] = o = objs [n].next_with_bind
+                    idx  [n] = o.end_idx
             yield tuple (objs)
     # end def voices_iter
 

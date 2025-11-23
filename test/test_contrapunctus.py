@@ -222,6 +222,69 @@ class Test_Contrapunctus:
         assert ''.join (tones) == 'g1 f1 e1 d1 c1 b1 a1 '
     # end def test_prev
 
+    def generic_tune_iter (self, abc, expect):
+        """ Test iteration over two voices
+        """
+        tune   = Tune.from_iterator (abc)
+        result = []
+        for r in tune.voices_iter ():
+            res = []
+            for v in r:
+                if v.is_tone:
+                    v = str (v.halftone)
+                else:
+                    v = 'Z'
+                res.append (v)
+            result.append (tuple (reversed (res)))
+            assert (r [0].overlaps_with_bind (r [1]))
+        assert result == expect
+    # end def generic_tune_iter
+
+    def test_tune_iter (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] z8  | D8- | D4 C4 | B4 A,4- | A,4 D4- | D4 ^C4 | D8- | D8  |
+             [V:2] D,8 | D,8 | E,8   | G,8     | F,8     | E,8    | D,8-| D,8 |
+             """
+            ).strip ().split ('\n')
+        expect = \
+            [ ('Z', 'D,'), ('D', 'D,'),  ('D', 'E,'),  ('C', 'E,')
+            , ('B', 'G,'), ('A,', 'G,'), ('A,', 'F,'), ('D', 'F,')
+            , ('D', 'E,'), ('^C', 'E,'), ('D', 'D,')
+            ]
+        self.generic_tune_iter (abc_notation, expect)
+    # end def test_tune_iter
+
+    def test_tune_iter_2 (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] z8   | D8- | D4 C4- | C4 B,4 | A,4 D4- | D4 ^C4 | D8- | D8  |
+             [V:2] D,8- | D,8 | E,8    | G,8    | F,8     | E,8    | D,8-| D,8 |
+             """
+            ).strip ().split ('\n')
+        expect = \
+            [ ('Z', 'D,'), ('D', 'D,'),  ('D', 'E,'),  ('C', 'E,')
+            , ('C', 'G,'), ('B,', 'G,'), ('A,', 'F,'), ('D', 'F,')
+            , ('D', 'E,'), ('^C', 'E,'), ('D', 'D,')
+            ]
+        self.generic_tune_iter (abc_notation, expect)
+    # end def test_tune_iter_2
+
+
     def test_check_harmony_interval_max (self):
         check = checks.Check_Harmony_Interval_Max \
             ('must be up', maximum = 12, badness = 1)
@@ -1667,8 +1730,15 @@ class Test_Contrapunctus:
             )
 
         tune = Tune.from_iterator (abc)
-        for exp, (cfo, cpo) in zip (expect, tune.voices_iter ()):
+        itr  = enumerate (zip (expect, tune.voices_iter ()))
+        for n, (exp, (cfo, cpo)) in itr:
             b, u = check.check (cfo, cpo)
+            print (b, exp, end = ' ')
+            for v, e in (cpo, ' '), (cfo, '\n'):
+                if v.is_tone:
+                    print (v.halftone, end = e)
+                else:
+                    print ('pause', end = e)
             assert (b == exp), str (n)
 
         # Now with exception
@@ -1698,6 +1768,44 @@ class Test_Contrapunctus:
         exp2   = (0, 0,  0, 0, 0, 10, 0, 0,  0, 0, 0, 0)
         self.generic_exception_suspension (abc_notation, expect, exp2)
     # end def test_exception_suspension
+
+    def test_exception_suspension_2 (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] z8   | D8- | D4 C4- | C4 B,4 | A,4 D4- | D4 ^C4 | D8- | D8  |
+             [V:2] D,8- | D,8 | E,8    | G,8    | F,8     | E,8    | D,8-| D,8 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 0, 10, 0, 10, 0,  0, 0, 10, 0, 0, 0)
+        exp2   = (0, 0,  0, 0,  0, 0,  0, 0,  0, 0, 0, 0)
+        self.generic_exception_suspension (abc_notation, expect, exp2)
+    # end def test_exception_suspension_2
+
+    def test_exception_suspension_3 (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:4/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] z8   | D8- | D4 C4- | C4 B,4 | A,4 D4- | D4 ^C4 | D8- | D8  |
+             [V:2] D,8- | D,8 | E,8    | G,8-   | G,4 F,4 | E,8    | D,8-| D,8 |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 0, 10, 0, 10, 0, 10, 0, 10, 0, 0, 0)
+        exp2   = (0, 0,  0, 0,  0, 0, 10, 0,  0, 0, 0, 0)
+        self.generic_exception_suspension (abc_notation, expect, exp2)
+    # end def test_exception_suspension_2
 
 # end class Test_Contrapunctus
 

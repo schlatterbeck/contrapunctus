@@ -473,7 +473,7 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
     def _check (self, cf_obj, cp_obj):
         """ We check the first two objects *which are not a Pause*
         """
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
         if cf_obj.is_pause or cp_obj.is_pause:
             return False
         cpp = self.is_first_non_pause (cp_obj)
@@ -563,7 +563,7 @@ class Check_Melody_Jump_2 (Check_Harmony):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
         self.cp_obj = cp_obj
         self.cf_obj = cf_obj
         p_cp_obj    = cp_obj.prev
@@ -611,7 +611,7 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
             current time (i.e. the *latest* prev object), otherwise we
             do not correctly determine a movement.
         """
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
         p_cp_obj = cp_obj.prev_with_bind
         p_cf_obj = cf_obj.prev_with_bind
         if not p_cp_obj and not p_cf_obj:
@@ -689,7 +689,7 @@ class Check_Harmony_Akzentparallelen (Check_Harmony_Interval):
 
     def _check (self, cf_obj, cp_obj):
         """ Check for accent parallels between strong beats across measures """
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
 
         # Only check on strong beats (offset 0 in a bar)
         if cf_obj.offset != 0 or cp_obj.offset != 0:
@@ -746,7 +746,7 @@ class Check_Harmony_Nachschlagende_Parallelen (Check_Harmony_Interval):
 
     def _check (self, cf_obj, cp_obj):
         """ Check for nachschlagende parallels from weak to strong beats """
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
 
         # Only check on weak beats
         strong_beats = {0, 8}
@@ -848,7 +848,7 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
     # end def __init__
 
     def applies (self, parent, cf_obj, cp_obj):
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
 
         d = parent.compute_interval (cf_obj, cp_obj)
         if d is None or d not in self.interval:
@@ -919,7 +919,7 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
     # end def __init__
 
     def applies (self, parent, cf_obj, cp_obj):
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
 
         d = parent.compute_interval (cf_obj, cp_obj)
         if d is None or d not in self.interval:
@@ -1002,7 +1002,7 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
     def check_cambiata (self, parent, cf_obj, cp_obj):
         """ We assume that we're called with the *first* tone of the cambiata
         """
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
 
         # Check if it's a tone
         d = parent.compute_interval (cf_obj, cp_obj)
@@ -1116,7 +1116,7 @@ class Exception_Harmony_Suspension (Harmony_Exception):
     # end def __init__
 
     def applies (self, parent, cf_obj, cp_obj):
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
 
         # Check if it's a dissonance that this exception handles
         d = parent.compute_interval (cf_obj, cp_obj)
@@ -1126,7 +1126,12 @@ class Exception_Harmony_Suspension (Harmony_Exception):
         # Must be on a strong beat (heavy half note position)
         # Strong beats are at offset 0 and 8 in a 4/4 measure
         strong_beats = {0, 8}
-        if cp_obj.offset not in strong_beats:
+
+        # The current location is the maximum of both combined offsets
+        cp_off = (cp_obj.bar.idx, cp_obj.offset)
+        cf_off = (cf_obj.bar.idx, cf_obj.offset)
+        maxoff = max (cp_off, cf_off)
+        if maxoff [1] not in strong_beats:
             return False
 
         # Must be at least a half note (minima) duration
