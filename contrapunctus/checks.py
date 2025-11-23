@@ -150,7 +150,7 @@ class Check_Melody (Check):
             current = self.current
         if current is None:
             return
-        prev = current.prev
+        prev = current.prev_with_bind
         if not prev or not current.is_tone or not prev.is_tone:
             return
         d = current.halftone.offset - prev.halftone.offset
@@ -171,17 +171,19 @@ class Check_Melody (Check):
             return False
         if self.note_length and current.length not in self.note_length:
             return False
-        if self.next_length and self.next:
-            if self.next.length not in self.next_length:
+        if self.next_length and self.next_with_bind:
+            if self.next_with_bind.length not in self.next_length:
                 return False
-            if self.next2_length and self.next.next:
-                if self.next.next.length not in self.next2_length:
+            nn = self.next_with_bind.next_with_bind
+            if self.next2_length and nn:
+                if nn.length not in self.next2_length:
                     return False
         if self.prev_length and self.prev:
-            if self.prev.length not in self.prev_length:
+            if self.prev_length.length not in self.prev_length:
                 return False
-            if self.prev2_length and self.prev.prev:
-                if self.prev.prev.length not in self.prev2_length:
+            pp = self.prev_with_bind.prev_with_bind
+            if self.prev2_length and pp:
+                if pp.length not in self.prev2_length:
                     return False
         return True
     # end def timing_check
@@ -202,11 +204,11 @@ class Check_Melody_Interval (Check_Melody):
         if d is not None and d in self.interval:
             return True
         if self.next_interval:
-            d = self.compute_interval (self.next)
+            d = self.compute_interval (self.next_with_bind)
             if d is not None and d in self.next_interval:
                 return True
         if self.prev_interval:
-            d = self.compute_interval (self.prev)
+            d = self.compute_interval (self.prev_with_bind)
             if d is not None and d in self.prev_interval:
                 return True
     # end def _check
@@ -445,7 +447,7 @@ class Check_Harmony_Interval (Check_Harmony):
     # end def check_exceptions
 
     def compute_interval (self, cf_obj, cp_obj):
-        assert cf_obj.overlaps (cp_obj)
+        assert cf_obj.overlaps_with_bind (cp_obj)
         self.cf_obj = cf_obj
         self.cp_obj = cp_obj
         if not cf_obj.is_tone or not cp_obj.is_tone:
@@ -503,7 +505,7 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
                     return True
                 if p_obj.bar.idx == bar.idx and p_obj.offset <= offset:
                     return True
-            p_obj = p_obj.prev
+            p_obj = p_obj.prev_with_bind
             # Happens only during testing/searching when the previous
             # bar has no objects:
             if p_obj is None:
@@ -610,8 +612,8 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
             do not correctly determine a movement.
         """
         assert cf_obj.overlaps (cp_obj)
-        p_cp_obj = cp_obj.prev
-        p_cf_obj = cf_obj.prev
+        p_cp_obj = cp_obj.prev_with_bind
+        p_cf_obj = cf_obj.prev_with_bind
         if not p_cp_obj and not p_cf_obj:
             return False
         if not p_cp_obj:
@@ -862,7 +864,7 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
                 return False
 
         # Check if reached by step
-        p_cp_obj = cp_obj.prev
+        p_cp_obj = cp_obj.prev_with_bind
         if not p_cp_obj or not p_cp_obj.is_tone or not cp_obj.is_tone:
             return False
 
@@ -872,7 +874,7 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
             return False
 
         # Check if left by step
-        n_cp_obj = cp_obj.next
+        n_cp_obj = cp_obj.next_with_bind
         if not n_cp_obj or not n_cp_obj.is_tone:
             return False
 
@@ -933,8 +935,8 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
             return False
 
         # Need previous and next tones to check melodic pattern
-        p_cp_obj = cp_obj.prev
-        n_cp_obj = cp_obj.next
+        p_cp_obj = cp_obj.prev_with_bind
+        n_cp_obj = cp_obj.next_with_bind
         if not p_cp_obj or not n_cp_obj:
             return False
         # If anything is a pause we don't need to check further
@@ -988,7 +990,7 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
     def applies (self, parent, cf_obj, cp_obj):
         current = cp_obj
         for k in range (3):
-            current = current.prev
+            current = current.prev_with_bind
             if current is None:
                 return False
             cfo  = cf_obj.bar.get_by_offset (current)
@@ -1015,7 +1017,7 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
 
         # Go forward 4 tones
         for _ in range (4):
-            if current.next and current.next.is_tone:
+            if current.next_with_bind and current.next_with_bind.is_tone:
                 current = current.next
                 tones.append (current)
             else:
@@ -1223,7 +1225,7 @@ class Exception_Harmony_Suspension (Harmony_Exception):
         """ Step 3: Check stepwise downward resolution to consonance
             on the next weak beat
         """
-        next_cp = cp_obj.next
+        next_cp = cp_obj.next_with_bind
         if not next_cp or not next_cp.is_tone:
             return False
 

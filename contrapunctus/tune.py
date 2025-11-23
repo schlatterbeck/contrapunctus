@@ -540,7 +540,6 @@ class Bar_Object:
         if self.is_bound:
             return len (self.prev)
         if self.bind:
-            assert self.next and isinstance (self.next.duration, int)
             return self.duration + self.next.duration
         return self.duration
     # end def __len__
@@ -592,13 +591,19 @@ class Bar_Object:
             if self.bar.next is None or not self.bar.next.objects:
                 return None
             obj = self.bar.next.objects [0]
-            if obj.is_bound:
-                return obj.next
             return obj
         else:
             assert not self.bind
             return self._next
     # end def next
+
+    @property
+    def next_with_bind (self):
+        n = self.next
+        if n and n.is_bound:
+            return n.next
+        return n
+    # end def next_with_bind
 
     @property
     def prev (self):
@@ -608,12 +613,18 @@ class Bar_Object:
             if self.bar.prev is None or not self.bar.prev.objects:
                 return None
             obj = self.bar.prev.objects [-1]
-            if obj.bind:
-                return obj.prev
             return obj
         else:
             return self._prev
     # end def prev
+
+    @property
+    def prev_with_bind (self):
+        p = self.prev
+        if p and p.bind:
+            return p.prev
+        return p
+    # end def prev_with_bind
 
     @property
     def is_first (self):
@@ -654,6 +665,17 @@ class Bar_Object:
             return True
         return False
     # end def overlaps
+
+    def overlaps_with_bind (self, other):
+        """ Same as above but *with* bindings
+        """
+        if self.overlaps (other):
+            return True
+        if self.bind and self.next and self.next.overlaps (other):
+            return True
+        if other.is_bound and other.prev and self.overlaps (other.prev):
+            return True
+    # end def overlaps_with_bind
 
     def register (self, bar, offset, idx):
         assert self.offset is None
