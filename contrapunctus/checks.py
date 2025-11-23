@@ -830,7 +830,7 @@ class Harmony_Exception:
 class Exception_Harmony_Passing_Tone (Harmony_Exception):
     """ If a note is reached by step and left by step in the *same*
         direction, it can be a dissonance as long as it's on a weak
-        beat. Exception: hard passing tone (half-strong).
+        beat. Exception: passus irregularis (half-strong).
         From: Zweistimmiger Kontrapunkt -- Ein Lehrgang in 30 Lektionen,
         Thomas Daniel, 2002, S. 112-120.
     """
@@ -838,7 +838,7 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
     def __init__ \
         ( self, interval
         , octave         = True
-        , note_length    = (1, 2)
+        , note_length    = (1, 2, 4)
         , bar_position   = None
         ):
         super ().__init__ (interval)
@@ -862,6 +862,20 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
         if self.bar_position is not None:
             if cp_obj.offset not in self.bar_position:
                 return False
+
+        #MAGGI: check if it's a weak or semistrong (passus irregularis) beat:
+        #if note_length == 2
+        #and bar_position == (3,5,7,11,13,15)
+        #elif note_length == 4
+        #and bar_position == (5,13)
+        #elif note_length == 1
+        #and bar_position == (2,4,6,8,10,12,14,16)
+        #return True
+        if not (note_length == 2 and bar_position == (3,5,7,11,13,15)):
+            if not (note_length == 4 and bar_position == (5,9,13)):
+                if not (note_length == 1 and bar_position == (2,3,4,6,7,8,10,11,12,14,15,16)):
+                    return False
+
 
         # Check if reached by step
         p_cp_obj = cp_obj.prev_with_bind
@@ -890,6 +904,8 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
         if prev_dir != next_dir:
             return False
 
+        #MAGGI: Both intervals, p and n need to be consonants!
+
         # If we got here, it's a valid passing tone exception
         return True
     # end def applies
@@ -910,7 +926,7 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
         ( self, interval
         , octave       = True
         , note_length  = (1, 2)  # eighth and quarter notes typically
-        , bar_position = None    # weak beats only
+        , bar_position = None
         ):
         super ().__init__ (interval)
         self.octave       = octave
@@ -930,7 +946,18 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
             if cp_obj.offset not in self.bar_position:
                 return False
 
-        # Check note length (typically short ornamental notes)
+        #MAGGI: check if it's a weak beat:
+        #if note_length == 2
+        #and bar_position == (3,7,11,15)
+        #elif note_length == 1
+        #and bar_position == (2,4,6,8,10,12,14,16)
+        #return True
+
+        if not (note_length == 2 and bar_position == (3,7,11,15)):
+            if not (note_length == 1 and bar_position == (2,4,6,8,10,12,14,16)):
+                return False
+
+        # Check note length (typically short and ornamental)
         if cp_obj.length not in self.note_length:
             return False
 
@@ -958,6 +985,8 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
                     (p_cp_obj.halftone.offset - n_cp_obj.halftone.offset)
                 if total_movement == 0:  # Returns to same tone
                     return True
+
+        #MAGGI: Both intervals, p and n need to be consonants!
 
         return False
     # end def applies
@@ -1118,7 +1147,6 @@ class Exception_Harmony_Suspension (Harmony_Exception):
     def applies (self, parent, cf_obj, cp_obj):
         assert cf_obj.overlaps (cp_obj)
 
-        # Check if it's a dissonance that this exception handles
         d = parent.compute_interval (cf_obj, cp_obj)
         if d is None or d not in self.interval:
             return False
