@@ -1294,7 +1294,7 @@ passing_tone_exceptions = \
         ( interval       = (1, 2, 5, 6, 10, 11)
         , octave         = True
         , note_length    = (4,)
-        , bar_position   = (4, 12)
+        , bar_position   = (4, 8, 12)
         )
     , Exception_Harmony_Passing_Tone
         ( interval       = (1, 2, 5, 6, 10, 11)
@@ -1306,28 +1306,21 @@ passing_tone_exceptions = \
         ( interval       = (1, 2, 5, 6, 10, 11)
         , octave         = True
         , note_length    = (1,)
-        , bar_position   = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
-        )
-    , Exception_Harmony_Wechselnote
-        ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
-        , octave         = True
-        , note_length    = (4,)  # half notes
-        # half-weak beats
-        , bar_position   = (4, 12)
+        , bar_position   = (1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15)
         )
     , Exception_Harmony_Wechselnote
         ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
         , octave         = True
         , note_length    = (2,)  # quarter notes
         # weak beats:
-        , bar_position   = (2, 4, 6, 10, 12, 14)
+        , bar_position   = (2, 6, 10, 14)
         )
     , Exception_Harmony_Wechselnote
         ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
         , octave         = True
         , note_length    = (1,)  # eighth notes
         # weak beats:
-        , bar_position   = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
+        , bar_position   = (1, 3, 5, 7, 9, 11, 13, 15)
         )
     , Exception_Harmony_Cambiata
         ( interval       = (1, 2, 5, 6, 10, 11)  # dissonances
