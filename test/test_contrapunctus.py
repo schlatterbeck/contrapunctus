@@ -648,7 +648,8 @@ class Test_Contrapunctus:
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         log  = 'test/search_de_cf_haenschen.data'
         abc  = 'test/search_de_cf_haenschen.abc'
-        args = cmd.parse_args (['-v', '-v', '-b', '-g', log])
+        argv = ['-v', '-v', '-b', '--divide-by-unit', '-g', log]
+        args = cmd.parse_args (argv)
         cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         cp.from_gene ()
         txt  = cp.as_complete_tune ()
@@ -656,7 +657,7 @@ class Test_Contrapunctus:
             abc_content = f.read ()
         assert txt.strip () == abc_content.strip ()
         # roundtrip test, note the missing -b ('best') option
-        args = cmd.parse_args (['-v', '-v', '-g', abc])
+        args = cmd.parse_args (['-v', '-v', '--divide-by-unit', '-g', abc])
         cp   = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
         cp.from_gene ()
         txt = cp.as_complete_tune ()
@@ -1768,27 +1769,29 @@ class Test_Contrapunctus_IO_Slow (Base_Skip_Nonzero):
 
 @pytest.mark.slow
 class Test_Contrapunctus_Slow (PGA_Test_Instrumentation):
+    ev_opt = ['--divide-by-unit']
 
     def test_search_ga (self):
-        args = self.out_options
+        args = self.out_options + self.ev_opt
         gentune_main (args)
         self.compare ()
     # end def test_search_ga
 
     def test_search_ga_cf (self):
-        args = self.out_options + ['-c', 'test/de-1.abc']
+        args = self.out_options + self.ev_opt + ['-c', 'test/de-1.abc']
         gentune_main (args)
         self.compare ()
     # end def test_search_ga_cf
 
     def test_search_de (self):
-        args = self.out_options + ['-R', '9', '--use-de']
+        args = self.out_options + self.ev_opt + ['-R', '9', '--use-de']
         gentune_main (args)
         self.compare ()
     # end def test_search_de
 
     def test_search_de_cf (self):
-        args = self.out_options + ['--use-de', '-c', 'test/de-1.abc']
+        args = self.out_options + self.ev_opt
+        args += ['--use-de', '-c', 'test/de-1.abc']
         gentune_main (args)
         self.compare ()
     # end def test_search_de_cf
@@ -1797,7 +1800,7 @@ class Test_Contrapunctus_Slow (PGA_Test_Instrumentation):
         """ Test with modified Haenschen Klein
         """
         args = '--use-de -c test/h2t.abc --no-cf-feasibility --no-check-cf'
-        args = self.out_options + args.split ()
+        args = self.out_options + self.ev_opt + args.split ()
         gentune_main (args)
         self.compare ()
     # end def test_search_de_cf_haenschen
@@ -1807,7 +1810,7 @@ class Test_Contrapunctus_Slow (PGA_Test_Instrumentation):
             wikipedia page on Kontrapunkt
         """
         args = '--use-de -c test/zacconi.abc --no-cf-feasibility --no-check-cf'
-        args = self.out_options + args.split ()
+        args = self.out_options + self.ev_opt + args.split ()
         gentune_main (args)
         self.compare ()
     # end def test_search_de_cf_zacconi

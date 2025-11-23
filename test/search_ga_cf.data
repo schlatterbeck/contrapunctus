@@ -1,8 +1,9 @@
 Iter #     Field      Value
 10         Best       4.250000e+03
 Command-line options:
---cantus-firmus=+      --pop-size=500         --random-seed=23
---tune-length=12       --verbose              --verbose
+--cantus-firmus=+       --divide-by-unit        --pop-size=500
+--random-seed=23        --tune-length=12        --verbose
+--verbose
 
 Best index: 476: 4.25000000000e+03
 Iter: 10 Evals: 4743
@@ -787,8 +788,9 @@ K: DDor
 The Best Evaluation: 1.800000e+00.
 The Best String:
 Command-line options:
---cantus-firmus=+      --pop-size=500         --random-seed=23
---tune-length=12       --verbose              --verbose
+--cantus-firmus=+       --divide-by-unit        --pop-size=500
+--random-seed=23        --tune-length=12        --verbose
+--verbose
 
 Best index: 0: 1.80000000000e+00
 Iter: 235 Evals: 100383

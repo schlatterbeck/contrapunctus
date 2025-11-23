@@ -1,11 +1,11 @@
 Iter #     Field      Value
 10         Best       1.108080e+13
 Command-line options:
---cantus-firmus=+          --no-cf-feasibility
---no-check-cf              --pop-size=10
---random-seed=23           --tune-length=12
---use-de                   --verbose
---verbose
+--cantus-firmus=+          --divide-by-unit
+--no-cf-feasibility        --no-check-cf
+--pop-size=10              --random-seed=23
+--tune-length=12           --use-de
+--verbose                  --verbose
 
 Best index: 5: 1.10808000000e+13
 Iter: 10 Evals: 110
@@ -29978,11 +29978,11 @@ A2 ^F2 ^F4 |G2 E2 E4 |D2 ^F2 A2 A2 |D8 |
 The Best Evaluation: 6.089000e+03.
 The Best String:
 Command-line options:
---cantus-firmus=+          --no-cf-feasibility
---no-check-cf              --pop-size=10
---random-seed=23           --tune-length=12
---use-de                   --verbose
---verbose
+--cantus-firmus=+          --divide-by-unit
+--no-cf-feasibility        --no-check-cf
+--pop-size=10              --random-seed=23
+--tune-length=12           --use-de
+--verbose                  --verbose
 
 Best index: 0: 6.08900000000e+03
 Iter: 9999 Evals: 100000

@@ -392,12 +392,18 @@ class Contrapunctus:
                 last_cp_obj = cp_obj
                 for check in self.melody_checks_cp:
                     b, u = check.check (cp_obj)
-                    bsum += b * len (cp_obj) ** 2
+                    b = b * len (cp_obj) ** 2
+                    if self.args.divide_by_unit:
+                        b /= cp_obj.bar.unit
+                    bsum += b
                     usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
                     self.explain (check)
             for check in self.harmony_checks:
                 b, u = check.check (cf_obj, cp_obj)
-                bsum += b * len (cp_obj) ** 2
+                b = b * len (cp_obj) ** 2
+                if self.args.divide_by_unit:
+                    b /= cp_obj.bar.unit
+                bsum += b
                 usum += u * len (cp_obj) ** 2 / cp_obj.bar.unit
                 self.explain (check)
 
@@ -966,6 +972,11 @@ def contrapunctus_cmd (argv = None):
         , help    = "Differential Evolution variant, default=%(default)s"
         , default = 'best'
         , choices = ('best', 'rand', 'either-or')
+        )
+    cmd.add_argument \
+        ( "--divide-by-unit"
+        , help    = "Divide by bar.unit when evaluating badness"
+        , action  = 'store_true'
         )
     cmd.add_argument \
         ( "--do-not-fix-gene"

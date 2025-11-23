@@ -1,11 +1,11 @@
 Iter #     Field      Value
 10         Best       9.971469e+17
 Command-line options:
---cantus-firmus=+          --no-cf-feasibility
---no-check-cf              --pop-size=10
---random-seed=23           --tune-length=12
---use-de                   --verbose
---verbose
+--cantus-firmus=+          --divide-by-unit
+--no-cf-feasibility        --no-check-cf
+--pop-size=10              --random-seed=23
+--tune-length=12           --use-de
+--verbose                  --verbose
 
 Best index: 2: 9.97146881104e+17
 Iter: 10 Evals: 110
@@ -43964,11 +43964,11 @@ K: DDor
 The Best Evaluation: 8.750000e+00.
 The Best String:
 Command-line options:
---cantus-firmus=+          --no-cf-feasibility
---no-check-cf              --pop-size=10
---random-seed=23           --tune-length=12
---use-de                   --verbose
---verbose
+--cantus-firmus=+          --divide-by-unit
+--no-cf-feasibility        --no-check-cf
+--pop-size=10              --random-seed=23
+--tune-length=12           --use-de
+--verbose                  --verbose
 
 Best index: 1: 8.75000000000e+00
 Iter: 9999 Evals: 100000
