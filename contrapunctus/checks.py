@@ -31,7 +31,8 @@ class Check:
     """ Super class of all checks
         This gets the description of the check.
     """
-    prefix = ''
+    prefix    = ''
+    lookahead = 0 # how much we look into the future using next
 
     def __init__ (self, desc, badness, ugliness):
         self.desc     = self.msg = desc
@@ -410,14 +411,17 @@ class Check_Harmony_Interval (Check_Harmony):
         self.signed     = signed
         self.not_first  = not_first
         self.not_last   = not_last
+        self.lookahead  = self.lookahead # copy from class
         self.exceptions = []
         self.prev_interval = [None, None]
         # Only keep applicable exceptions
-        for exc in (self.exceptions or []):
+        for exc in (exceptions or []):
             if not exc.interval or not self.interval:
                 self.exceptions.append (exc)
+                self.lookahead = max (self.lookahead, exc.lookahead)
                 continue
             if self.interval.intersection (exc.interval):
+                self.lookahead = max (self.lookahead, exc.lookahead)
                 self.exceptions.append (exc)
         super ().__init__ (desc, badness, ugliness)
     # end def __init__
@@ -735,6 +739,7 @@ class Check_Harmony_Nachschlagende_Parallelen (Check_Harmony_Interval):
 
         Kontrapunkt im Selbststudium und Unterricht, Thomas Krämer, 2012, p. 108
     """
+    lookahead = 8
 
     def __init__ (self, desc, badness = 0, ugliness = 0):
         # Perfect consonant intervals: unison, fifth, octave
@@ -810,6 +815,7 @@ class Harmony_Exception:
     """ Base class for exceptions to harmony rules.
         An exception can override a harmony check under certain conditions.
     """
+    lookahead = 0
 
     def __init__ (self, interval):
         self.interval = set (interval)
@@ -834,6 +840,7 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
         From: Zweistimmiger Kontrapunkt -- Ein Lehrgang in 30 Lektionen,
         Thomas Daniel, 2002, S. 112-120.
     """
+    lookahead = 1
 
     def __init__ \
         ( self, interval
@@ -905,6 +912,7 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
         From: Zweistimmiger Kontrapunkt -- Ein Lehrgang in 30 Lektionen,
         Thomas Daniel, 2002, S. 112-120.
     """
+    lookahead = 1
 
     def __init__ \
         ( self, interval
@@ -981,6 +989,7 @@ class Exception_Harmony_Cambiata (Harmony_Exception):
         From Schoenberg's "Harmonielehre" p. 42
         Zweite stehende Formel: Die Cambiata
     """
+    lookahead = 4
 
     def __init__ ( self, interval, octave = True):
         super ().__init__ (interval)
@@ -1109,6 +1118,7 @@ class Exception_Harmony_Suspension (Harmony_Exception):
 
         Ganter p. 53, 54, Spuller p. 12, 13
     """
+    lookahead = 1
 
     def __init__ (self, interval, octave = True):
         super ().__init__ (interval)
@@ -1266,7 +1276,7 @@ class Exception_Harmony_Suspension (Harmony_Exception):
 # end class Exception_Harmony_Suspension
 
 # Define passing tone exceptions
-passing_tone_exceptions = \
+tone_exceptions = \
     [ Exception_Harmony_Passing_Tone
         ( interval       = (1, 2, 5, 6, 10, 11)
         , octave         = True
@@ -1549,28 +1559,28 @@ magi_harmony_checks = \
         , octave     = False
         , not_first  = True
         , not_last   = True
-        , exceptions = passing_tone_exceptions
+        , exceptions = tone_exceptions
         )
     , Check_Harmony_Interval
         ( "No Sekund"
         , interval = (1, 2)
         , badness  = 10.0
         , octave   = True
-        , exceptions = passing_tone_exceptions
+        , exceptions = tone_exceptions
         )
     , Check_Harmony_Interval \
         ( "Magdalena: 5/6 verboten"
         , interval = (5, 6)
         , badness  = 10.0
         , octave   = True
-        , exceptions = passing_tone_exceptions
+        , exceptions = tone_exceptions
         )
     , Check_Harmony_Interval \
         ( "Magdalena: 10/11 verboten"
         , interval = (10, 11)
         , badness  = 10.0
         , octave   = True
-        , exceptions = passing_tone_exceptions
+        , exceptions = tone_exceptions
         )
     , Check_Harmony_Interval_Max
         ( "Distance between voices should not exceed Duodezime"
