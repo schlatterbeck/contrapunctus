@@ -27,6 +27,12 @@ from .tune    import sgn, Pause
 # Used for default argument when None is a valid value
 DEFAULT_ARG = -1
 
+# Badness in n-th root of 2
+BAD_MAX = 2
+BAD_2   = 2 ** (1/2)
+BAD_4   = 2 ** (1/4)
+BAD_8   = 2 ** (1/8)
+
 class Check:
     """ Super class of all checks
         This gets the description of the check.
@@ -120,6 +126,9 @@ class Check_Melody (Check):
         , prev2_length  = None
         , next_interval = None
         , prev_interval = None
+        , badness_2     = 0
+        , ugliness_2    = 0
+        , msg_2         = None
         ):
         super ().__init__ (desc, badness, ugliness)
         self.interval      = set (interval)
@@ -133,6 +142,14 @@ class Check_Melody (Check):
         self.prev2_length  = prev2_length
         self.next_interval = next_interval
         self.prev_interval = prev_interval
+        self.badness_2     = badness_2
+        self.ugliness_2    = ugliness_2
+        self.badness_1     = badness
+        self.ugliness_1    = ugliness
+        self.msg_2         = msg_2 or self.desc
+        if self.badness_2 == 0 and self.ugliness_2 == 0:
+            self.badness_2  = self.badness_1
+            self.ugliness_2 = self.ugliness_1
         # signed and octave flags may not currently be combined
         assert not (self.signed and self.octave)
     # end def __init__
@@ -234,16 +251,21 @@ class Check_Melody_Jump (Check_Melody_History):
         if d is None:
             return False
         retval = False
-        # We might want to make the badness and the ugliness different
-        # for jumps and directional movements after a jump
+        # We want to make the badness and the ugliness different
+        # for jumps and directional movements after a jump, so we assign
+        # self.badness and self.ugliness here depending on the condition
         if abs (d) > self.limit:
             if self.prev_match:
                 self.msg = self.desc
+                self.badness  = self.badness_1
+                self.ugliness = self.ugliness_1
                 retval = True
             self.prev_match = sgn (d)
         else: # Step not jump
             if self.prev_match and self.prev_match == sgn (d):
-                self.msg = 'Same-direction movement after jump'
+                self.msg = self.msg_2
+                self.badness  = self.badness_2
+                self.ugliness = self.ugliness_2
                 retval = True
             self.prev_match = 0
         return retval
@@ -256,7 +278,7 @@ class Check_Melody_Jump (Check_Melody_History):
 
 # end class Check_Melody_Jump
 
-class Check_Melody_Avoid_Eighth_Jump (Check_Melody_Interval):
+class Check_Melody_Avoid_Notelen_Jump (Check_Melody_Interval):
     """ Eighth notes should not be reached by jumps and should be
         followed by step. (Ganter p. 90)
         We also allow a pause after or before a jump. And the check also
@@ -264,22 +286,24 @@ class Check_Melody_Avoid_Eighth_Jump (Check_Melody_Interval):
         Note that the note length here by default is 1 (one eighth).
     """
 
-    def __init__ (self, desc, note_length = (1,), badness = 0, ugliness = 0):
+    def __init__ \
+        (self, desc, note_length = 1, badness = 0, ugliness = 0, limit = 2):
         super ().__init__ (desc, (), badness, ugliness, True, False)
         self.note_length = note_length
+        self.limit       = limit
     # end def __init__
 
     def _check (self, current):
         self.current = current
 
         # Check if current note fits the given length (typically 1/8)
-        if current.length in self.note_length and current.is_tone:
+        if current.length == self.note_length and current.is_tone:
             # Check if reached by jump
             if current.prev and current.prev.is_tone:
                 prev_interval = abs \
                     (current.halftone.offset - current.prev.halftone.offset)
-                if prev_interval > 2:  # More than a step
-                    self.msg = "Eighth note should not be reached by a jump"
+                if prev_interval > self.limit:
+                    self.msg = self.desc
                     return True
 
             # Check if followed by jump
@@ -288,16 +312,16 @@ class Check_Melody_Avoid_Eighth_Jump (Check_Melody_Interval):
             if current.next and current.next.is_tone:
                 next_interval = abs \
                     (current.next.halftone.offset - current.halftone.offset)
-                if next_interval > 2:  # More than a step
-                    self.msg = "Eighth note should be followed by a step"
+                if next_interval > self.limit:
+                    self.msg = self.desc
                     return True
         return False
     # end def _check
 
-# end class Check_Melody_Avoid_Eighth_Jump
+# end class Check_Melody_Avoid_Notelen_Jump
 
 class Check_Melody_Note_Length_Jump (Check_Melody_Interval):
-    """ Jumps are preferred on half notes or longer (Daniel S.78)
+    """ Usually no jumps between short notes (e.g. LaMotte p. 76, 122),
     """
 
     def __init__ (self, desc, note_length = (1, 2), badness=0, ugliness=0):
@@ -313,16 +337,52 @@ class Check_Melody_Note_Length_Jump (Check_Melody_Interval):
             return False
         # Check if current note is involved in a jump
         if current.prev and current.prev.is_tone:
-            interval = abs \
-                (current.halftone.offset - current.prev.halftone.offset)
+            prev = current.prev
+            interval = abs (current.halftone.offset - prev.halftone.offset)
             if interval > 2:  # It's a jump
-                # Check if note length is shorter than preferred
-                if current.length in self.note_length:
+                # Check if both note length are short
+                if  (   current.length in self.note_length
+                    and prev.length in self.note_length
+                    ):
                     return True
         return False
     # end def _check
 
 # end class Check_Melody_Note_Length_Jump
+
+class Check_Melody_Note_Length_Double_Jump (Check_Melody_Interval):
+    """ No double jumps between short notes
+    """
+
+    def __init__ (self, desc, note_length = (1, 2), badness=0, ugliness=0):
+        super ().__init__ (desc, (), badness, ugliness, True, False)
+        self.note_length = note_length
+        prev_jump = False
+    # end def __init__
+
+    def _check (self, current):
+        self.current = current
+
+        # No check if this is a pause
+        if not current.is_tone:
+            return False
+        # Check if current note is involved in a jump
+        if current.prev and current.prev.is_tone:
+            prev = current.prev
+            interval = abs (current.halftone.offset - prev.halftone.offset)
+            if interval > 2:  # It's a jump
+                # Check if both note length are short
+                if  (   current.length in self.note_length
+                    and prev.length in self.note_length
+                    ):
+                    if prev_jump:
+                        return True
+                    prev_jump = True
+        prev_jump = False
+        return False
+    # end def _check
+
+# end class Check_Melody_Note_Length_Double_Jump
 
 class Check_Melody_laMotte_Jump (Check_Melody_Jump):
     """ Implements laMotte's rules for jumps:
@@ -332,6 +392,10 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
           direction is allowed
         - For upward movement, the larger interval should come first
         - For downward movement, the smaller interval should come first
+        - Not yet implemented:
+          You may combine third jumps with the bigger jumps
+          Three jumps are allowed if first and last is a third jump and
+          they are in contrary motion
         laMotte 1981, p. 69ff
     """
 
@@ -347,7 +411,7 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
         next_d = current.next.halftone.offset - current.halftone.offset
 
         # Check for sixth or octave jumps
-        if abs (d) == 8 or abs (d) == 9 or abs (d) == 12:
+        if abs (d) in (8, 12):
             prev_d = 0
             if current.prev.prev:
                 prev = current.prev
@@ -362,7 +426,7 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
         # Check for third, fourth, fifth jumps in same direction
         elif abs (d) in (3, 4, 5, 7):
             # If same direction, check interval size rules
-            if sgn (d) == sgn (next_d) and abs (next_d) > 1:
+            if sgn (d) == sgn (next_d) and abs (next_d) > 2:
                 # Upward: larger interval should come first:
                 if d > 0 and abs (d) < abs (next_d):
                     self.msg = "For upward movement, " \
@@ -377,6 +441,40 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
     # end def _check
 
 # end class Check_Melody_laMotte_Jump
+
+class Check_Melody_Jump_Magdalena (Check_Melody_Jump):
+    """ If there are consecutive jumps:
+        - Check how big the intervals are, generally: Not too large jumps
+        - No more than 20 halftones in sum (absolute values)
+          -> violations are scaled with the difference above 20
+        - Big jumps are octave or sixth, no two big jumps in a row
+    """
+    jump_sum = 0
+
+    def _check (self, current):
+        self.current = current
+        d = self.compute_interval ()
+        if d is None:
+            return False
+        if d <= 2:
+            jump_sum = 0
+            return False
+        jump_sum += abs (d)
+        if not current.prev.prev:
+            return False
+        prev = current.prev
+        prev_d = prev.halftone.offset - prev.prev.halftone.offset
+        # No two big jumps in a row
+        if abs (d) >= 8 and abs (prev_d) >= 8:
+            self.ugliness = self.ugliness_1
+            self.badness  = self.badness_1
+            return True
+        if jump_sum > 20:
+            self.ugliness = self.ugliness_2 * (jump_sum - 20)
+            self.badness  = self.badness_2
+            return True
+    # end def _check
+# end class Check_Melody_Jump_Magdalena
 
 class Check_Harmony (Check):
 
@@ -526,14 +624,23 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
     def __init__ \
         ( self, desc, maximum
         , badness = 0, ugliness = 0
+        , stepped_bad_ugly = False
         ):
-        self.maximum = maximum
+        # We keep a copy of badness, ugliness if we want to set it
+        # depending on overflow
+        self.badness_default  = badness
+        self.ugliness_default = ugliness
+        self.stepped_bad_ugly = stepped_bad_ugly
+        self.maximum          = maximum
         super ().__init__ (desc, None, badness, ugliness, False, signed = True)
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d > self.maximum:
+            if self.stepped_bad_ugly:
+                self.badness  = self.badness_default   * (self.maximum - d)
+                self.ugliness = self.ugliness_default ** (self.maximum - d)
             return True
         return False
     # end def _check
@@ -551,6 +658,7 @@ class Check_Harmony_Interval_Min (Check_Harmony_Interval):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
+        # FIXME: If the contrapunctus is the lower voice this is different
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d < self.minimum:
             return True
@@ -831,7 +939,7 @@ class Harmony_Exception:
         raise NotImplementedError ('Need applies method') # pragma: no cover
     # end def applies
 
-    def is_consonant (self, p_cp_obj, cp_obj):
+    def is_consonant (self, p_cf_obj, p_cp_obj):
         allowed = (0, 3, 4, 7, 8, 9)
         interval = abs (p_cf_obj.halftone.offset - p_cp_obj.halftone.offset) %12
         if interval in allowed:
@@ -906,7 +1014,7 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
             return False
 
         p_cp_obj, p_cf_obj = parent.prev_interval
-        if not self.is_consonant (p_cp_obj, cp_obj):
+        if not self.is_consonant (p_cf_obj, p_cp_obj):
             return False
         # Prev CP tone length must be >= current tone length
         if p_cp_obj.duration < cp_obj.duration:
@@ -986,7 +1094,7 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
             return False
 
         p_cp_obj, p_cf_obj = parent.prev_interval
-        if not self.is_consonant (p_cp_obj, cp_obj):
+        if not self.is_consonant (p_cf_obj, p_cp_obj):
             return False
         return True
     # end def applies
@@ -1388,8 +1496,42 @@ old_melody_checks_cf = \
         , badness = 10.0
         )
     ]
-magi_melody_checks_cf = old_melody_checks_cf
 
+magi_melody_checks_cf = \
+    [ Check_Melody_Interval
+        ( "No seventh (Septime)"
+        , interval = (10, 11)
+        , badness  = BAD_MAX
+        )
+    , Check_Melody_Interval
+        ( "No Devils interval"
+        , interval = (6,)
+        , badness  = BAD_MAX
+        )
+    , Check_Melody_Interval
+        ("No unison (Prim) allowed"
+        , interval =  (0,)
+        , badness  = BAD_4
+        , octave   = False
+        )
+    , Check_Melody_Interval
+        ( "Small Sixth down, large sixth"
+        , interval =  (-8, -9, 9)
+        , badness  = BAD_2
+        , signed   = True
+        , octave   = False
+        )
+    , Check_Melody_laMotte_Jump
+        ( "Jump according to laMotte rules"
+        , badness      = BAD_MAX
+        )
+    , Check_Melody_Avoid_Notelen_Jump
+        ( "Fourth should not be reached or left by large jumps"
+        , limit        = 7
+        , badness      = BAD_MAX
+        , note_length  = 2
+        )
+    ]
 old_melody_checks_cp = \
     [ Check_Melody_Interval
         ( "0.1.2: no seventh (Septime)"
@@ -1412,42 +1554,54 @@ old_melody_checks_cp = \
         , badness = 10.0
         )
     ]
+
 magi_melody_checks_cp = \
     [ Check_Melody_Interval
-        ( "no big sixth, no downwards little sixth"
-        , signed  = True
-        , octave  = False
-        , interval = (9, -8)
-        , badness  = 1.5
+        ( "Small Sixth down, large sixth"
+        , interval =  (-8, -9, 9)
+        , badness  = BAD_2
+        , signed   = True
+        , octave   = False
         )
     , Check_Melody_Interval
-        ( "0.1.2: no Devils interval"
+        ( "No Devils interval"
         , interval = (6,)
-        , badness  = 1.7
-        )
-    , Check_Melody_History
-        ("0.1.2: No consecutive unison (Prim) allowed"
-        , interval    = (0,)
-        , badness     = 1.1
-        , octave      = False
+        , badness  = BAD_MAX
         )
     , Check_Melody_Interval
-        ( "0.1.2: no seventh (Septime)"
+        ("No unison (Prim) allowed"
+        , interval =  (0,)
+        , badness  = BAD_4
+        , octave   = False
+        )
+    , Check_Melody_Interval
+        ( "No seventh (Septime)"
         , interval = (10, 11)
-        , badness  = 1.5
+        , badness  = BAD_MAX
         )
     , Check_Melody_laMotte_Jump
         ( "Jump according to laMotte rules"
-        , badness = 1.5
+        , badness      = BAD_MAX
         )
-    , Check_Melody_Avoid_Eighth_Jump
+    , Check_Melody_Avoid_Notelen_Jump
         ( "Eighth should not be reached by jumps and should be followed by step"
-        , badness      = 1.5
+        , badness      = BAD_MAX
+        )
+    , Check_Melody_Avoid_Notelen_Jump
+        ( "Fourth should not be reached or left by large jumps"
+        , limit        = 7
+        , badness      = BAD_MAX
+        , note_length  = 2
         )
     , Check_Melody_Note_Length_Jump
-        ( "Jumps are preferred on half notes or longer"
+        ( "Don't jump between short notes"
         , note_length  = (1, 2)
-        , badness      = 1.1
+        , badness      = BAD_8
+        )
+    , Check_Melody_Note_Length_Double_Jump
+        ( "No double jumps between short notes"
+        , note_length  = (1, 2)
+        , badness      = BAD_MAX
         )
     , Check_Melody_Interval
         ( "Wenn zwei Vierteln auf leichter Taktzeit stehen und danach und"
@@ -1462,7 +1616,7 @@ magi_melody_checks_cp = \
         , interval      = (-1, -2)
         , bar_position  = (5, 13)
         , next_interval = (-1, -2)
-        , badness       = 1.4
+        , ugliness      = 5
         )
     ]
 
@@ -1519,19 +1673,6 @@ old_harmony_checks = \
         ( "Not both voices may jump"
         , badness  = 10.0
         )
-    # This might need more history, should probably only trigger if
-    # the *last* was already a fifth or octave. And switching from
-    # fifth to octave ore vice-versa might still be allowed, in
-    # which case we would need *two* checks.
-    #, Check_Harmony_Melody_Direction
-    #    ( "Magdalena: Avoid parallel fifth or octaves: Ensure that"
-    #      " the last direction (from where is the fifth or octave"
-    #      " approached) is different."
-    #    , interval = (7, 12)
-    #    , dir      = 'same'
-    #    , badness  = 9.0
-    #    )
-    # This implements the spec above
     , Check_Harmony_History
         ( "Magdalena: Avoid parallel fifth"
         , interval = (7,)
@@ -1542,17 +1683,6 @@ old_harmony_checks = \
         , interval = (12,)
         , badness  = 9.0
         )
-
-    # This only checks for two of the *same*. Not if we have several
-    # sixth in a row with different CF. This might need changes to
-    # the underlying check implementation.
-    #, Check_Harmony_Melody_Direction
-    #    ( "For sext (sixth) or terz (third) don't allow several in a row"
-    #    , interval = (3, 4, 8, 9)
-    #    , dir      = 'zero'
-    #    , ugliness = 3
-    #    )
-    # This doesn't allow several (unrelated) sixth or thirds in a row
     , Check_Harmony_History
         ( "For sext (sixth) don't allow several in a row"
         , interval = (8, 9)
@@ -1574,9 +1704,9 @@ old_harmony_checks = \
 
 magi_harmony_checks = \
     [ Check_Harmony_Interval
-        ( "1.2: Use no unisons except at the beginning or end"
+        ( "Use no unisons except at the beginning or end"
         , interval   = (0,)
-        , badness    = 10.0
+        , badness    = BAD_4
         , octave     = False
         , not_first  = True
         , not_last   = True
@@ -1585,72 +1715,70 @@ magi_harmony_checks = \
     , Check_Harmony_Interval
         ( "No Sekund"
         , interval = (1, 2)
-        , badness  = 10.0
+        , badness  = BAD_MAX
         , octave   = True
         , exceptions = tone_exceptions
         )
     , Check_Harmony_Interval \
         ( "Magdalena: 5/6 verboten"
         , interval = (5, 6)
-        , badness  = 10.0
+        , badness  = BAD_MAX
         , octave   = True
         , exceptions = tone_exceptions
         )
     , Check_Harmony_Interval \
         ( "Magdalena: 10/11 verboten"
         , interval = (10, 11)
-        , badness  = 10.0
+        , badness  = BAD_MAX
         , octave   = True
         , exceptions = tone_exceptions
         )
     , Check_Harmony_Interval_Max
         ( "Distance between voices should not exceed Duodezime"
         , maximum  = 19
-        , badness  = 10.0
+        , badness  = BAD_8
+        , stepped_bad_ugly = True
+        )
+    , Check_Harmony_Interval_Min
+        ( "Contrapunctus voice must be *up*"
+        , minimum  = 0
+        , badness  = BAD_MAX
         )
     , Check_Harmony_First_Interval
         ( "1.1. Begin and end on either unison, octave, fifth,"
           " unless the added part is underneath [it isn't here],"
           " in which case begin and end only on unison or octave."
         , interval = (0, 7, 12, -12)
-        , badness  = 100
+        , badness  = BAD_MAX ** 2
+        # FIXME: With Hypo the '7' is not allowed at all
+        # So we need something like is_hypo here and instantiate two
+        # different variants
         )
     , Check_Melody_Jump_2
         ( "Both voices may not jump"
-        , badness  = 10.0
+        , badness  = BAD_MAX
         )
     , Check_Harmony_Melody_Direction
         ( "Magdalena: Ensure that the last direction"
           " (from where is the fifth or octave approached) is different."
         , interval = (0, 7, 12)
         , dir      = 'same'
-        , badness  = 9.0
+        , badness  = BAD_2
         )
     , Check_Harmony_History
         ( "Magdalena: Avoid parallel unison, octaves, fifths"
         , interval = (0, 7, 12)
-        , badness  = 9.0
+        , badness  = BAD_MAX
         )
-
-    # This only checks for two of the *same*. Not if we have several
-    # sixth in a row with different CF. This might need changes to
-    # the underlying check implementation.
-    #, Check_Harmony_Melody_Direction
-    #    ( "For sext (sixth) or terz (third) don't allow several in a row"
-    #    , interval = (3, 4, 8, 9)
-    #    , dir      = 'zero'
-    #    , ugliness = 3
-    #    )
-    # This doesn't allow several (unrelated) sixth or thirds in a row
     , Check_Harmony_History
         ( "For sext (sixth) don't allow several in a row"
         , interval = (8, 9)
-        , ugliness = 1.1
+        , ugliness = 1
         )
     , Check_Harmony_History
         ( "For terz (third) don't allow several in a row"
         , interval = (3, 4)
-        , ugliness = 1.1
+        , ugliness = 1
         )
     , Check_Harmony_Melody_Direction
         ( "Generally it's better that voices move in opposite"
@@ -1662,12 +1790,12 @@ magi_harmony_checks = \
     , Check_Harmony_Akzentparallelen
         ( "Avoid Akzentparallelen"
           " (accent parallels of perfect consonances)"
-        , badness = 5.0
+        , badness = BAD_2
         )
     , Check_Harmony_Nachschlagende_Parallelen
         ( "Avoid nachschlagende Parallelen (Klapperoktaven)"
           " - parallels from weak to strong beats"
-        , badness = 4.0
+        , badness = BAD_2
         )
     ]
 
