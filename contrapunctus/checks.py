@@ -831,6 +831,14 @@ class Harmony_Exception:
         raise NotImplementedError ('Need applies method') # pragma: no cover
     # end def applies
 
+    def is_consonant (self, p_cp_obj, cp_obj):
+        allowed = (0, 3, 4, 7, 8, 9)
+        interval = abs (p_cf_obj.halftone.offset - p_cp_obj.halftone.offset) %12
+        if interval in allowed:
+            return True
+        return False
+    # end def is_consonant
+
 # end class Harmony_Exception
 
 class Exception_Harmony_Passing_Tone (Harmony_Exception):
@@ -897,6 +905,13 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
         if prev_dir != next_dir:
             return False
 
+        p_cp_obj, p_cf_obj = parent.prev_interval
+        if not self.is_consonant (p_cp_obj, cp_obj):
+            return False
+        # Prev CP tone length must be >= current tone length
+        if p_cp_obj.duration < cp_obj.duration:
+            return False
+
         # If we got here, it's a valid passing tone exception
         return True
     # end def applies
@@ -955,19 +970,25 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
         next_interval = n_cp_obj.halftone.offset - cp_obj.halftone.offset
 
         # Both intervals must be steps (1 or 2 semitones)
-        if abs (prev_interval) <= 2 and abs (next_interval) <= 2:
-            # Wechselnote: step away and back
-            # (opposite directions, return to same tone)
-            if  (   sgn (prev_interval) != sgn (next_interval)
-                and prev_interval != 0 and next_interval != 0
-                ):
-                # Check if we return to the same tone
-                total_movement = abs \
-                    (p_cp_obj.halftone.offset - n_cp_obj.halftone.offset)
-                if total_movement == 0:  # Returns to same tone
-                    return True
+        if not abs (prev_interval) <= 2 and abs (next_interval) <= 2:
+            return False
+        # Wechselnote: step away and back
+        # (opposite directions, return to same tone)
+        if  (   sgn (prev_interval) != sgn (next_interval)
+            and prev_interval != 0 and next_interval != 0
+            ):
+            # Check if we return to the same tone
+            total_movement = abs \
+                (p_cp_obj.halftone.offset - n_cp_obj.halftone.offset)
+            if total_movement != 0:  # Returns to same tone
+                return False
+        else:
+            return False
 
-        return False
+        p_cp_obj, p_cf_obj = parent.prev_interval
+        if not self.is_consonant (p_cp_obj, cp_obj):
+            return False
+        return True
     # end def applies
 
 # end class Exception_Harmony_Wechselnote
