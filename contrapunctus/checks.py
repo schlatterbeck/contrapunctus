@@ -924,6 +924,8 @@ class Harmony_Exception:
         An exception can override a harmony check under certain conditions.
     """
     lookahead = 0
+    consonant_allowed = (0, 3, 4, 7, 8, 9)
+    consonant_octave  = True
 
     def __init__ (self, interval):
         self.interval = set (interval)
@@ -940,9 +942,10 @@ class Harmony_Exception:
     # end def applies
 
     def is_consonant (self, p_cf_obj, p_cp_obj):
-        allowed = (0, 3, 4, 7, 8, 9)
-        interval = abs (p_cf_obj.halftone.offset - p_cp_obj.halftone.offset) %12
-        if interval in allowed:
+        interval = abs (p_cf_obj.halftone.offset - p_cp_obj.halftone.offset)
+        if self.consonant_octave:
+            interval %= 12
+        if interval in self.consonant_allowed:
             return True
         return False
     # end def is_consonant
@@ -1036,6 +1039,8 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
         Thomas Daniel, 2002, S. 112-120.
     """
     lookahead = 1
+    consonant_allowed = (3, 4, 7, 8, 9, 12, 15, 16, 19, 20, 21)
+    consonant_octave  = False
 
     def __init__ \
         ( self, interval
