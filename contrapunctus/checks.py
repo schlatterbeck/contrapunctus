@@ -1785,6 +1785,11 @@ magi_harmony_checks = \
         , interval = (3, 4)
         , ugliness = 1
         )
+    , Check_Harmony_History
+        ( "For large third don't allow two or more (devil's interval)"
+        , interval = (4,)
+        , badness  = BAD_4
+        )
     , Check_Harmony_Melody_Direction
         ( "Generally it's better that voices move in opposite"
           " direction (or one stays the same if allowed)"

@@ -14,8 +14,8 @@ Allgemein
 + Durchgang, Wechselnote Regeln
 + Vorhalt
 + Cambiata
-- Schlüsse und Zwischenkadenzen? -> Halbtonanschluss und Akzidenzien als
-  Aufforderung zur Kadenz
+- Zwischenkadenzen? -> Halbtonanschluss und Akzidenzien als Aufforderung
+  zur Kadenz
 
   * verschiedene Varianten als Liste oder so
   * evtl. Markierung beim C.F.?
@@ -29,12 +29,7 @@ Allgemein
   allow 1/1 on half time) In addition allow dotted 1/2 and 1/1, when a
   dotted 1/2 is seen an 1/4 after that is allowed. After dotted no
   syncope is allowed.
-  
-Was dürfen Achteln und wieso steht das nirgends?
-Dürfen Achteln nicht jumpen? Haben wir das schon?
-  
-[- Ténor einbauen?]
-- C.F. soll auch Halbe können (extra Regel für Synkopen?)
+- Allow more different end-sequences not just a single hard-coded one
 
 Done
 ++++
@@ -48,6 +43,20 @@ Done
 + Quint-Parallelen (?)
 + Falsche Intervalle Modulo 12 (!) 
 
+Zusätzliche Bewertungsfunktion: Interestingness
+-----------------------------------------------
+
+- Kurze Notenwerte und überbundene Töne/Synkopen besser bewerten als
+  lange, gerade
+- Längere Viertel-Abfolgen besser bewerten
+- Selbstähnlichkeit: Sequenzen
+
+  * selber Rhytmus (von >= 3 Tönen)
+  * Notenwerte +/- zwei Halbtöne
+  * Vielleicht ist auch die Richtung egal
+  * Aber: Gleiche Töne in Melodie 1 müssen gleiche Töne in Melodie 2
+    bleiben
+
 wichtige Rand-/ Zwischennotizen
 --------------------------------
 
@@ -57,11 +66,11 @@ wichtige Rand-/ Zwischennotizen
     Unterstimme schreitet zum nächsten Ton vor und erzeugt so Dissonanz
   * beim Sekundvorhalt bleibt immer die Unterstimme liegen
 
-- keine parallelen großen Terzen -> sonst entsteht Tritonus
++ keine parallelen großen Terzen -> sonst entsteht Tritonus
 
   * z.B. c' und e', dann d' und fis' -> zwischen c' und fis' ü4 (Tritonus)
 
-- alterierte Töne nur bei Terz und Sext möglich
+[- alterierte Töne nur bei Terz und Sext möglich]
 + Viertel müssen auf leichte Zeit einsetzen (=leichte Halbe)
 
 Features
