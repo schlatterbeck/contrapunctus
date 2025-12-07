@@ -24,6 +24,11 @@ Allgemein
 - Wenn CF mit L=1/4 oder anderen Werten vorgegeben wird sollte das in
   1/8 umgerechnet werden (beim Einlesen). Für Regression-Tests (von CF +
   CP) reichts wenn das nur in 1/8 geht.
+- Allow more different note lengths in CF: Allow 1/2 notes and syncopes:
+  1/2 bound to another 1/2 in next bar (or when our bar is length 2
+  allow 1/1 on half time) In addition allow dotted 1/2 and 1/1, when a
+  dotted 1/2 is seen an 1/4 after that is allowed. After dotted no
+  syncope is allowed.
   
 Was dürfen Achteln und wieso steht das nirgends?
 Dürfen Achteln nicht jumpen? Haben wir das schon?
