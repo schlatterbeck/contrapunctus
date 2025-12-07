@@ -375,10 +375,10 @@ class Check_Melody_Note_Length_Double_Jump (Check_Melody_Interval):
                 if  (   current.length in self.note_length
                     and prev.length in self.note_length
                     ):
-                    if prev_jump:
+                    if self.prev_jump:
                         return True
-                    prev_jump = True
-        prev_jump = False
+                    self.prev_jump = True
+        self.prev_jump = False
         return False
     # end def _check
 
