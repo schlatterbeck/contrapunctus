@@ -135,7 +135,9 @@ class Contrapunctus:
         self.explanation   = []
         self._tune         = None # for given cantus firmus
         self.cantus_firmus = None
-        self.rhythm        = Rhythm_Semibreve (self, args.tune_length)
+        rhythm             = \
+            'Rhythm_' + self.args.rhythm [0].upper () + self.args.rhythm [1:]
+        self.rhythm        = globals () [rhythm] (self, args.tune_length)
         assert args.tune_length > 3
         if not args.pop_size and not args.optimize_depth_first:
             if args.use_de:
@@ -371,7 +373,7 @@ class Contrapunctus:
             cp = cp_obj.bar
             assert cp.voice.id == 'Contrapunctus'
             assert cf.voice.id == 'CantusFirmus'
-            assert cf.idx == cp.idx
+            assert cf_obj.overlaps_with_bind (cp_obj)
 
             if last_bar_obj is not cp:
                 ugliness += usum
@@ -1053,6 +1055,13 @@ def contrapunctus_cmd (argv = None):
         , help    = "Print frequency, default=%(default)s"
         , type    = int
         , default = 10
+        )
+    rhythm = ('breve', 'semibreve')
+    cmd.add_argument \
+        ( "-r", "--rhythm"
+        , help    = "Rhythm used, default=%(default)s"
+        , choices = rhythm
+        , default = rhythm [1]
         )
     cmd.add_argument \
         ( "-R", "--random-seed"
