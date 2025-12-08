@@ -1014,7 +1014,7 @@ class Bar:
     # end def __init__
 
     @classmethod
-    def from_string (cls, key, unit, s):
+    def from_string (cls, key, unit, duration, s):
         end = ''
         if s.endswith ('|\n'):
             end = '|\n'
@@ -1022,7 +1022,7 @@ class Bar:
         if s.endswith ('\n'):
             end = '\n'
             s = s [:-1]
-        bar = cls (unit, unit, end)
+        bar = cls (duration, unit, end)
         for t in s.strip ().split ():
             while t:
                 tone = []
@@ -1222,7 +1222,7 @@ class Voice:
         return 'V:%s%s' % (self.id, prp)
     # end def as_abc_header
 
-    def bars_from_string (self, key, unit, s):
+    def bars_from_string (self, key, unit, duration, s):
         """ Parse (and append) bars from string.
             Can be called multiple times to append multiple lines.
         """
@@ -1233,7 +1233,7 @@ class Voice:
                 r = '\n'
             if n + 2 == len (bars) and bars [n + 1] == '':
                 r = '|\n'
-            self.add (Bar.from_string (key, unit, b + r))
+            self.add (Bar.from_string (key, unit, duration, b + r))
             if r:
                 break
     # end def bars_from_string
@@ -1290,7 +1290,7 @@ class Tune:
     # end def __init__
 
     @classmethod
-    def from_iterator (self, itr, stop_at_err = False):
+    def from_iterator (self, bar_duration, itr, stop_at_err = False):
         """ The iterator will usually be a file
         """
         kw = {}
@@ -1368,7 +1368,7 @@ class Tune:
                 key   = kw.get ('key')
                 if not key:
                     raise ValueError ('No key (K) definition') #pragma: no cover
-                voice.bars_from_string (key, unit, rest)
+                voice.bars_from_string (key, unit, bar_duration, rest)
             else:
                 k, v = line.split (':', 1)
                 v = v.lstrip ()

@@ -81,6 +81,8 @@ class Rhythm_Semibreve (Rhythm):
         if the previous note is longer some of the genes are not used
     """
 
+    bar_duration = 8 # in 1/8
+
     @property
     def cflength (self):
         if self.generate_cf:
@@ -234,6 +236,8 @@ class Rhythm_Breve (Rhythm):
     cf_tbl = [4, 6, 8, 12, 16]
     cp_tbl = [1, 2, 4, 6, 8, 12, 16]
 
+    bar_duration = 16 # in 1/8
+
     @property
     def cflength (self):
         """ Cantus Firmus length *in bars*
@@ -330,7 +334,7 @@ class Rhythm_Breve (Rhythm):
             # offset 7 # [9]
             init.append ([0,  7]) # pitch light 1/8
             # offset 8 # [10, 11]
-            init.append ([1,  6]) # heavy: 6:16/8 5:12/8 4:8/8 3:6/8 2:4/8 1:2/8
+            init.append ([1,  5]) # heavy: 5:12/8 4:8/8 3:6/8 2:4/8 1:2/8
             init.append ([0,  7]) # pitch
             # offset 10 # [12, 13]
             init.append ([0,  2]) # light 1/4: 2:4/8 1:2/8 0:1/8

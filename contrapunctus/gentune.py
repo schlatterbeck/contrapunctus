@@ -122,7 +122,8 @@ class Contrapunctus:
 
     pop_default = (10, 500)
     # These should always be printed when printing options:
-    necessary_options = ['--random-seed', '--tune-length']
+    necessary_options = \
+        ['--random-seed', '--tune-length', '--checks', '--rhythm']
     # And these should always be removed:
     remove_options    = ['--output-file']
 
@@ -135,9 +136,7 @@ class Contrapunctus:
         self.explanation   = []
         self._tune         = None # for given cantus firmus
         self.cantus_firmus = None
-        rhythm             = \
-            'Rhythm_' + self.args.rhythm [0].upper () + self.args.rhythm [1:]
-        self.rhythm        = globals () [rhythm] (self, args.tune_length)
+        self.set_rhythm ()
         assert args.tune_length > 3
         if not args.pop_size and not args.optimize_depth_first:
             if args.use_de:
@@ -151,7 +150,7 @@ class Contrapunctus:
         if args.cantus_firmus:
             assert args.cantus_firmus != '+'
             with Infile (args.cantus_firmus) as f:
-                tune = Tune.from_iterator (f)
+                tune = Tune.from_iterator (self.rhythm.bar_duration, f)
             if args.transpose_cf:
                 tune = tune.transpose (args.transpose_cf)
             self.tune = tune
@@ -222,9 +221,14 @@ class Contrapunctus:
                 break
             argv.extend (line.split ())
         self.orig_args = self.cmd.parse_args (argv)
+        # Get necessery args to self.args:
+        for a in ('checks', 'gregorian_mode', 'rhythm'):
+            setattr (self.args, a, getattr (self.orig_args, a))
+        self.get_checks ()
+        self.mode = gregorian_modes [self.args.gregorian_mode]
         # Set tune length accordingly
-        if self.orig_args.tune_length == self.args.tune_length:
-            self.tunelength = self.orig_args.tune_length
+        self.set_rhythm (tune_length = self.orig_args.tune_length)
+        self.tunelength = self.orig_args.tune_length
         return n
     # end def args_from_gene
 
@@ -451,7 +455,10 @@ class Contrapunctus:
             if line.startswith ('X:') or line.startswith ('M:'):
                 tmp_iter  = iter ([line])
                 tune = Tune.from_iterator \
-                    (itertools.chain (tmp_iter, itr), True)
+                    ( self.rhythm.bar_duration
+                    , itertools.chain (tmp_iter, itr)
+                    , True
+                    )
                 c += tune.nlines - 1 # first line already counted
                 line = getattr (tune, 'lastline', None)
                 # When reading abc file the abc parser has picked up the
@@ -660,6 +667,14 @@ class Contrapunctus:
                         return False
         return True
     # end def run_cp_checks
+
+    def set_rhythm (self, tune_length = None):
+        if tune_length is None:
+            tune_length = self.args.tune_length
+        rhythm      = \
+            'Rhythm_' + self.args.rhythm [0].upper () + self.args.rhythm [1:]
+        self.rhythm = globals () [rhythm] (self, tune_length)
+    # end def set_rhythm
 
     def verify_cantus_firmus (self):
         if not self.cantus_firmus:
