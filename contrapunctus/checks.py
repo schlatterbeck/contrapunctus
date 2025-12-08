@@ -238,8 +238,9 @@ class Check_Melody_History (History_Mixin, Check_Melody_Interval):
 
 class Check_Melody_Jump (Check_Melody_History):
 
-    def __init__ (self, desc, badness = 0, ugliness = 0, limit = 2):
-        super ().__init__ (desc, (), badness, ugliness, True, False)
+    def __init__ (self, desc, badness = 0, ugliness = 0, limit = 2, msg_2 = ''):
+        super ().__init__ \
+            (desc, (), badness, ugliness, True, False, msg_2 = msg_2)
         self.limit = limit
     # end def __init__
 
@@ -1499,6 +1500,7 @@ old_melody_checks_cf = \
     , Check_Melody_Jump
         ( "Jump"
         , badness = 10.0
+        , msg_2   = 'Same-direction movement after jump'
         )
     ]
 
@@ -1557,6 +1559,7 @@ old_melody_checks_cp = \
     , Check_Melody_Jump
         ( "Jump"
         , badness = 10.0
+        , msg_2   = 'Same-direction movement after jump'
         )
     ]
 
