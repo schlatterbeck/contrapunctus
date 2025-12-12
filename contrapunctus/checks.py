@@ -690,8 +690,8 @@ class Check_Melody_Jump_2 (Check_Harmony):
             return False
         if not cp_obj.is_tone or not p_cp_obj.is_tone:
             return False
-        d1 = cf_obj.halftone.offset - p_cf_obj.halftone.offset
-        d2 = cp_obj.halftone.offset - p_cp_obj.halftone.offset
+        d1 = abs (cf_obj.halftone.offset - p_cf_obj.halftone.offset)
+        d2 = abs (cp_obj.halftone.offset - p_cp_obj.halftone.offset)
         if d1 > self.limit and d2 > self.limit:
             return True
         return False

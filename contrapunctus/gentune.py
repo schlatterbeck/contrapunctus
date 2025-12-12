@@ -231,6 +231,10 @@ class Contrapunctus:
         # Set tune length accordingly
         self.set_rhythm (tune_length = self.orig_args.tune_length)
         self.tunelength = self.orig_args.tune_length
+        if self.orig_args.no_check_cf:
+            self.args.no_check_cf = self.orig_args.no_check_cf
+        if self.orig_args.divide_by_unit:
+            self.args.divide_by_unit = self.orig_args.divide_by_unit
         return n
     # end def args_from_gene
 
