@@ -10,9 +10,10 @@ K: DDor
 A2 ^F2 ^F4 |G2 E2 E4 |D2 ^F2 A2 A2 |D8 |
 [V:Contrapunctus] A4 d4 |d2 c1B1 c4 |d2 c1B1 d2 d2 |c8 |c2 d2 A4 |B2 B2 c4 |^c8 |d8 |
 % Command-line options:
-% --cantus-firmus=+          --divide-by-unit
-% --no-cf-feasibility        --no-check-cf
-% --pop-size=10              --random-seed=23
+% --cantus-firmus=+          --checks=default
+% --divide-by-unit           --no-cf-feasibility
+% --no-check-cf              --pop-size=10
+% --random-seed=23           --rhythm=semibreve
 % --tune-length=12           --use-de
 % --verbose                  --verbose
 %

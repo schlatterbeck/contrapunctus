@@ -150,7 +150,9 @@ class Contrapunctus:
         if args.cantus_firmus:
             assert args.cantus_firmus != '+'
             with Infile (args.cantus_firmus) as f:
-                tune = Tune.from_iterator (self.rhythm.bar_duration, f)
+                tune = Tune.from_iterator (f)
+            bd = self.rhythm.bar_duration / self.rhythm.unit
+            assert bd == tune.meter.fraction
             if args.transpose_cf:
                 tune = tune.transpose (args.transpose_cf)
             self.tune = tune
@@ -455,10 +457,7 @@ class Contrapunctus:
             if line.startswith ('X:') or line.startswith ('M:'):
                 tmp_iter  = iter ([line])
                 tune = Tune.from_iterator \
-                    ( self.rhythm.bar_duration
-                    , itertools.chain (tmp_iter, itr)
-                    , True
-                    )
+                    (itertools.chain (tmp_iter, itr), True)
                 c += tune.nlines - 1 # first line already counted
                 line = getattr (tune, 'lastline', None)
                 # When reading abc file the abc parser has picked up the

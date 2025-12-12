@@ -1,9 +1,9 @@
 Iter #     Field      Value
 10         Best       1.930162e+14
 Command-line options:
---divide-by-unit        --pop-size=10           --random-seed=9
---tune-length=12        --use-de                --verbose
---verbose
+--checks=default        --divide-by-unit        --pop-size=10
+--random-seed=9         --rhythm=semibreve      --tune-length=12
+--use-de                --verbose               --verbose
 
 Best index: 8: 1.93016250000e+14
 Iter: 10 Evals: 110
@@ -6168,9 +6168,9 @@ K: DDor
 The Best Evaluation: 1.000000e+00.
 The Best String:
 Command-line options:
---divide-by-unit        --pop-size=10           --random-seed=9
---tune-length=12        --use-de                --verbose
---verbose
+--checks=default        --divide-by-unit        --pop-size=10
+--random-seed=9         --rhythm=semibreve      --tune-length=12
+--use-de                --verbose               --verbose
 
 Best index: 2: 1.00000000000e+00
 Iter: 1586 Evals: 15870

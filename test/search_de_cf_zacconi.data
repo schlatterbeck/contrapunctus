@@ -1,9 +1,10 @@
 Iter #     Field      Value
 10         Best       9.971469e+17
 Command-line options:
---cantus-firmus=+          --divide-by-unit
---no-cf-feasibility        --no-check-cf
---pop-size=10              --random-seed=23
+--cantus-firmus=+          --checks=default
+--divide-by-unit           --no-cf-feasibility
+--no-check-cf              --pop-size=10
+--random-seed=23           --rhythm=semibreve
 --tune-length=12           --use-de
 --verbose                  --verbose
 
@@ -43964,9 +43965,10 @@ K: DDor
 The Best Evaluation: 8.750000e+00.
 The Best String:
 Command-line options:
---cantus-firmus=+          --divide-by-unit
---no-cf-feasibility        --no-check-cf
---pop-size=10              --random-seed=23
+--cantus-firmus=+          --checks=default
+--divide-by-unit           --no-cf-feasibility
+--no-check-cf              --pop-size=10
+--random-seed=23           --rhythm=semibreve
 --tune-length=12           --use-de
 --verbose                  --verbose
 

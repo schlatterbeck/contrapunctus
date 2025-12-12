@@ -82,6 +82,7 @@ class Rhythm_Semibreve (Rhythm):
     """
 
     bar_duration = 8 # in 1/8
+    unit         = 8
 
     @property
     def cflength (self):
@@ -237,6 +238,7 @@ class Rhythm_Breve (Rhythm):
     cp_tbl = [1, 2, 4, 6, 8, 12, 16]
 
     bar_duration = 16 # in 1/8
+    unit         =  8
 
     @property
     def cflength (self):

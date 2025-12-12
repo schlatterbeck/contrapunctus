@@ -813,6 +813,11 @@ class Meter:
         self.beats   = beats
     # end def __init__
 
+    @property
+    def fraction (self):
+        return Fraction (self.measure, self.beats)
+    # end def fraction
+
     @classmethod
     def from_string (cls, s):
         if s == 'C':
@@ -1290,13 +1295,13 @@ class Tune:
     # end def __init__
 
     @classmethod
-    def from_iterator (self, bar_duration, itr, stop_at_err = False):
+    def from_iterator (self, itr, stop_at_err = False):
         """ The iterator will usually be a file
         """
-        kw = {}
-        voices = {}
-        barlen = None
-        vinfo_seen = False
+        kw           = {}
+        voices       = {}
+        bar_duration = None
+        vinfo_seen   = False
         for lineno, line in enumerate (itr):
             line = line.strip ()
             if not line:
@@ -1368,6 +1373,7 @@ class Tune:
                 key   = kw.get ('key')
                 if not key:
                     raise ValueError ('No key (K) definition') #pragma: no cover
+                assert bar_duration is not None
                 voice.bars_from_string (key, unit, bar_duration, rest)
             else:
                 k, v = line.split (':', 1)
@@ -1385,8 +1391,16 @@ class Tune:
                         raise NotImplementedError \
                             ('Non integral unit') # pragma: no cover
                     kw ['unit'] = unit
+                    if 'meter' in kw:
+                        bar_duration = kw ['meter'].fraction * kw ['unit']
+                        assert int (bar_duration) == bar_duration
+                        bar_duration = int (bar_duration)
                 elif k == 'M':
                     kw ['meter'] = Meter.from_string (v)
+                    if 'unit' in kw:
+                        bar_duration = kw ['meter'].fraction * kw ['unit']
+                        assert int (bar_duration) == bar_duration
+                        bar_duration = int (bar_duration)
                 elif k == 'T':
                     kw ['title'] = v
                 elif k == 'V':
