@@ -679,13 +679,22 @@ class Check_Melody_Jump_2 (Check_Harmony):
         assert cf_obj.overlaps_with_bind (cp_obj)
         self.cp_obj = cp_obj
         self.cf_obj = cf_obj
-        p_cp_obj    = cp_obj.prev
-        if not p_cp_obj:
+        # First we must establish that cp_obj and cf_obj both start at
+        # the same offset, otherwise we won't have a jump on both
+        if cp_obj.bar.idx != cf_obj.bar.idx:
             return False
-        p_cf_obj = cf_obj.bar.get_by_offset (p_cp_obj)
-        # This would only happen if the CF bar is empty
-        if not p_cf_obj:
-            return False # pragma: no cover
+        if cp_obj.offset != cf_obj.offset:
+            return False
+        # None of the two notes may be bound: If they still start on the
+        # same offset we would already have seen them
+        if cp_obj.is_bound or cf_obj.is_bound:
+            return False
+        # Now that we've established they both start at same offset we
+        # can get previous tone of both
+        p_cp_obj = cp_obj.prev
+        p_cf_obj = cf_obj.prev
+        if not p_cp_obj or not p_cf_obj:
+            return False
         if not cf_obj.is_tone or not p_cf_obj.is_tone:
             return False
         if not cp_obj.is_tone or not p_cp_obj.is_tone:

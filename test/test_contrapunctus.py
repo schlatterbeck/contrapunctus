@@ -1807,6 +1807,18 @@ class Test_Contrapunctus:
         self.generic_exception_suspension (abc_notation, expect, exp2)
     # end def test_exception_suspension_2
 
+    def generic_jump_2 (self, abc, expect):
+        check = checks.Check_Melody_Jump_2 \
+            ( "Not both voices may jump"
+            , badness  = 10.0
+            )
+        tune = Tune.from_iterator (abc)
+        itr  = enumerate (zip (expect, tune.voices_iter ()))
+        for n, (exp, (cfo, cpo)) in itr:
+            b, u = check.check (cfo, cpo)
+            assert (b == exp), "cfo [%s]: %s  cpo: %s" % (n, cfo, cpo)
+    # end def generic_jump_2
+
     def test_jump_2 (self):
         abc = dedent \
             ("""
@@ -1821,17 +1833,60 @@ class Test_Contrapunctus:
              [V:2] F12 D4 |F12 C4 |
              """
             ).strip ().split ('\n')
-        expect = (0, 10, 10, 10)
-        check = checks.Check_Melody_Jump_2 \
-            ( "Not both voices may jump"
-            , badness  = 10.0
-            )
-        tune = Tune.from_iterator (abc)
-        itr  = enumerate (zip (expect, tune.voices_iter ()))
-        for n, (exp, (cfo, cpo)) in itr:
-            b, u = check.check (cfo, cpo)
-            assert (b == exp), "cfo [%s]: %s  cpo: %s" % (n, cfo, cpo)
+        self.generic_jump_2 (abc, (0, 10, 10, 10))
     # end def test_jump_2
+
+    def test_jump_2_2 (self):
+        abc = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:8/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] B12 A4 |c8 A8- | A8 F8 |
+             [V:2] D16    |A,16   | C8 D8 |
+             """
+            ).strip ().split ('\n')
+        self.generic_jump_2 (abc, (0, 0, 10, 0, 0, 0))
+    # end def test_jump_2_2
+
+    def test_jump_2_3 (self):
+        abc = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:8/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] G6 d2 G8-    | G4     c4  G6 d2 |
+             [V:2] E4 C6 E2 C4- | C2 B,2 A,4 B,8   |
+             """
+            ).strip ().split ('\n')
+        # These were wrong:              X     X        X
+        self.generic_jump_2 (abc, (0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    # end def test_jump_2_3
+
+    def test_jump_2_4 (self):
+        abc = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:8/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] G4 c4 G4 c4  | G6 D2 G8 |
+             [V:2] E12      A,4 | E12   C4 |
+             """
+            ).strip ().split ('\n')
+        self.generic_jump_2 (abc, (0, 0, 0, 10, 10, 0, 0, 0))
+    # end def test_jump_2_4
 
 # end class Test_Contrapunctus
 
