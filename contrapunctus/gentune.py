@@ -134,6 +134,7 @@ class Contrapunctus:
         self.orig_args     = None
         self.do_explain    = False
         self.explanation   = []
+        self.exp_explain   = []
         self._tune         = None # for given cantus firmus
         self.cantus_firmus = None
         self.set_rhythm ()
@@ -329,7 +330,10 @@ class Contrapunctus:
         if self.args.verbose:
             self.do_explain = True
             r.append ('%% Eval: %g' % self.evaluate (p, pop))
-            exp = '\n'.join (self.explanation)
+            exp  = '\n'.join (self.explanation)
+            if self.exp_explain:
+                exp += '\nExceptions:\n'
+                exp += '\n'.join (self.exp_explain)
             r.append ('% '+ exp.replace ('\n', '\n% '))
         if self.args.verbose > 1:
             r.append (self.as_tune_gene (p, pop))
@@ -364,6 +368,7 @@ class Contrapunctus:
             check.reset ()
 
         self.explanation = []
+        self.exp_explain = []
 
         # A tune contains two (or theoretically more) voices. We can
         # iterate over the bars of a voice via tune.iter (N) where N is
@@ -412,6 +417,8 @@ class Contrapunctus:
                     self.explain (check)
             for check in self.harmony_checks:
                 b, u = check.check (cf_obj, cp_obj)
+                if b == 0 and u == 0:
+                    self.explain_except (check)
                 b = b * len (cp_obj) ** 2
                 if self.args.divide_by_unit:
                     b /= cp_obj.bar.unit
@@ -432,6 +439,13 @@ class Contrapunctus:
             if ex:
                 self.explanation.append (ex)
     # end def explain
+
+    def explain_except (self, check):
+        if self.do_explain and hasattr (check, 'explain_exception'):
+            ex = check.explain_exception ()
+            if ex:
+                self.exp_explain.append (ex)
+    # end def explain_except
 
     def fix_gene (self):
         for i in range (len (self.init)):
@@ -584,6 +598,9 @@ class Contrapunctus:
                 if self.explanation:
                     with Outfile (self.args.output_file) as f:
                         print ('\n'.join (self.explanation), file = f)
+                        if self.exp_explain:
+                            print ('\nExceptions:')
+                            print ('\n'.join (self.exp_explain), file = f)
                         for v in bd.tune.voices:
                             print (v.as_abc (), file = f)
                 continue
@@ -604,6 +621,7 @@ class Contrapunctus:
             This asumes an empty Contrapunctus voice in tune.
         """
         self.explanation = []
+        self.exp_explain = []
         assert len (tune.voices) == 2
         assert len (tune.voices [1].bars) == 1
         assert len (tune.voices [1].bars [0].objects) == 0
@@ -638,6 +656,7 @@ class Contrapunctus:
             responsibility for start = startidx / end = idx.
         """
         self.explanation = []
+        self.exp_explain = []
         if startidx is None:
             start = max (idx - 2, 0)
             end   = idx + 1
@@ -769,6 +788,9 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
             self.do_explain = True
             self.evaluate (p, pop)
             print ('\n'.join (self.explanation), file = file)
+            if self.exp_explain:
+                print ('\nExceptions:')
+                print ('\n'.join (self.exp_explain), file = file)
         file.flush ()
         super ().print_string (file, p, pop)
     # end def print_string
@@ -917,6 +939,7 @@ class Contrapunctus_Depth_First (Fake_PGA, Contrapunctus):
 
     def run_cf_checks (self, tune, idx):
         self.explanation = []
+        self.exp_explain = []
         for c in self.melody_checks_cf:
             if hasattr (c, 'reset'):
                 c.reset ()

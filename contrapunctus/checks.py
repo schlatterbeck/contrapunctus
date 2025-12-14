@@ -273,7 +273,8 @@ class Check_Melody_Jump (Check_Melody_History):
     # end def _check
 
     def reset (self):
-        super ().reset ()
+        if hasattr (super (), 'reset'):
+            super ().reset ()
         self.msg = self.desc
     # end def reset
 
@@ -512,7 +513,8 @@ class Check_Harmony_Interval (Check_Harmony):
         self.not_last   = not_last
         self.lookahead  = self.lookahead # copy from class
         self.exceptions = []
-        self.prev_interval = [None, None]
+        self.h_interval = [None, None]
+        self.match_exc  = None
         # Only keep applicable exceptions
         for exc in (exceptions or []):
             if not exc.interval or not self.interval:
@@ -526,6 +528,7 @@ class Check_Harmony_Interval (Check_Harmony):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
+        self.match_exc  = None
         if self.not_first and (cf_obj.is_first and cp_obj.is_first):
             return False
         if self.not_last and (cp_obj.is_last and cf_obj.is_last):
@@ -533,18 +536,20 @@ class Check_Harmony_Interval (Check_Harmony):
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d in self.interval:
             if self.check_exceptions (cf_obj, cp_obj):
-                self.prev_interval = [cf_obj, cp_obj]
+                self.h_interval = [cf_obj, cp_obj]
                 return False
-            self.prev_interval = [cf_obj, cp_obj]
+            self.h_interval = [cf_obj, cp_obj]
             return True
-        self.prev_interval = [cf_obj, cp_obj]
+        self.h_interval = [cf_obj, cp_obj]
         return False
     # end def _check
 
     def check_exceptions (self, cf_obj, cp_obj):
         """ Check if any exception applies """
+        self.match_exc = None
         for exception in self.exceptions:
             if exception.applies (self, cf_obj, cp_obj):
+                self.match_exc = exception
                 return True
         return False
     # end def check_exceptions
@@ -564,6 +569,18 @@ class Check_Harmony_Interval (Check_Harmony):
             d %= 12
         return d
     # end def compute_interval
+
+    def explain_exception (self):
+        if not self.match_exc:
+            return ''
+        return self.match_exc.explanation (self)
+    # end def explain_exception
+
+    def reset (self):
+        if hasattr (super (), 'reset'):
+            super ().reset ()
+        self.h_interval = [None, None]
+    # end def reset
 
 # end class Check_Harmony_Interval
 
@@ -786,6 +803,8 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
     # end def direction_check
 
     def reset (self):
+        if hasattr (super (), 'reset'):
+            super ().reset ()
         self.prev_match = False
     # end def reset
 
@@ -844,6 +863,8 @@ class Check_Harmony_Akzentparallelen (Check_Harmony_Interval):
 
     def reset (self):
         """ Reset the check state """
+        if hasattr (super (), 'reset'):
+            super ().reset ()
         self.prev_strong_interval = None
     # end def reset
 
@@ -923,10 +944,6 @@ class Check_Harmony_Nachschlagende_Parallelen (Check_Harmony_Interval):
         return True
     # end def _check
 
-    def reset (self):
-        pass
-    # end def reset
-
 # end class Check_Harmony_Nachschlagende_Parallelen
 
 class Harmony_Exception:
@@ -941,6 +958,14 @@ class Harmony_Exception:
         self.interval = set (interval)
     # end def __init__
 
+    @property
+    def name (self):
+        v = self.__class__.__name__.split ('_')
+        assert v [0] == 'Exception'
+        assert v [1] == 'Harmony'
+        return ' '.join (v [2:])
+    # end def name
+
     def applies (self, parent, cf_obj, cp_obj):
         """ Check if this exception applies to the given objects.
             Should be overridden by subclasses.
@@ -950,6 +975,12 @@ class Harmony_Exception:
         """
         raise NotImplementedError ('Need applies method') # pragma: no cover
     # end def applies
+
+    def explanation (self, parent):
+        parent.compute_description ()
+        desc = parent.prefix + ':\n    ' + self.name
+        return desc
+    # end def explanation
 
     def is_consonant (self, p_cf_obj, p_cp_obj):
         interval = abs (p_cf_obj.halftone.offset - p_cp_obj.halftone.offset)
@@ -1026,7 +1057,7 @@ class Exception_Harmony_Passing_Tone (Harmony_Exception):
         if prev_dir != next_dir:
             return False
 
-        p_cp_obj, p_cf_obj = parent.prev_interval
+        p_cp_obj, p_cf_obj = parent.h_interval
         if not self.is_consonant (p_cf_obj, p_cp_obj):
             return False
         # Prev CP tone length must be >= current tone length
@@ -1108,7 +1139,7 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
         else:
             return False
 
-        p_cp_obj, p_cf_obj = parent.prev_interval
+        p_cp_obj, p_cf_obj = parent.h_interval
         if not self.is_consonant (p_cf_obj, p_cp_obj):
             return False
         return True
@@ -1346,7 +1377,7 @@ class Exception_Harmony_Suspension (Harmony_Exception):
             tone = cf_obj
         # Check the *previous* interval: The tone must be the same
         # halftone.
-        prev_tone = parent.prev_interval [(use_cf + 1) % 2]
+        prev_tone = parent.h_interval [(use_cf + 1) % 2]
         if not prev_tone or not prev_tone.is_tone:
             return False
 
@@ -1363,7 +1394,7 @@ class Exception_Harmony_Suspension (Harmony_Exception):
             return False
 
         # Find the corresponding CF tone for the preparation
-        prev_other = parent.prev_interval [use_cf]
+        prev_other = parent.h_interval [use_cf]
         if not prev_other or not prev_other.is_tone:
             return False
 
