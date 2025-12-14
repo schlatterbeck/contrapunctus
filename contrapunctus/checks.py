@@ -550,7 +550,11 @@ class Check_Harmony_Interval (Check_Harmony):
         for exception in self.exceptions:
             if exception.applies (self, cf_obj, cp_obj):
                 self.match_exc = exception
+                # self.cf_obj and self.cp_obj might have been changed
+                self.compute_interval (cf_obj, cp_obj)
                 return True
+        # self.cf_obj and self.cp_obj might have been changed
+        self.compute_interval (cf_obj, cp_obj)
         return False
     # end def check_exceptions
 

@@ -1583,9 +1583,11 @@ class Test_Contrapunctus:
         self.generic_exception_harmony_passing_tone (abc_notation, expect)
     # end def test_exception_harmony_passing_tone_PT_acc
 
-    def generic_exception_harmony_wechselnote (self, abc, expect):
+    def generic_exception_wechselnote (self, abc, expect, expect2 = None):
         """ Test the Exception_Harmony_Wechselnote class
         """
+        if expect2 is None:
+            expect2 = (0,) * len (expect)
         # Without exception, this should trigger (assuming it's a dissonance)
         check = checks.Check_Harmony_Interval \
             ( "Test dissonance"
@@ -1608,10 +1610,10 @@ class Test_Contrapunctus:
 
         # Now with exception
         check.exceptions.append (wechselnote_exception)
-        for cfo, cpo in tune.voices_iter ():
+        for exp, (cfo, cpo) in zip (expect2, tune.voices_iter ()):
             b, u = check.check (cfo, cpo)
-            assert (b == 0), "cfo: %s  cpo: %s" % (cfo, cpo)
-    # end def generic_exception_harmony_wechselnote
+            assert (b == exp), "cfo: %s  cpo: %s" % (cfo, cpo)
+    # end def generic_exception_wechselnote
 
     def test_exception_harmony_wechselnote_WN (self):
         abc_notation = dedent \
@@ -1621,14 +1623,14 @@ class Test_Contrapunctus:
              L:1/8
              M:4/4
              K:C
-             V:2 clef=treble
+             V:2 clef=bass
              V:1 clef=treble
              [V:1] B2 A2 B4 |
              [V:2] G8       |
              """
             ).strip ().split ('\n')
         expect = (0, 10, 0)
-        self.generic_exception_harmony_wechselnote (abc_notation, expect)
+        self.generic_exception_wechselnote (abc_notation, expect)
     # end def test_exception_harmony_wechselnote_WN
 
     def test_exception_harmony_wechselnote_WN_acc (self):
@@ -1639,15 +1641,35 @@ class Test_Contrapunctus:
              L:1/8
              M:4/4
              K:D
-             V:2 clef=treble
+             V:2 clef=bass
              V:1 clef=treble
              [V:1] D6 E2 | F2 E2 F4 |
              [V:2] B8    | A8       |
              """
             ).strip ().split ('\n')
         expect = (0, 0, 0, 10, 0)
-        self.generic_exception_harmony_wechselnote (abc_notation, expect)
+        self.generic_exception_wechselnote (abc_notation, expect)
     # end def test_exception_harmony_wechselnote_WN_acc
+
+    @pytest.mark.xfail
+    def test_exception_wechselnote_breve_noup (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:8/4
+             K:DDor
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] d12 B4 | G6 d2 G8-    | G4     c4  G6 d2 |
+             [V:2] D16    | E4 C6 E2 C4- | C2 B,2 A,4 B,8   |
+             """
+            ).strip ().split ('\n')
+        expect  = (0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0)
+        expect2 = (0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0)
+        self.generic_exception_wechselnote (abc_notation, expect, expect2)
+    # end def test_exception_wechselnote_breve_noup
 
     def generic_exception_cambiata (self, abc, expect):
         """ Test the Exception_Harmony_Wechselnote class
@@ -1805,7 +1827,27 @@ class Test_Contrapunctus:
         expect = (0, 0, 10, 0, 10, 0, 10, 0, 10, 0, 0, 0)
         exp2   = (0, 0,  0, 0,  0, 0, 10, 0,  0, 0, 0, 0)
         self.generic_exception_suspension (abc_notation, expect, exp2)
-    # end def test_exception_suspension_2
+    # end def test_exception_suspension_3
+
+    @pytest.mark.xfail
+    def test_exception_suspension_breve (self):
+        abc_notation = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:8/4
+             K:DDor
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] A4 F4 c6 B2 |
+             [V:2] D16         |
+             """
+            ).strip ().split ('\n')
+        expect = (0, 0, 10, 0)
+        exp2   = (0, 0, 10, 0)
+        self.generic_exception_suspension (abc_notation, expect, exp2)
+    # end def test_exception_suspension_breve
 
     def generic_jump_2 (self, abc, expect):
         check = checks.Check_Melody_Jump_2 \
