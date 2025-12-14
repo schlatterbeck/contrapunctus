@@ -69,7 +69,11 @@ class Check:
             This *must* return True when the check condition matches,
             i.e., when there is a violation of the rule.
         """
+        self.store_context (*args, **kw)
         self.result = self._check (*args, **kw)
+        # We need to keep some context for explanations and it might
+        # have been destroyed during _check above
+        self.store_context (*args, **kw)
         if self.result:
             return self.badness, self.ugliness
         return 0, 0
@@ -217,7 +221,6 @@ class Check_Melody_Interval (Check_Melody):
     def _check (self, current):
         if not self.timing_check (current):
             return
-        self.current = current
         d = self.compute_interval ()
         if d is not None and d in self.interval:
             return True
@@ -230,6 +233,10 @@ class Check_Melody_Interval (Check_Melody):
             if d is not None and d in self.prev_interval:
                 return True
     # end def _check
+
+    def store_context (self, current):
+        self.current = current
+    # end def store_context
 
 # end class Check_Melody_Interval
 
@@ -245,7 +252,6 @@ class Check_Melody_Jump (Check_Melody_History):
     # end def __init__
 
     def _check (self, current):
-        self.current = current
         if not current.prev:
             return False
         d = self.compute_interval ()
@@ -296,8 +302,6 @@ class Check_Melody_Avoid_Notelen_Jump (Check_Melody_Interval):
     # end def __init__
 
     def _check (self, current):
-        self.current = current
-
         # Check if current note fits the given length (typically 1/8)
         if current.length == self.note_length and current.is_tone:
             # Check if reached by jump
@@ -332,8 +336,6 @@ class Check_Melody_Note_Length_Jump (Check_Melody_Interval):
     # end def __init__
 
     def _check (self, current):
-        self.current = current
-
         # No check if this is a pause
         if not current.is_tone:
             return False
@@ -363,8 +365,6 @@ class Check_Melody_Note_Length_Double_Jump (Check_Melody_Interval):
     # end def __init__
 
     def _check (self, current):
-        self.current = current
-
         # No check if this is a pause
         if not current.is_tone:
             return False
@@ -402,7 +402,6 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
     """
 
     def _check (self, current):
-        self.current = current
         if not current.prev or not current.next:
             return False
 
@@ -454,7 +453,6 @@ class Check_Melody_Jump_Magdalena (Check_Melody_Jump):
     jump_sum = 0
 
     def _check (self, current):
-        self.current = current
         d = self.compute_interval ()
         if d is None:
             return False
@@ -492,6 +490,11 @@ class Check_Harmony (Check):
               )
             )
     # end def compute_description
+
+    def store_context (self, cf_obj, cp_obj):
+        self.cf_obj = cf_obj
+        self.cp_obj = cp_obj
+    # end def store_context
 
 # end class Check_Harmony
 
@@ -550,23 +553,17 @@ class Check_Harmony_Interval (Check_Harmony):
         for exception in self.exceptions:
             if exception.applies (self, cf_obj, cp_obj):
                 self.match_exc = exception
-                # self.cf_obj and self.cp_obj might have been changed
-                self.compute_interval (cf_obj, cp_obj)
                 return True
-        # self.cf_obj and self.cp_obj might have been changed
-        self.compute_interval (cf_obj, cp_obj)
         return False
     # end def check_exceptions
 
-    def compute_interval (self, cf_obj, cp_obj):
+    def compute_interval (self, cf_obj = None, cp_obj = None):
+        cf_obj = cf_obj or self.cf_obj
+        cp_obj = cp_obj or self.cp_obj
         assert cf_obj.overlaps_with_bind (cp_obj)
-        self.cf_obj = cf_obj
-        self.cp_obj = cp_obj
         if not cf_obj.is_tone or not cp_obj.is_tone:
             return
-        self.cft    = cf_obj.halftone.offset
-        self.cpt    = cp_obj.halftone.offset
-        d = self.cpt - self.cft
+        d = cp_obj.halftone.offset - cf_obj.halftone.offset
         if not self.signed:
             d = abs (d)
         if self.octave:
@@ -698,8 +695,6 @@ class Check_Melody_Jump_2 (Check_Harmony):
 
     def _check (self, cf_obj, cp_obj):
         assert cf_obj.overlaps_with_bind (cp_obj)
-        self.cp_obj = cp_obj
-        self.cf_obj = cf_obj
         # First we must establish that cp_obj and cf_obj both start at
         # the same offset, otherwise we won't have a jump on both
         if cp_obj.bar.idx != cf_obj.bar.idx:
