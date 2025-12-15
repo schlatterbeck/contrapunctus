@@ -1829,7 +1829,6 @@ class Test_Contrapunctus:
         self.generic_exception_suspension (abc_notation, expect, exp2)
     # end def test_exception_suspension_3
 
-    @pytest.mark.xfail
     def test_exception_suspension_breve (self):
         abc_notation = dedent \
             ("""

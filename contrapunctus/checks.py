@@ -1301,6 +1301,7 @@ class Exception_Harmony_Suspension (Harmony_Exception):
 
     def applies (self, parent, cf_obj, cp_obj):
         assert cf_obj.overlaps_with_bind (cp_obj)
+        self.parent = parent
 
         # Check if it's a dissonance that this exception handles
         d = parent.compute_interval (cf_obj, cp_obj)
@@ -1308,38 +1309,38 @@ class Exception_Harmony_Suspension (Harmony_Exception):
             return False
 
         # Must be on a strong beat (heavy half note position)
-        # Strong beats are at offset 0 and 8 in a 4/4 measure
+        # Strong beats are at offset 0 and 8 when counting in 1/8
         strong_beats = {0, 8}
 
         # The current location is the maximum of both combined offsets
-        cp_off = (cp_obj.bar.idx, cp_obj.offset)
-        cf_off = (cf_obj.bar.idx, cf_obj.offset)
-        maxoff = max (cp_off, cf_off)
+        # The maxoff is the voice that *changed*
+        cp_off = self.cp_off = (cp_obj.bar.idx, cp_obj.offset)
+        cf_off = self.cf_off = (cf_obj.bar.idx, cf_obj.offset)
+        maxoff = self.maxoff = max (cp_off, cf_off)
         if maxoff [1] not in strong_beats:
             return False
-
-        # Must be at least a half note (minima) duration
-        if cp_obj.length < 4:  # 4 = half note in our system
-            return False
+        if maxoff == cp_off:
+            changed_obj = cp_obj
+            kept_obj    = cf_obj
+        else:
+            changed_obj = cf_obj
+            kept_obj    = cp_obj
 
         # Check voice leading rules based on interval type
         if not self._check_voice_leading_rules (parent, cf_obj, cp_obj, d):
             return False
 
         # Step 1: Check consonant preparation
-        chk = self._check_consonant_preparation
-        if not (  chk (parent, cf_obj, cp_obj, False)
-               or chk (parent, cf_obj, cp_obj, True)
-               ):
+        if not self._check_consonant_preparation (cf_obj, cp_obj):
             return False
 
         # Step 2: Check that dissonance occurs when other voice moves
         # This is already established: We know we have dissonance now,
-        # we know the last interval was not dissonant and we know the CP
-        # has not changed. So the CF must have moved.
+        # we know the last interval was not dissonant and we know one
+        # voice has not changed. So the other voice must have moved.
 
         # Step 3: Check stepwise downward resolution
-        if not self._check_stepwise_resolution (parent, cf_obj, cp_obj):
+        if not self._check_stepwise_resolution (parent, changed_obj, kept_obj):
             return False
 
         return True
@@ -1366,79 +1367,74 @@ class Exception_Harmony_Suspension (Harmony_Exception):
         return False
     # end def _check_voice_leading_rules
 
-    def _check_consonant_preparation (self, parent, cf_obj, cp_obj, use_cf):
+    def _check_consonant_preparation (self, cf_obj, cp_obj):
         """ Step 1: Check that the suspension tone was introduced consonantly
             and held for at least a half note
         """
-        # Ether the CP or the CF changes and the other is kept equal
-        tone = cp_obj
-        if use_cf:
-            tone = cf_obj
-        # Check the *previous* interval: The tone must be the same
-        # halftone.
-        prev_tone = parent.h_interval [(use_cf + 1) % 2]
-        if not prev_tone or not prev_tone.is_tone:
+        # *The previous notes* must be at least a half note (minima) duration
+        # and must be *consonant*
+        minoff = min (self.cp_off, self.cf_off)
+        # If both starts are equal, both notes start here and none of
+        # the notes was kept into the dissonance
+        if minoff == self.maxoff:
             return False
-
-        # Must be the same pitch (tied or repeated)
-        if prev_tone.halftone != tone.halftone:
-            return False
-
-        # The prev_tone must either be the same as tone or bound to it
-        if prev_tone is not tone and not prev_tone.bind:
-            return False
-
-        # Must be at least a half note duration for preparation
-        if prev_tone.length < 4:
-            return False
-
-        # Find the corresponding CF tone for the preparation
-        prev_other = parent.h_interval [use_cf]
-        if not prev_other or not prev_other.is_tone:
-            return False
-
-        # The preparation must be consonant
-        if use_cf:
-            prep_interval = parent.compute_interval (prev_tone, prev_other)
+        # Now find the maximum of starts of last note keeping the one
+        # that was kept into the dissonance
+        if minoff == self.cp_off:
+            p_cp = cp_obj
+            p_cf = cf_obj.prev
         else:
-            prep_interval = parent.compute_interval (prev_other, prev_tone)
-        if prep_interval is None:
+            p_cf = cf_obj
+            p_cp = cp_obj.prev
+        if not p_cf or not p_cp:
             return False
-
+        p_cp_off = (p_cp.bar.idx, p_cp.offset)
+        p_cf_off = (p_cf.bar.idx, p_cf.offset)
+        m    = max (p_cp_off, p_cf_off)
+        # Now the difference (the time of consonance) must be >= 1/2 note
+        diff = self.maxoff [1] - m [1] \
+             + (self.maxoff [0] - m [0]) * p_cp.bar.duration
+        assert 0 < diff < 16
+        if diff < 4:  # 4/8 = half note in our system
+            return False
+        # Must be consonant
         # Consonant intervals (unison, third, fifth, sixth, octave)
         consonant_intervals = {0, 3, 4, 7, 8, 9}
-        return prep_interval in consonant_intervals
+        if self.parent.compute_interval (p_cf, p_cp) not in consonant_intervals:
+            return False
+        return True
     # end def _check_consonant_preparation
 
-    def _check_stepwise_resolution (self, parent, cf_obj, cp_obj):
+    def _check_stepwise_resolution (self, parent, ch_obj, kept_obj):
         """ Step 3: Check stepwise downward resolution to consonance
-            on the next weak beat
+            on the next weak beat. Note that the voice that was kept now
+            must change.
         """
-        next_cp = cp_obj.next_with_bind
-        if not next_cp or not next_cp.is_tone:
+        next_kept = kept_obj.next_with_bind
+        if not next_kept or not next_kept.is_tone:
             return False
 
         # Must resolve on a weak beat (not 0 or 8)
         weak_beats = {2, 4, 6, 10, 12, 14}
-        if next_cp.offset not in weak_beats:
+        if next_kept.offset not in weak_beats:
             return False
 
         # Must resolve downward by step (1 or 2 semitones)
-        resolution_interval = cp_obj.halftone.offset - next_cp.halftone.offset
-        if resolution_interval not in {1, 2}:
+        res_interval = kept_obj.halftone.offset - next_kept.halftone.offset
+        if res_interval not in {1, 2}:
             return False
 
-        # Find corresponding CF tone for resolution
-        next_cf = cf_obj.bar.get_by_offset (next_cp)
-        if not next_cf or not next_cf.is_tone:
+        # Find corresponding other voice tone for resolution
+        next_ch = ch_obj.bar.get_by_offset (next_kept)
+        if not next_ch or not next_ch.is_tone:
             return False
 
-        # next cf must be the same as cf
-        if next_cf != cf_obj:
+        # next ch must be the same as ch
+        if next_ch != ch_obj:
             return False
 
         # Resolution must be consonant
-        res_interval = parent.compute_interval (next_cf, next_cp)
+        res_interval = parent.compute_interval (next_ch, next_kept)
         if res_interval is None:
             return False
 
