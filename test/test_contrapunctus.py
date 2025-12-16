@@ -1651,7 +1651,6 @@ class Test_Contrapunctus:
         self.generic_exception_wechselnote (abc_notation, expect)
     # end def test_exception_harmony_wechselnote_WN_acc
 
-    @pytest.mark.xfail
     def test_exception_wechselnote_breve_noup (self):
         abc_notation = dedent \
             ("""

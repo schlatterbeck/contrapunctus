@@ -1123,7 +1123,7 @@ class Exception_Harmony_Wechselnote (Harmony_Exception):
         next_interval = n_cp_obj.halftone.offset - cp_obj.halftone.offset
 
         # Both intervals must be steps (1 or 2 semitones)
-        if not abs (prev_interval) <= 2 and abs (next_interval) <= 2:
+        if abs (prev_interval) > 2 or abs (next_interval) > 2:
             return False
         # Wechselnote: step away and back
         # (opposite directions, return to same tone)
