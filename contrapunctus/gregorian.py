@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright (C) 2017-2024
+# Copyright (C) 2017-2026
 # Magdalena Schlatterbeck
 # Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
@@ -21,7 +21,176 @@
 # 02110-1301, USA.
 # ****************************************************************************
 
-from .tune import halftone
+from .tune import Tone, halftone
+
+# These assume L:1/8, each end sequence consists of cp, cf in a separate
+# dictionary -- these must match by length, the first cp entry belongs
+# to the first cf entry, etc. Note that they need not have the same
+# length, the rest of the framework can generate tones where undefined.
+
+end_sequences = dict \
+    ( dorian =  dict
+        ( cp =
+            [ [('d',  8), ('^c', 4), ('d',  8)]
+            , [('d',  6), ('^c', 2), ('c',  2), ('B', 2), ('d', 8)]
+            , [('d',  6), ('B',  2), ('^c', 4), ('d', 8)]
+            , [('d',  6), ('^c', 2), ('c',  4), ('d', 8)]
+            , [('d',  6), ('^c', 1), ('B',  1), ('c', 4), ('d', 8)]
+            , [('^c', 4), ('d',  8)]
+            , [('c',  4), ('A',  4), ('d',  8)]
+            ]
+        , cf =
+            [ [('F',  8), ('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('E',  8), ('D',  8)]
+            , [('E',  8), ('D',  8)]
+            ]
+        )
+
+    , phrygian = dict
+        ( cp =
+            [ [('F',  8), ('E',  8)]
+            , [('B',  4), ('e',  8), ('d',  4), ('e', 8)]
+            , [('B',  4), ('e',  6), ('d',  2), ('d', 2), ('c', 2), ('e', 8)]
+            , [('B',  4), ('e',  6), ('c',  2), ('d', 4), ('e', 8)]
+            , [('B',  4), ('e',  6), ('d',  2), ('d', 4), ('e', 8)]
+            , [('B',  4), ('e',  6), ('d',  1), ('c', 1), ('d', 4), ('e', 8)]
+            , [('F',  2), ('G',  2), ('F',  4), ('E', 8)]
+            , [('F',  8), ('E',  8)]
+            ]
+        , cf =
+            [ [('D',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('D',  8), ('E',  8)]
+            , [('D',  8), ('E',  8)]
+            ]
+        )
+    , ionian = dict
+        ( cp =
+            [ [('c',  8), ('B',  4), ('c',  8)]
+            , [('c',  6), ('B',  2), ('B',  2), ('A', 2), ('c', 8)]
+            , [('c',  6), ('A',  2), ('B',  4), ('c', 8)]
+            , [('c',  6), ('B',  2), ('B',  4), ('c', 8)]
+            , [('c',  6), ('B',  1), ('A',  1), ('B', 4), ('c', 8)]
+            # quintfallend:
+            , [('c',  8), ('c',  8)]
+            , [('G',  8), ('C',  8)]
+            ]
+        , cf =
+            [ [('E',  8), ('D',  8), ('C',  8)]
+            , [('E',  8), ('D',  8), ('C',  8)]
+            , [('E',  8), ('D',  8), ('C',  8)]
+            , [('E',  8), ('D',  8), ('C',  8)]
+            , [('E',  8), ('D',  8), ('C',  8)]
+            # quintfallend:
+            , [('G',  8), ('C',  8)]
+            , [('C',  8), ('C',  8)]
+            ]
+        )
+    , hypodorian = dict
+        ( cp =
+            [ [('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('F',  8), ('E',  8), ('D',  8)]
+            , [('E',  8), ('D',  8)]
+            ]
+        , cf =
+            [ [('C',  4), ('A,', 4), ('D',  8)]
+            , [('D',  8), ('^C', 4), ('D',  8)]
+            , [('D',  6), ('^C', 2), ('C',  2), ('B', 2), ('D', 8)]
+            , [('D',  6), ('B',  2), ('^C', 4), ('D', 8)]
+            , [('D',  6), ('^C', 2), ('C',  4), ('D', 8)]
+            , [('D',  6), ('^C', 1), ('B,', 1), ('C', 4), ('D', 8)]
+            , [('^C', 4), ('D',  8)]
+            ]
+        )
+    , hypophrygian = dict
+        ( cp =
+            [ [('G',  8), ('F',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('G',  8), ('F',  8), ('E',  8)]
+            , [('D',  8), ('E',  8)]
+            , [('D',  8), ('E',  8)]
+            ]
+        , cf =
+            [ [('B,', 4), ('E',  8), ('D',  4), ('E', 8)]
+            , [('B,', 4), ('E',  6), ('D',  2), ('D', 2), ('C', 2), ('E', 8)]
+            , [('B,', 4), ('E',  6), ('C',  2), ('D', 4), ('E', 8)]
+            , [('B,', 4), ('E',  6), ('D',  2), ('D', 4), ('E', 8)]
+            , [('B,', 4), ('E',  6), ('D',  1), ('C', 1), ('D', 4), ('E', 8)]
+            , [('F',  2), ('G',  2), ('F',  4), ('E', 8)]
+            , [('F',  8), ('E',  8)]
+            ]
+        )
+    , hypoionian = dict
+        ( cp =
+            [ [('E',  8), ('D',  8), ('C',  8)]
+            , [('E',  8), ('D',  8), ('C',  8)]
+            , [('E',  8), ('D',  8), ('C',  8)]
+            , [('E',  8), ('D',  8), ('C',  8)]
+            , [('E',  8), ('D',  8), ('C',  8)]
+            ]
+        , cf =
+            [ [('C',  8), ('B,', 4), ('C',  8)]
+            , [('C',  6), ('B,', 2), ('B,', 2), ('A,', 2), ('C', 8)]
+            , [('C',  6), ('A,', 2), ('B,', 4), ('C',  8)]
+            , [('C',  6), ('B,', 2), ('B,', 4), ('C',  8)]
+            , [('C',  6), ('B,', 1), ('A,', 1), ('B,', 4), ('C', 8)]
+            ]
+        )
+    )
+# These are re-used from dorian FIXME: transpose
+end_sequences ['mixolydian']     = end_sequences ['dorian']
+end_sequences ['hypomixolydian'] = end_sequences ['hypodorian']
+end_sequences ['aeolian']        = end_sequences ['dorian']
+end_sequences ['hypoaeolian']    = end_sequences ['hypodorian']
+# And these are re-used from ionian FIXME: transpose
+end_sequences ['lydian']         = end_sequences ['ionian']
+end_sequences ['hypolydian']     = end_sequences ['hypoionian']
+# We currently do not have end-sequences for locrian and hypolocrian
+end_sequences ['locrian'] = dict (cp = [], cf = [])
+end_sequences ['hypolocrian'] = end_sequences ['locrian']
+
+intermediate_sequence = dict \
+    ( ionian = dict
+        ( cp =
+            [ [('E',  6), ('D',  1), ('C',  1), ('D',  4), ('E',  4), ('z', 4)]
+            ]
+        , cf =
+            [ [('A,', 8), ('B,', 8), ('C',  8)]
+            ]
+        )
+    , hypoionian = dict
+        ( cp = 
+            [ [('E',  8), ('D',  8), ('C',  8)]
+            ]
+        , cf =
+            [ [('C',  6), ('B,', 1), ('A,', 1), ('B,', 4), ('A,', 4), ('z', 4)]
+            ]
+        )
+    , dorian = dict
+        ( cp =
+            [ [('E',  4), ('F',  6), ('E',  1), ('D', 1), ('E', 4), ('F', 4)
+              , ('z', 4)
+              ]
+            ]
+        , cf =
+            [ [('A,', 8), ('C',  8), ('D',  8)]
+            ]
+        )
+    )
 
 class Gregorian (object):
     """
