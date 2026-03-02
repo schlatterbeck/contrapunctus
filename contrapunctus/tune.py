@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright (C) 2017-2025
+# Copyright (C) 2017-2026
 # Magdalena Schlatterbeck
 # Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
@@ -939,9 +939,22 @@ class Key (object):
         ( 'BbLoc', 'FLoc',  'CLoc',  'GLoc',  'DLoc',  'ALoc',  'ELoc'
         , 'BLoc',  'F#Loc', 'C#Loc', 'G#Loc', 'D#Loc', 'A#Loc', 'E#Loc', 'B#Loc'
         )
-    modes = ( 'ionian', 'major', 'aeolian', 'minor', 'mixolydian'
+    # The order is chose so that major and minor do not end up as key in
+    # the dictionary.
+    modes = ( 'major', 'ionian', 'minor', 'aeolian', 'mixolydian'
             , 'dorian', 'phrygian', 'lydian', 'locrian'
             )
+    key_offset = dict \
+        ( ionian     = halftone ('C').offset
+        , dorian     = halftone ('D').offset
+        , phrygian   = halftone ('E').offset
+        , lydian     = halftone ('F').offset
+        , mixolydian = halftone ('G').offset
+        , aeolian    = halftone ('A').offset
+        , locrian    = halftone ('B').offset
+        )
+    key_offset ['major'] = key_offset ['ionian']
+    key_offset ['minor'] = key_offset ['aeolian']
 
     table = {}
     reg   = {}
@@ -993,6 +1006,40 @@ class Key (object):
             t = -6
         return self.get (getattr (self, self.mode) [t + 7])
     # end def transpose
+
+    def transpose_offset (self, key):
+        """ Determine the offset in halftones for transposing to another key
+            Offset is in the range <12 (modulo octave) to fit the
+            definitions of the gregorian modes.
+        >>> io = Key.get ('C')
+        >>> io.transpose_offset (Key.get ('C'))
+        0
+        >>> io.transpose_offset (Key.get ('E'))
+        4
+        >>> io.transpose_offset (Key.get ('B'))
+        11
+        >>> io.transpose_offset (Key.get ('DDor'))
+        2
+        >>> io.transpose_offset (Key.get ('EDor'))
+        4
+        >>> io.transpose_offset (Key.get ('EPhr'))
+        4
+        >>> io.transpose_offset (Key.get ('FLyd'))
+        5
+        >>> io.transpose_offset (Key.get ('GMix'))
+        7
+        >>> io.transpose_offset (Key.get ('Am'))
+        9
+        >>> io.transpose_offset (Key.get ('BLoc'))
+        11
+        """
+        off = -self.key_offset [self.mode]
+        off -= 7 * self.offset # offset 7 is fifth
+        off += key.key_offset [key.mode]
+        off += 7 * key.offset # offset 7 is fifth
+        off %= 12
+        return off
+    # end def transpose_offset
 
     def __str__ (self):
         return self.name

@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2025 Dr. Ralf Schlatterbeck Open Source Consulting.
+# Copyright (C) 2017-2026 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
 # ****************************************************************************
@@ -2054,8 +2054,8 @@ class Test_Doctest:
     num_tests = dict \
         ( circle    =  2
         , gentune   =  9
-        , gregorian = 10
-        , tune      = 110
+        , gregorian = 11
+        , tune      = 121
         )
 
     def test_doctest (self):

@@ -21,7 +21,7 @@
 # 02110-1301, USA.
 # ****************************************************************************
 
-from .tune import Tone, halftone
+from .tune import Tone, halftone, Key
 
 # These assume L:1/8, each end sequence consists of cp, cf in a separate
 # dictionary -- these must match by length, the first cp entry belongs
@@ -49,7 +49,6 @@ end_sequences = dict \
             , [('E',  8), ('D',  8)]
             ]
         )
-
     , phrygian = dict
         ( cp =
             [ [('F',  8), ('E',  8)]
@@ -151,19 +150,37 @@ end_sequences = dict \
             ]
         )
     )
-# These are re-used from dorian FIXME: transpose
-end_sequences ['mixolydian']     = end_sequences ['dorian']
-end_sequences ['hypomixolydian'] = end_sequences ['hypodorian']
-end_sequences ['aeolian']        = end_sequences ['dorian']
-end_sequences ['hypoaeolian']    = end_sequences ['hypodorian']
-# And these are re-used from ionian FIXME: transpose
-end_sequences ['lydian']         = end_sequences ['ionian']
-end_sequences ['hypolydian']     = end_sequences ['hypoionian']
 # We currently do not have end-sequences for locrian and hypolocrian
 end_sequences ['locrian'] = dict (cp = [], cf = [])
 end_sequences ['hypolocrian'] = end_sequences ['locrian']
 
-intermediate_sequence = dict \
+# mixolydian and aeolian end-sequences are re-used from dorian
+# lydian end-sequence is re-used from ionian
+# Same for the hypo variants
+for k, lst in (('dorian', ('mixolydian', 'aeolian')), ('ionian', ('lydian',))):
+    for name in lst:
+        frm = Key.get (getattr (Key, k)[7])
+        offset = frm.transpose_offset (Key.get (getattr (Key, name)[7]))
+        end_sequences [name]          = dict (cp = [], cf = [])
+        end_sequences ['hypo' + name] = dict (cp = [], cf = [])
+        for voice in ('cp', 'cf'):
+            for sq in end_sequences [k][voice]:
+                end_sequences [name][voice].append ([])
+                t_sq = end_sequences [name][voice][-1]
+                for ht, l in sq:
+                    t_ht = halftone (ht).transpose (offset)
+                    t_sq.append ((str (t_ht), l))
+            for sq in end_sequences ['hypo' + k][voice]:
+                end_sequences ['hypo' + name][voice].append ([])
+                t_sq = end_sequences ['hypo' + name][voice][-1]
+                for ht, l in sq:
+                    t_ht = halftone (ht).transpose (offset)
+                    t_sq.append ((str (t_ht), l))
+# Common aliases
+end_sequences ['major'] = end_sequences ['ionian']
+end_sequences ['minor'] = end_sequences ['aeolian']
+
+intermediate_sequences = dict \
     ( ionian = dict
         ( cp =
             [ [('E',  6), ('D',  1), ('C',  1), ('D',  4), ('E',  4), ('z', 4)]
@@ -213,13 +230,77 @@ class Gregorian (object):
     C
     >>> d.subsemitonium
     ^c
+    >>> for g in mixolydian, aeolian, lydian:
+    ...     print ("Mode: %s" % g.mode)
+    ...     for voice in ('cp', 'cf'):
+    ...         print ('Voice: %s' % voice)
+    ...         for sq in g.es [voice]:
+    ...             print (str (sq))
+    Mode: mixolydian
+    Voice: cp
+    [('g', 8), ('^f', 4), ('g', 8)]
+    [('g', 6), ('^f', 2), ('f', 2), ('e', 2), ('g', 8)]
+    [('g', 6), ('e', 2), ('^f', 4), ('g', 8)]
+    [('g', 6), ('^f', 2), ('f', 4), ('g', 8)]
+    [('g', 6), ('^f', 1), ('e', 1), ('f', 4), ('g', 8)]
+    [('^f', 4), ('g', 8)]
+    [('f', 4), ('d', 4), ('g', 8)]
+    Voice: cf
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('A', 8), ('G', 8)]
+    [('A', 8), ('G', 8)]
+    Mode: aeolian
+    Voice: cp
+    [('a', 8), ('^g', 4), ('a', 8)]
+    [('a', 6), ('^g', 2), ('g', 2), ('^f', 2), ('a', 8)]
+    [('a', 6), ('^f', 2), ('^g', 4), ('a', 8)]
+    [('a', 6), ('^g', 2), ('g', 4), ('a', 8)]
+    [('a', 6), ('^g', 1), ('^f', 1), ('g', 4), ('a', 8)]
+    [('^g', 4), ('a', 8)]
+    [('g', 4), ('e', 4), ('a', 8)]
+    Voice: cf
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('B', 8), ('A', 8)]
+    [('B', 8), ('A', 8)]
+    Mode: lydian
+    Voice: cp
+    [('f', 8), ('e', 4), ('f', 8)]
+    [('f', 6), ('e', 2), ('e', 2), ('d', 2), ('f', 8)]
+    [('f', 6), ('d', 2), ('e', 4), ('f', 8)]
+    [('f', 6), ('e', 2), ('e', 4), ('f', 8)]
+    [('f', 6), ('e', 1), ('d', 1), ('e', 4), ('f', 8)]
+    [('f', 8), ('f', 8)]
+    [('c', 8), ('F', 8)]
+    Voice: cf
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('c', 8), ('F', 8)]
+    [('F', 8), ('F', 8)]
     """
+
+    end_sequences          = end_sequences
+    intermediate_sequences = intermediate_sequences
 
     def __init__ (self, ambitus, key, offset = 0):
         assert len (ambitus) == 7
         self.ambitus = [halftone (x) for x in ambitus]
-        self.key     = key
+        self.key     = Key.get (key)
         self.offset  = offset
+        self.mode    = self.key.mode
+        self.es      = self.end_sequences [self.mode]
+        assert len (self.es ['cp']) == len (self.es ['cf'])
+        self.eslen   = len (self.es ['cp'])
     # end def __init__
 
     @property
@@ -250,6 +331,13 @@ class Gregorian (object):
         return self.ambitus [m].transpose_octaves (d)
     # end def __getitem__
 
+    def transpose (self, key, halftone):
+        """ Transpose a halftone to another key
+        """
+        offset = self.key.transpose_offset (key)
+        return halftone.transpose (offset)
+    # end def transpose
+
 # end class Gregorian
 
 ionian         = Gregorian (['C', 'D', 'E', 'F', 'G', 'A', 'B'], key = 'C')
@@ -266,7 +354,6 @@ aeolian        = Gregorian (['A', 'B', 'c', 'd', 'e', 'f', 'g'], key = 'Am')
 hypoaeolian    = Gregorian (aeolian.ambitus, aeolian.key, offset = -3)
 locrian        = Gregorian (['B', 'c', 'd', 'e', 'f', 'g', 'a'], key = 'BLoc')
 hypolocrian    = Gregorian (locrian.ambitus, locrian.key, offset = -3)
-
 
 gregorian_modes = dict \
     ( ionian     = (ionian,     hypoionian)
