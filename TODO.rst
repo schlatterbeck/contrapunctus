@@ -9,6 +9,7 @@ Allgemein
 + Punktierte
 - nicht ständig die Tonlänge ändern (mehr Gruppen von Achteln oder Vierteln)?
 + Synkopen (kurz-lang(-lang-lang-...)-kurz)
+- Fix Synkopen: Parallele Synkopen sind keine
 
 + Notenmaterial (akzidenzien) und ambitus
 + Durchgang, Wechselnote Regeln
