@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright (C) 2017-2025
+# Copyright (C) 2017-2026
 # Magdalena Schlatterbeck
 # Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
@@ -225,7 +225,8 @@ class Contrapunctus:
             argv.extend (line.split ())
         self.orig_args = self.cmd.parse_args (argv)
         # Get necessery args to self.args:
-        for a in ('checks', 'gregorian_mode', 'rhythm'):
+        for a in \
+            ('checks', 'gregorian_mode', 'rhythm', 'randomize_end_sequence'):
             setattr (self.args, a, getattr (self.orig_args, a))
         self.get_checks ()
         self.mode = gregorian_modes [self.args.gregorian_mode]
@@ -1063,6 +1064,13 @@ def contrapunctus_cmd (argv = None):
         , default = 10000
         )
     cmd.add_argument \
+        ( "-N", "--new-style"
+        , help    = "Use new-style search: This currently implies"
+                    " --rhythm=breve --checks=special"
+                    " --randomize-end-sequence"
+        , action  = 'store_true'
+        )
+    cmd.add_argument \
         ( "--no-check-cf", "--no-check-cantus-firmus"
         , help    = "Do not check cantus firmus melody during search,"
                     " applies only to explicit cantus firmus with"
@@ -1096,6 +1104,12 @@ def contrapunctus_cmd (argv = None):
         , help    = "Print frequency, default=%(default)s"
         , type    = int
         , default = 10
+        )
+    cmd.add_argument \
+        ( "-e", "--randomize-end-sequence"
+        , help    = "Select random end sequence from choices, default is"
+                    " only one hard-coded end sequence"
+        , action  = 'store_true'
         )
     rhythm = ('breve', 'semibreve')
     cmd.add_argument \
@@ -1153,6 +1167,10 @@ def main (argv = None):
     """
     cmd  = contrapunctus_cmd ()
     args = cmd.parse_args (argv)
+    if args.new_style:
+        args.checks = 'special'
+        args.rhythm = 'breve'
+        args.randomize_end_sequence = True
     if args.cantus_firmus == '+' and not args.gene_file:
         print ('--cantus-firmus=+ needs --gene-file option')
         return 1

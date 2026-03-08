@@ -2054,8 +2054,8 @@ class Test_Doctest:
     num_tests = dict \
         ( circle    =  2
         , gentune   =  9
-        , gregorian = 11
-        , tune      = 121
+        , gregorian = 16
+        , tune      = 125
         )
 
     def test_doctest (self):

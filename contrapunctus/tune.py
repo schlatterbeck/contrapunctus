@@ -975,6 +975,23 @@ class Key (object):
         return cls.reg [name]
     # end def get
 
+    @classmethod
+    def byname (cls, name):
+        """ Get by name, e.g. 'dorian', this returns the *middle* key
+        >>> Key.byname ('dorian')
+        DDor
+        >>> Key.byname ('hypodorian')
+        DDor
+        >>> Key.byname ('phrygian')
+        EPhr
+        >>> Key.byname ('hypophrygian')
+        EPhr
+        """
+        if name.startswith ('hypo'):
+            name = name [4:]
+        return cls.get (getattr (cls, name)[7])
+    # end def byname
+
     @cached_property
     def accidentals (self):
         assert -7 <= self.offset <= 7

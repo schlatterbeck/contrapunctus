@@ -23,188 +23,258 @@
 
 from .tune import Tone, halftone, Key
 
+class End_Sequence:
+
+    def __init__ (self, sequence):
+        self.sequence = tuple ((self.halftone (a), b) for a, b in sequence)
+        self.len = sum (k [1] for k in self.sequence)
+    # end def __init__
+
+    def __iter__ (self):
+        return iter (self.sequence)
+    # end def __iter__
+
+    def __len__ (self):
+        return self.len
+    # end def __len__
+
+    def __str__ (self):
+        return str (list ((str (a), b) for a, b in self.sequence))
+    # end def __str__
+
+    @classmethod
+    def halftone (cls, x):
+        """ Use normal halftone if x != 'z', else 'z'
+        """
+        if x == 'z':
+            return x
+        return halftone (x)
+    # end def halftone
+
+    def transpose (self, key1, key2):
+        """ Transpose from key1 to key2
+        """
+        offset = key1.transpose_offset (key2)
+        return self.__class__ \
+            ((a.transpose (offset), b) for a, b in self.sequence)
+    # end def transpose
+
+# end class End_Sequence
+ES = End_Sequence
+
+class Mode_End_Sequences:
+
+    def __init__ (self, modename, cf, cp):
+        self.cp       = cp
+        self.cf       = cf
+        self.modename = modename
+        assert len (cp) == len (cf)
+        if len (cp) == 0:
+            self.min_cf_len = self.max_cf_len = 0
+            self.min_cp_len = self.max_cp_len = 0
+        else:
+            self.min_cf_len = min (len (x) for x in self.cf)
+            self.max_cf_len = max (len (x) for x in self.cf)
+            self.min_cp_len = min (len (x) for x in self.cp)
+            self.max_cp_len = max (len (x) for x in self.cp)
+    # end def __init__
+
+    def transpose (self, other_modename):
+        frm = Key.byname (self.modename)
+        to  = Key.byname (other_modename)
+        result = {}
+        for v in 'cp', 'cf':
+            voice = getattr (self, v)
+            result [v] = []
+            for es in voice:
+                result [v].append (es.transpose (frm, to))
+        return self.__class__ (other_modename, **result)
+    # end def transpose
+
+# end class Mode_End_Sequences
+
 # These assume L:1/8, each end sequence consists of cp, cf in a separate
 # dictionary -- these must match by length, the first cp entry belongs
 # to the first cf entry, etc. Note that they need not have the same
 # length, the rest of the framework can generate tones where undefined.
 
 end_sequences = dict \
-    ( dorian =  dict
-        ( cp =
-            [ [('d',  8), ('^c', 4), ('d',  8)]
-            , [('d',  6), ('^c', 2), ('c',  2), ('B', 2), ('d', 8)]
-            , [('d',  6), ('B',  2), ('^c', 4), ('d', 8)]
-            , [('d',  6), ('^c', 2), ('c',  4), ('d', 8)]
-            , [('d',  6), ('^c', 1), ('B',  1), ('c', 4), ('d', 8)]
-            , [('^c', 4), ('d',  8)]
-            , [('c',  4), ('A',  4), ('d',  8)]
+    ( dorian =  Mode_End_Sequences
+        ( 'dorian'
+        , cp =
+            [ ES ([('d',  8), ('^c', 4), ('d',  8)])
+            , ES ([('d',  6), ('^c', 2), ('c',  2), ('B', 2), ('d', 8)])
+            , ES ([('d',  6), ('B',  2), ('^c', 4), ('d', 8)])
+            , ES ([('d',  6), ('^c', 2), ('c',  4), ('d', 8)])
+            , ES ([('d',  6), ('^c', 1), ('B',  1), ('c', 4), ('d', 8)])
+            , ES ([('^c', 4), ('d',  8)])
+            , ES ([('c',  4), ('A',  4), ('d',  8)])
             ]
         , cf =
-            [ [('F',  8), ('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('E',  8), ('D',  8)]
-            , [('E',  8), ('D',  8)]
+            [ ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('E',  8), ('D',  8)])
+            , ES ([('E',  8), ('D',  8)])
             ]
         )
-    , phrygian = dict
-        ( cp =
-            [ [('F',  8), ('E',  8)]
-            , [('B',  4), ('e',  8), ('d',  4), ('e', 8)]
-            , [('B',  4), ('e',  6), ('d',  2), ('d', 2), ('c', 2), ('e', 8)]
-            , [('B',  4), ('e',  6), ('c',  2), ('d', 4), ('e', 8)]
-            , [('B',  4), ('e',  6), ('d',  2), ('d', 4), ('e', 8)]
-            , [('B',  4), ('e',  6), ('d',  1), ('c', 1), ('d', 4), ('e', 8)]
-            , [('F',  2), ('G',  2), ('F',  4), ('E', 8)]
-            , [('F',  8), ('E',  8)]
+    , phrygian = Mode_End_Sequences
+        ( 'phrygian'
+        , cp =
+            [ ES ([('F', 8), ('E', 8)])
+            , ES ([('B', 4), ('e', 8), ('d', 4), ('e', 8)])
+            , ES ([('B', 4), ('e', 6), ('d', 2), ('d', 2), ('c', 2), ('e', 8)])
+            , ES ([('B', 4), ('e', 6), ('c', 2), ('d', 4), ('e', 8)])
+            , ES ([('B', 4), ('e', 6), ('d', 2), ('d', 4), ('e', 8)])
+            , ES ([('B', 4), ('e', 6), ('d', 1), ('c', 1), ('d', 4), ('e', 8)])
+            , ES ([('F', 2), ('G', 2), ('F', 4), ('E', 8)])
+            , ES ([('F', 8), ('E', 8)])
             ]
         , cf =
-            [ [('D',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('D',  8), ('E',  8)]
-            , [('D',  8), ('E',  8)]
+            [ ES ([('D', 8), ('E', 8)])
+            , ES ([('G', 8), ('F', 8), ('E', 8)])
+            , ES ([('G', 8), ('F', 8), ('E', 8)])
+            , ES ([('G', 8), ('F', 8), ('E', 8)])
+            , ES ([('G', 8), ('F', 8), ('E', 8)])
+            , ES ([('G', 8), ('F', 8), ('E', 8)])
+            , ES ([('D', 8), ('E', 8)])
+            , ES ([('D', 8), ('E', 8)])
             ]
         )
-    , ionian = dict
-        ( cp =
-            [ [('c',  8), ('B',  4), ('c',  8)]
-            , [('c',  6), ('B',  2), ('B',  2), ('A', 2), ('c', 8)]
-            , [('c',  6), ('A',  2), ('B',  4), ('c', 8)]
-            , [('c',  6), ('B',  2), ('B',  4), ('c', 8)]
-            , [('c',  6), ('B',  1), ('A',  1), ('B', 4), ('c', 8)]
+    , ionian = Mode_End_Sequences
+        ( 'ionian'
+        , cp =
+            [ ES ([('c', 8), ('B', 4), ('c', 8)])
+            , ES ([('c', 6), ('B', 2), ('B', 2), ('A', 2), ('c', 8)])
+            , ES ([('c', 6), ('A', 2), ('B', 4), ('c', 8)])
+            , ES ([('c', 6), ('B', 2), ('B', 4), ('c', 8)])
+            , ES ([('c', 6), ('B', 1), ('A', 1), ('B', 4), ('c', 8)])
             # quintfallend:
-            , [('c',  8), ('c',  8)]
-            , [('G',  8), ('C',  8)]
+            , ES ([('c', 8), ('c', 8)])
+            , ES ([('G', 8), ('C', 8)])
             ]
         , cf =
-            [ [('E',  8), ('D',  8), ('C',  8)]
-            , [('E',  8), ('D',  8), ('C',  8)]
-            , [('E',  8), ('D',  8), ('C',  8)]
-            , [('E',  8), ('D',  8), ('C',  8)]
-            , [('E',  8), ('D',  8), ('C',  8)]
+            [ ES ([('E', 8), ('D', 8), ('C', 8)])
+            , ES ([('E', 8), ('D', 8), ('C', 8)])
+            , ES ([('E', 8), ('D', 8), ('C', 8)])
+            , ES ([('E', 8), ('D', 8), ('C', 8)])
+            , ES ([('E', 8), ('D', 8), ('C', 8)])
             # quintfallend:
-            , [('G',  8), ('C',  8)]
-            , [('C',  8), ('C',  8)]
+            , ES ([('G', 8), ('C', 8)])
+            , ES ([('C', 8), ('C', 8)])
             ]
         )
-    , hypodorian = dict
-        ( cp =
-            [ [('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('F',  8), ('E',  8), ('D',  8)]
-            , [('E',  8), ('D',  8)]
+    , hypodorian = Mode_End_Sequences
+        ( 'hypodorian'
+        , cp =
+            [ ES ([('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('F',  8), ('E',  8), ('D',  8)])
+            , ES ([('E',  8), ('D',  8)])
             ]
         , cf =
-            [ [('C',  4), ('A,', 4), ('D',  8)]
-            , [('D',  8), ('^C', 4), ('D',  8)]
-            , [('D',  6), ('^C', 2), ('C',  2), ('B', 2), ('D', 8)]
-            , [('D',  6), ('B',  2), ('^C', 4), ('D', 8)]
-            , [('D',  6), ('^C', 2), ('C',  4), ('D', 8)]
-            , [('D',  6), ('^C', 1), ('B,', 1), ('C', 4), ('D', 8)]
-            , [('^C', 4), ('D',  8)]
+            [ ES ([('C',  4), ('A,', 4), ('D',  8)])
+            , ES ([('D',  8), ('^C', 4), ('D',  8)])
+            , ES ([('D',  6), ('^C', 2), ('C',  2), ('B', 2), ('D', 8)])
+            , ES ([('D',  6), ('B',  2), ('^C', 4), ('D', 8)])
+            , ES ([('D',  6), ('^C', 2), ('C',  4), ('D', 8)])
+            , ES ([('D',  6), ('^C', 1), ('B,', 1), ('C', 4), ('D', 8)])
+            , ES ([('^C', 4), ('D',  8)])
             ]
         )
-    , hypophrygian = dict
-        ( cp =
-            [ [('G',  8), ('F',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('G',  8), ('F',  8), ('E',  8)]
-            , [('D',  8), ('E',  8)]
-            , [('D',  8), ('E',  8)]
+    , hypophrygian = Mode_End_Sequences
+        ( 'hypophrygian'
+        , cp =
+            [ ES ([('G',  8), ('F', 8), ('E', 8)])
+            , ES ([('G',  8), ('F', 8), ('E', 8)])
+            , ES ([('G',  8), ('F', 8), ('E', 8)])
+            , ES ([('G',  8), ('F', 8), ('E', 8)])
+            , ES ([('G',  8), ('F', 8), ('E', 8)])
+            , ES ([('D',  8), ('E', 8)])
+            , ES ([('D',  8), ('E', 8)])
             ]
         , cf =
-            [ [('B,', 4), ('E',  8), ('D',  4), ('E', 8)]
-            , [('B,', 4), ('E',  6), ('D',  2), ('D', 2), ('C', 2), ('E', 8)]
-            , [('B,', 4), ('E',  6), ('C',  2), ('D', 4), ('E', 8)]
-            , [('B,', 4), ('E',  6), ('D',  2), ('D', 4), ('E', 8)]
-            , [('B,', 4), ('E',  6), ('D',  1), ('C', 1), ('D', 4), ('E', 8)]
-            , [('F',  2), ('G',  2), ('F',  4), ('E', 8)]
-            , [('F',  8), ('E',  8)]
+            [ ES ([('B,', 4), ('E', 8), ('D', 4), ('E', 8)])
+            , ES ([('B,', 4), ('E', 6), ('D', 2), ('D', 2), ('C', 2), ('E', 8)])
+            , ES ([('B,', 4), ('E', 6), ('C', 2), ('D', 4), ('E', 8)])
+            , ES ([('B,', 4), ('E', 6), ('D', 2), ('D', 4), ('E', 8)])
+            , ES ([('B,', 4), ('E', 6), ('D', 1), ('C', 1), ('D', 4), ('E', 8)])
+            , ES ([('F',  2), ('G', 2), ('F', 4), ('E', 8)])
+            , ES ([('F',  8), ('E', 8)])
             ]
         )
-    , hypoionian = dict
-        ( cp =
-            [ [('E',  8), ('D',  8), ('C',  8)]
-            , [('E',  8), ('D',  8), ('C',  8)]
-            , [('E',  8), ('D',  8), ('C',  8)]
-            , [('E',  8), ('D',  8), ('C',  8)]
-            , [('E',  8), ('D',  8), ('C',  8)]
+    , hypoionian = Mode_End_Sequences
+        ( 'hypoionian'
+        , cp =
+            [ ES ([('E', 8), ('D',  8), ('C',  8)])
+            , ES ([('E', 8), ('D',  8), ('C',  8)])
+            , ES ([('E', 8), ('D',  8), ('C',  8)])
+            , ES ([('E', 8), ('D',  8), ('C',  8)])
+            , ES ([('E', 8), ('D',  8), ('C',  8)])
             ]
         , cf =
-            [ [('C',  8), ('B,', 4), ('C',  8)]
-            , [('C',  6), ('B,', 2), ('B,', 2), ('A,', 2), ('C', 8)]
-            , [('C',  6), ('A,', 2), ('B,', 4), ('C',  8)]
-            , [('C',  6), ('B,', 2), ('B,', 4), ('C',  8)]
-            , [('C',  6), ('B,', 1), ('A,', 1), ('B,', 4), ('C', 8)]
+            [ ES ([('C', 8), ('B,', 4), ('C',  8)])
+            , ES ([('C', 6), ('B,', 2), ('B,', 2), ('A,', 2), ('C', 8)])
+            , ES ([('C', 6), ('A,', 2), ('B,', 4), ('C',  8)])
+            , ES ([('C', 6), ('B,', 2), ('B,', 4), ('C',  8)])
+            , ES ([('C', 6), ('B,', 1), ('A,', 1), ('B,', 4), ('C', 8)])
             ]
         )
     )
 # We currently do not have end-sequences for locrian and hypolocrian
-end_sequences ['locrian'] = dict (cp = [], cf = [])
-end_sequences ['hypolocrian'] = end_sequences ['locrian']
+end_sequences ['locrian'] = Mode_End_Sequences ('locrian', [], [])
+end_sequences ['hypolocrian'] = Mode_End_Sequences ('hypolocrian', [], [])
 
 # mixolydian and aeolian end-sequences are re-used from dorian
 # lydian end-sequence is re-used from ionian
 # Same for the hypo variants
 for k, lst in (('dorian', ('mixolydian', 'aeolian')), ('ionian', ('lydian',))):
+    hk = 'hypo' + k
     for name in lst:
-        frm = Key.get (getattr (Key, k)[7])
-        offset = frm.transpose_offset (Key.get (getattr (Key, name)[7]))
-        end_sequences [name]          = dict (cp = [], cf = [])
-        end_sequences ['hypo' + name] = dict (cp = [], cf = [])
-        for voice in ('cp', 'cf'):
-            for sq in end_sequences [k][voice]:
-                end_sequences [name][voice].append ([])
-                t_sq = end_sequences [name][voice][-1]
-                for ht, l in sq:
-                    t_ht = halftone (ht).transpose (offset)
-                    t_sq.append ((str (t_ht), l))
-            for sq in end_sequences ['hypo' + k][voice]:
-                end_sequences ['hypo' + name][voice].append ([])
-                t_sq = end_sequences ['hypo' + name][voice][-1]
-                for ht, l in sq:
-                    t_ht = halftone (ht).transpose (offset)
-                    t_sq.append ((str (t_ht), l))
+        hname = 'hypo' + name
+        end_sequences [name]  = end_sequences [k].transpose (name)
+        end_sequences [hname] = end_sequences [hk].transpose (hname)
 # Common aliases
 end_sequences ['major'] = end_sequences ['ionian']
 end_sequences ['minor'] = end_sequences ['aeolian']
 
 intermediate_sequences = dict \
-    ( ionian = dict
-        ( cp =
-            [ [('E',  6), ('D',  1), ('C',  1), ('D',  4), ('E',  4), ('z', 4)]
+    ( ionian = Mode_End_Sequences
+        ( 'ionian'
+        , cp =
+            [ ES ([ ('E',  6), ('D',  1), ('C',  1), ('D',  4)
+                  , ('E', 4), ('z', 4)
+                  ])
             ]
         , cf =
-            [ [('A,', 8), ('B,', 8), ('C',  8)]
+            [ ES ([('A,', 8), ('B,', 8), ('C',  8)])
             ]
         )
-    , hypoionian = dict
-        ( cp = 
-            [ [('E',  8), ('D',  8), ('C',  8)]
+    , hypoionian = Mode_End_Sequences
+        ( 'hypoionian'
+        , cp = 
+            [ ES ([('E',  8), ('D',  8), ('C',  8)])
             ]
         , cf =
-            [ [('C',  6), ('B,', 1), ('A,', 1), ('B,', 4), ('A,', 4), ('z', 4)]
+            [ ES ([ ('C',  6), ('B,', 1), ('A,', 1), ('B,', 4)
+                  , ('A,', 4), ('z', 4)
+                  ])
             ]
         )
-    , dorian = dict
-        ( cp =
-            [ [('E',  4), ('F',  6), ('E',  1), ('D', 1), ('E', 4), ('F', 4)
-              , ('z', 4)
-              ]
+    , dorian = Mode_End_Sequences
+        ( 'dorian'
+        , cp =
+            [ ES ([ ('E',  4), ('F',  6), ('E',  1), ('D', 1), ('E', 4)
+                  , ('F', 4), ('z', 4)
+                  ])
             ]
         , cf =
-            [ [('A,', 8), ('C',  8), ('D',  8)]
+            [ ES ([('A,', 8), ('C',  8), ('D',  8)])
             ]
         )
     )
@@ -230,11 +300,16 @@ class Gregorian (object):
     C
     >>> d.subsemitonium
     ^c
-    >>> for g in mixolydian, aeolian, lydian:
+    >>> print (type (dorian.es))
+    <class 'contrapunctus.gregorian.Mode_End_Sequences'>
+    >>> print (type (mixolydian.es))
+    <class 'contrapunctus.gregorian.Mode_End_Sequences'>
+    >>> modes = [mixolydian, aeolian, lydian]
+    >>> for g in modes:
     ...     print ("Mode: %s" % g.mode)
     ...     for voice in ('cp', 'cf'):
     ...         print ('Voice: %s' % voice)
-    ...         for sq in g.es [voice]:
+    ...         for sq in getattr (g.es, voice):
     ...             print (str (sq))
     Mode: mixolydian
     Voice: cp
@@ -287,6 +362,60 @@ class Gregorian (object):
     [('A', 8), ('G', 8), ('F', 8)]
     [('c', 8), ('F', 8)]
     [('F', 8), ('F', 8)]
+    >>> modes = [hypomixolydian, hypoaeolian, hypolydian]
+    >>> for g in modes:
+    ...     print ("Mode: %s" % g.mode)
+    ...     for voice in ('cp', 'cf'):
+    ...         print ('Voice: %s' % voice)
+    ...         for sq in getattr (g.es, voice):
+    ...             print (str (sq))
+    Mode: hypomixolydian
+    Voice: cp
+    [('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('A', 8), ('G', 8)]
+    Voice: cf
+    [('F', 4), ('D', 4), ('G', 8)]
+    [('G', 8), ('^F', 4), ('G', 8)]
+    [('G', 6), ('^F', 2), ('F', 2), ('e', 2), ('G', 8)]
+    [('G', 6), ('e', 2), ('^F', 4), ('G', 8)]
+    [('G', 6), ('^F', 2), ('F', 4), ('G', 8)]
+    [('G', 6), ('^F', 1), ('E', 1), ('F', 4), ('G', 8)]
+    [('^F', 4), ('G', 8)]
+    Mode: hypoaeolian
+    Voice: cp
+    [('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('B', 8), ('A', 8)]
+    Voice: cf
+    [('G', 4), ('E', 4), ('A', 8)]
+    [('A', 8), ('^G', 4), ('A', 8)]
+    [('A', 6), ('^G', 2), ('G', 2), ('^f', 2), ('A', 8)]
+    [('A', 6), ('^f', 2), ('^G', 4), ('A', 8)]
+    [('A', 6), ('^G', 2), ('G', 4), ('A', 8)]
+    [('A', 6), ('^G', 1), ('^F', 1), ('G', 4), ('A', 8)]
+    [('^G', 4), ('A', 8)]
+    Mode: hypolydian
+    Voice: cp
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    Voice: cf
+    [('F', 8), ('E', 4), ('F', 8)]
+    [('F', 6), ('E', 2), ('E', 2), ('D', 2), ('F', 8)]
+    [('F', 6), ('D', 2), ('E', 4), ('F', 8)]
+    [('F', 6), ('E', 2), ('E', 4), ('F', 8)]
+    [('F', 6), ('E', 1), ('D', 1), ('E', 4), ('F', 8)]
     """
 
     end_sequences          = end_sequences
@@ -298,9 +427,18 @@ class Gregorian (object):
         self.key     = Key.get (key)
         self.offset  = offset
         self.mode    = self.key.mode
+        if self.offset:
+            assert self.offset == -3
+            self.mode = 'hypo' + self.mode
         self.es      = self.end_sequences [self.mode]
-        assert len (self.es ['cp']) == len (self.es ['cf'])
-        self.eslen   = len (self.es ['cp'])
+
+        # This only applies to Rhythm_Breve, for Rhythm_Semibreve this
+        # is hard-coded. And it is only used when --randomize-end-sequence
+        # is specified.
+        self.default_es = dict \
+            ( cf = [(str (self.step2),         8), (str (self.finalis), 16)]
+            , cp = [(str (self.subsemitonium), 8), (str (self [7]),     16)]
+            )
     # end def __init__
 
     @property
@@ -330,13 +468,6 @@ class Gregorian (object):
         d, m = divmod (index, 7)
         return self.ambitus [m].transpose_octaves (d)
     # end def __getitem__
-
-    def transpose (self, key, halftone):
-        """ Transpose a halftone to another key
-        """
-        offset = self.key.transpose_offset (key)
-        return halftone.transpose (offset)
-    # end def transpose
 
 # end class Gregorian
 
