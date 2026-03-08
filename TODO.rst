@@ -31,6 +31,10 @@ Allgemein
   dotted 1/2 is seen an 1/4 after that is allowed. After dotted no
   syncope is allowed.
 - Allow more different end-sequences not just a single hard-coded one
+- Check that for hypo modes the check for 'voice is upper' does the
+  correct thing: In that case the CF is the upper voice
+- For hypo-modes when generating abc-notation, put the CF in the upper
+  stave
 
 Done
 ++++
