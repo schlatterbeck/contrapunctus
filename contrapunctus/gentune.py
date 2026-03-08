@@ -694,7 +694,7 @@ class Contrapunctus:
     def set_rhythm (self, tune_length = None):
         if tune_length is None:
             tune_length = self.args.tune_length
-        rhythm      = \
+        rhythm = \
             'Rhythm_' + self.args.rhythm [0].upper () + self.args.rhythm [1:]
         self.rhythm = globals () [rhythm] (self, tune_length)
     # end def set_rhythm

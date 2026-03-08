@@ -2052,10 +2052,11 @@ class Test_Doctest:
     flags = doctest.NORMALIZE_WHITESPACE
 
     num_tests = dict \
-        ( circle    =  2
-        , gentune   =  9
-        , gregorian = 16
+        ( circle    =   2
+        , gentune   =   9
+        , gregorian =  16
         , tune      = 125
+        , rhythm    =   4
         )
 
     def test_doctest (self):

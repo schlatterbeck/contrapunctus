@@ -21,7 +21,7 @@
 # 02110-1301, USA.
 # ****************************************************************************
 
-from .tune import Tone, halftone, Key
+from .tune import Tone, halftone, Key, Bar, Pause
 
 class End_Sequence:
 
@@ -29,6 +29,10 @@ class End_Sequence:
         self.sequence = tuple ((self.halftone (a), b) for a, b in sequence)
         self.len = sum (k [1] for k in self.sequence)
     # end def __init__
+
+    def __getitem__ (self, idx):
+        return self.sequence [idx]
+    # end def __getitem__
 
     def __iter__ (self):
         return iter (self.sequence)
@@ -59,6 +63,44 @@ class End_Sequence:
             ((a.transpose (offset), b) for a, b in self.sequence)
     # end def transpose
 
+    def append_end_sequence (self, voice):
+        last_bar = voice.bars [-1]
+        assert last_bar.unit == 8
+        dur = last_bar.duration
+        assert dur in (8, 16)
+        last_obj = last_bar.objects [-1]
+        assert not last_obj.bind
+        remain   = dur - (last_obj.offset + last_obj.duration)
+        assert len (self) % dur == remain % dur
+        for ht, l in self:
+            if remain == 0:
+                remain = dur
+                voice.add (Bar (dur, 8))
+                last_bar = voice.bars [-1]
+            l1 = min (l, remain)
+            l2 = l - l1
+            if ht == 'z':
+                bo = Pause (l1)
+            else:
+                bo = Tone (ht, l1)
+            last_bar.add (bo)
+            remain -= l1
+            if l2:
+                assert remain == 0
+                remain = dur
+                voice.add (Bar (dur, 8))
+                last_bar = voice.bars [-1]
+                if ht == 'z':
+                    bo = Pause (l2)
+                else:
+                    bo = Tone (ht, l2)
+                last_bar.add (bo)
+                remain -= l2
+        # Last bar must be full
+        lastobj = last_bar.objects [-1]
+        assert lastobj.offset + lastobj.duration == dur
+    # end def append_end_sequence
+
 # end class End_Sequence
 ES = End_Sequence
 
@@ -78,6 +120,21 @@ class Mode_End_Sequences:
             self.min_cp_len = min (len (x) for x in self.cp)
             self.max_cp_len = max (len (x) for x in self.cp)
     # end def __init__
+
+    def __len__ (self):
+        return len (self.cp)
+    # end def __len__
+
+    def append_end_sequence (self, voice, sq_idx = 0):
+        """ Append the correct end sequence to the given voice
+            We use voice.id for determining if this is cf or cp.
+        """
+        if voice.id == 'CantusFirmus':
+            sq = self.cf [sq_idx]
+        else:
+            sq = self.cp [sq_idx]
+        sq.append_end_sequence (voice)
+    # end def append_end_sequence
 
     def transpose (self, other_modename):
         frm = Key.byname (self.modename)
@@ -168,7 +225,7 @@ end_sequences = dict \
         )
     , hypodorian = Mode_End_Sequences
         ( 'hypodorian'
-        , cp =
+        , cf =
             [ ES ([('E',  8), ('D',  8)])
             , ES ([('F',  8), ('E',  8), ('D',  8)])
             , ES ([('F',  8), ('E',  8), ('D',  8)])
@@ -177,7 +234,7 @@ end_sequences = dict \
             , ES ([('F',  8), ('E',  8), ('D',  8)])
             , ES ([('E',  8), ('D',  8)])
             ]
-        , cf =
+        , cp =
             [ ES ([('C',  4), ('A,', 4), ('D',  8)])
             , ES ([('D',  8), ('^C', 4), ('D',  8)])
             , ES ([('D',  6), ('^C', 2), ('C',  2), ('B', 2), ('D', 8)])
@@ -189,7 +246,7 @@ end_sequences = dict \
         )
     , hypophrygian = Mode_End_Sequences
         ( 'hypophrygian'
-        , cp =
+        , cf =
             [ ES ([('G',  8), ('F', 8), ('E', 8)])
             , ES ([('G',  8), ('F', 8), ('E', 8)])
             , ES ([('G',  8), ('F', 8), ('E', 8)])
@@ -198,7 +255,7 @@ end_sequences = dict \
             , ES ([('D',  8), ('E', 8)])
             , ES ([('D',  8), ('E', 8)])
             ]
-        , cf =
+        , cp =
             [ ES ([('B,', 4), ('E', 8), ('D', 4), ('E', 8)])
             , ES ([('B,', 4), ('E', 6), ('D', 2), ('D', 2), ('C', 2), ('E', 8)])
             , ES ([('B,', 4), ('E', 6), ('C', 2), ('D', 4), ('E', 8)])
@@ -210,14 +267,14 @@ end_sequences = dict \
         )
     , hypoionian = Mode_End_Sequences
         ( 'hypoionian'
-        , cp =
+        , cf =
             [ ES ([('E', 8), ('D',  8), ('C',  8)])
             , ES ([('E', 8), ('D',  8), ('C',  8)])
             , ES ([('E', 8), ('D',  8), ('C',  8)])
             , ES ([('E', 8), ('D',  8), ('C',  8)])
             , ES ([('E', 8), ('D',  8), ('C',  8)])
             ]
-        , cf =
+        , cp =
             [ ES ([('C', 8), ('B,', 4), ('C',  8)])
             , ES ([('C', 6), ('B,', 2), ('B,', 2), ('A,', 2), ('C', 8)])
             , ES ([('C', 6), ('A,', 2), ('B,', 4), ('C',  8)])
@@ -257,10 +314,10 @@ intermediate_sequences = dict \
         )
     , hypoionian = Mode_End_Sequences
         ( 'hypoionian'
-        , cp = 
+        , cf =
             [ ES ([('E',  8), ('D',  8), ('C',  8)])
             ]
-        , cf =
+        , cp =
             [ ES ([ ('C',  6), ('B,', 1), ('A,', 1), ('B,', 4)
                   , ('A,', 4), ('z', 4)
                   ])
@@ -365,20 +422,20 @@ class Gregorian (object):
     >>> modes = [hypomixolydian, hypoaeolian, hypolydian]
     >>> for g in modes:
     ...     print ("Mode: %s" % g.mode)
-    ...     for voice in ('cp', 'cf'):
+    ...     for voice in ('cf', 'cp'):
     ...         print ('Voice: %s' % voice)
     ...         for sq in getattr (g.es, voice):
     ...             print (str (sq))
     Mode: hypomixolydian
-    Voice: cp
-    [('A', 8), ('G', 8)]
-    [('_B', 8), ('A', 8), ('G', 8)]
-    [('_B', 8), ('A', 8), ('G', 8)]
-    [('_B', 8), ('A', 8), ('G', 8)]
-    [('_B', 8), ('A', 8), ('G', 8)]
-    [('_B', 8), ('A', 8), ('G', 8)]
-    [('A', 8), ('G', 8)]
     Voice: cf
+    [('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('_B', 8), ('A', 8), ('G', 8)]
+    [('A', 8), ('G', 8)]
+    Voice: cp
     [('F', 4), ('D', 4), ('G', 8)]
     [('G', 8), ('^F', 4), ('G', 8)]
     [('G', 6), ('^F', 2), ('F', 2), ('e', 2), ('G', 8)]
@@ -387,15 +444,15 @@ class Gregorian (object):
     [('G', 6), ('^F', 1), ('E', 1), ('F', 4), ('G', 8)]
     [('^F', 4), ('G', 8)]
     Mode: hypoaeolian
-    Voice: cp
-    [('B', 8), ('A', 8)]
-    [('c', 8), ('B', 8), ('A', 8)]
-    [('c', 8), ('B', 8), ('A', 8)]
-    [('c', 8), ('B', 8), ('A', 8)]
-    [('c', 8), ('B', 8), ('A', 8)]
-    [('c', 8), ('B', 8), ('A', 8)]
-    [('B', 8), ('A', 8)]
     Voice: cf
+    [('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('c', 8), ('B', 8), ('A', 8)]
+    [('B', 8), ('A', 8)]
+    Voice: cp
     [('G', 4), ('E', 4), ('A', 8)]
     [('A', 8), ('^G', 4), ('A', 8)]
     [('A', 6), ('^G', 2), ('G', 2), ('^f', 2), ('A', 8)]
@@ -404,13 +461,13 @@ class Gregorian (object):
     [('A', 6), ('^G', 1), ('^F', 1), ('G', 4), ('A', 8)]
     [('^G', 4), ('A', 8)]
     Mode: hypolydian
-    Voice: cp
-    [('A', 8), ('G', 8), ('F', 8)]
-    [('A', 8), ('G', 8), ('F', 8)]
-    [('A', 8), ('G', 8), ('F', 8)]
-    [('A', 8), ('G', 8), ('F', 8)]
-    [('A', 8), ('G', 8), ('F', 8)]
     Voice: cf
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    [('A', 8), ('G', 8), ('F', 8)]
+    Voice: cp
     [('F', 8), ('E', 4), ('F', 8)]
     [('F', 6), ('E', 2), ('E', 2), ('D', 2), ('F', 8)]
     [('F', 6), ('D', 2), ('E', 4), ('F', 8)]
@@ -427,26 +484,13 @@ class Gregorian (object):
         self.key     = Key.get (key)
         self.offset  = offset
         self.mode    = self.key.mode
+        self.omode   = 'hypo' + self.mode
         if self.offset:
             assert self.offset == -3
-            self.mode = 'hypo' + self.mode
+            self.omode = self.mode
+            self.mode  = 'hypo' + self.mode
         self.es      = self.end_sequences [self.mode]
-
-        # This only applies to Rhythm_Breve, for Rhythm_Semibreve this
-        # is hard-coded. And it is only used when --randomize-end-sequence
-        # is specified.
-        self.default_es = dict \
-            ( cf = [(str (self.step2),         8), (str (self.finalis), 16)]
-            , cp = [(str (self.subsemitonium), 8), (str (self [7]),     16)]
-            )
     # end def __init__
-
-    @property
-    def subsemitonium (self):
-        """ Leading tone, German: Leitton
-        """
-        return self [7].transpose (-1)
-    # end def subsemitonium
 
     @property
     def finalis (self):
@@ -454,9 +498,21 @@ class Gregorian (object):
     # end def finalis
 
     @property
+    def other (self):
+        return getattr (self.__class__, self.omode)
+    # end def other
+
+    @property
     def step2 (self):
         return self.ambitus [1]
     # end def step2
+
+    @property
+    def subsemitonium (self):
+        """ Leading tone, German: Leitton
+        """
+        return self [7].transpose (-1)
+    # end def subsemitonium
 
     def __getitem__ (self, idx):
         """ Get halftone with index idx from our tones, note that we
@@ -468,6 +524,35 @@ class Gregorian (object):
         d, m = divmod (index, 7)
         return self.ambitus [m].transpose_octaves (d)
     # end def __getitem__
+
+    def mode_end_sequences (self, parent, bar_duration):
+        """ The length of the second tone depends on parent.rhythm
+            The second tone has the length of rhythm.bar_duration.
+            When parent has set randomize_end_sequence we return
+            self.es, otherwise we compute the default es.
+        """
+        if getattr (self, 'mes', None):
+            return self.mes
+        if parent.args.randomize_end_sequence and len (self.es):
+            self.mes = self.es
+            return self.mes
+        l = bar_duration
+        e = Mode_End_Sequences \
+            ( self.mode
+            , cf =
+                [ ES ([ (str (self.other.step2),   8)
+                      , (str (self.other.finalis), l)
+                      ])
+                ]
+            , cp =
+                [ ES ([ (str (self.subsemitonium), 8)
+                      , (str (self [7]),           l)
+                      ])
+                ]
+            )
+        self.mes = e
+        return self.mes
+    # end def mode_end_sequences
 
 # end class Gregorian
 
@@ -485,6 +570,19 @@ aeolian        = Gregorian (['A', 'B', 'c', 'd', 'e', 'f', 'g'], key = 'Am')
 hypoaeolian    = Gregorian (aeolian.ambitus, aeolian.key, offset = -3)
 locrian        = Gregorian (['B', 'c', 'd', 'e', 'f', 'g', 'a'], key = 'BLoc')
 hypolocrian    = Gregorian (locrian.ambitus, locrian.key, offset = -3)
+
+Gregorian.ionian       = ionian
+Gregorian.hypoionian   = hypoionian
+Gregorian.dorian       = dorian
+Gregorian.hypodorian   = hypodorian
+Gregorian.phrygian     = phrygian
+Gregorian.hypophrygian = hypophrygian
+Gregorian.lydian       = lydian
+Gregorian.hypolydian   = hypolydian
+Gregorian.aeolian      = aeolian
+Gregorian.hypoaeolian  = hypoaeolian
+Gregorian.locrian      = locrian
+Gregorian.hypolocrian  = hypolocrian
 
 gregorian_modes = dict \
     ( ionian     = (ionian,     hypoionian)

@@ -21,7 +21,9 @@
 # 02110-1301, USA.
 # ****************************************************************************
 
-from .tune      import Tune, Voice, Bar, Meter, Tone
+from math   import ceil, log
+from bisect import bisect_left
+from .tune  import Tune, Voice, Bar, Meter, Tone
 
 class Rhythm:
     """ The encapsulates the rhythm generation. We specify all the
@@ -32,6 +34,17 @@ class Rhythm:
     def __init__ (self, parent, tunelength):
         self.parent      = parent
         self.tunelength  = tunelength
+        dur = self.bar_duration
+        method           = self.parent.mode [0].mode_end_sequences
+        self.es          = method (self.parent, dur)
+        self.cf_min_esl  = int (ceil (self.es.min_cf_len / dur))
+        self.cf_max_esl  = int (ceil (self.es.max_cf_len / dur))
+        # remaining part after removing length of fractional part of min len
+        self.cf_frac_l   = (self.cf_max_esl * dur - self.es.min_cf_len) % dur
+        self.cp_min_esl  = int (ceil (self.es.min_cp_len / dur))
+        self.cp_max_esl  = int (ceil (self.es.max_cp_len / dur))
+        # remaining part after removing length of fractional part of min len
+        self.cp_frac_l   = (self.cp_max_esl * dur - self.es.min_cp_len) % dur
     # end def __init__
 
     @property
@@ -87,20 +100,26 @@ class Rhythm_Semibreve (Rhythm):
     @property
     def cflength (self):
         if self.generate_cf:
-            return self.tunelength - 3
+            return self.tunelength - (1 + self.cf_max_esl)
         return 0
     # end def cflength
 
     @property
     def cplength (self):
-        return self.tunelength - 2
+        return self.tunelength - self.cp_max_esl
     # end def cplength
 
     def compute_init (self):
         init            = []
-        for i in range (self.cflength):
-            init.append ([0, 7])
-        for i in range (self.cplength):
+        self.cp_offset  = 0
+        if self.cflength:
+            self.cp_offset = self.cflength + (self.cf_max_esl - self.cf_min_esl)
+            for i in range (self.cp_offset):
+                init.append ([0, 7])
+            if self.cflength and self.cf_frac_l:
+                init.append ([0, 7])
+                self.cp_offset += 1
+        for i in range (self.cplength + (self.cp_max_esl - self.cp_min_esl)):
             init.append ([1,  3]) # duration heavy
             init.append ([0,  7]) # pitch
             init.append ([0,  1]) # duration light 1/4
@@ -108,14 +127,46 @@ class Rhythm_Semibreve (Rhythm):
             init.append ([0,  7]) # pitch light 1/8
             init.append ([1,  2]) # duration half-heavy 1/4 or 1/2
             init.append ([0,  7]) # pitch
-            init.append ([0,  7]) # pitch light 1/8
+            init.append ([0,  7]) # pitch light 1/8 - never used?!
             init.append ([0,  1]) # duration light 1/4
             init.append ([0,  7]) # pitch
             init.append ([0,  7]) # pitch light 1/8
+        if self.cp_frac_l:
+            frac_ll = int (log (self.cp_frac_l) / log (2))
+            assert frac_ll >= 1
+            init.append ([1,  frac_ll]) # duration heavy
+            init.append ([0,  7]) # pitch
+            if self.cp_frac_l > 2:
+                frac_ll = int (log (self.cp_frac_l - 2) / log (2))
+                init.append ([0,  max (frac_ll, 1)]) # duration light 1/4
+                init.append ([0,  7]) # pitch
+            if self.cp_frac_l > 3:
+                init.append ([0,  7]) # pitch light 1/8
+            if self.cp_frac_l > 4:
+                frac_ll = int (log (self.cp_frac_l - 4) / log (2))
+                assert frac_ll >= 1
+                init.append ([1,  max (frac_ll, 2)]) # half-heavy 1/4 or 1/2
+                init.append ([0,  7]) # pitch
+            if self.cp_frac_l > 5:
+                init.append ([0,  7]) # pitch light 1/8
+            if self.cp_frac_l > 6:
+                frac_ll = int (log (self.cp_frac_l - 6) / log (2))
+                init.append ([0,  max (frac_ll, 1)]) # duration light 1/4
+                init.append ([0,  7]) # pitch
+            assert self.cp_frac_l <= 7
+        esqlen = len (self.es)
+        if esqlen > 1:
+            init.append ([0, esqlen - 1])
         return init
     # end def compute_init
 
     def phenotype (self, p, pop, maxidx = None):
+        sq_idx = 0
+        if len (self.es) > 1:
+            l = len (self.parent.init)
+            sq_idx = self.parent.get_fixed_allele (p, pop, l - 1)
+        cf_esl = len (self.es.cf [sq_idx])
+        cp_esl = len (self.es.cp [sq_idx])
         tune = Tune \
             ( number = 1
             , meter  = Meter (4, 4)
@@ -133,33 +184,33 @@ class Rhythm_Semibreve (Rhythm):
             b.add (Tone (self.parent.mode [1].finalis, 8))
             cf.add (b)
         tune.add (cf)
-        for i in range (self.cflength):
+        bd  = self.bar_duration
+        cfl = (self.cf_max_esl * bd - cf_esl) // bd
+        idx = 0
+        for i in range (self.cflength + cfl):
+            idx = i
             if maxidx is not None and i > maxidx:
                 return tune
             a = self.parent.get_fixed_allele (p, pop, i)
             b = Bar (8, 8)
             b.add (Tone (self.parent.mode [1][a], 8))
             cf.add (b)
-        # 0.1.1: "The final must be approached by step. If the final is
-        # approached from below, then the leading tone must be raised in
-        # a minor key (Dorian, Hypodorian, Aeolian, Hypoaeolian), but
-        # not in Phrygian or Hypophrygian mode. Thus, in the Dorian mode
-        # on D a C# is necessary at the cadence." We achieve this by
-        # hard-coding the tone prior to the final to be the step2 for
-        # the cantus firmus
-        # 1.1: "The counterpoint must begin and end on a perfect
-        # consonance" is also achived by hard-coding the last tone.
+        idx += 1
+        if self.cflength and (bd - cf_esl) % bd:
+            if maxidx is not None and idx > maxidx:
+                return tune
+            a = self.parent.get_fixed_allele (p, pop, idx)
+            b = Bar (8, 8)
+            b.add (Tone (self.parent.mode [1][a], (bd - cf_esl) % bd))
+            cf.add (b)
+        # Append end sequence if we don't have fixed CF
         if not self.parent.cantus_firmus:
-            b  = Bar (8, 8)
-            b.add (Tone (self.parent.mode [1].step2, 8))
-            cf.add (b)
-            b  = Bar (8, 8)
-            b.add (Tone (self.parent.mode [1].finalis, 8))
-            cf.add (b)
+            self.es.append_end_sequence (cf, sq_idx)
         cp  = Voice (id = 'Contrapunctus', name = 'Contrapunctus')
         tune.add (cp)
-        for i in range (self.cplength):
-            off  = i * 11 + self.cflength
+        cpl = (self.cp_max_esl * bd - cp_esl) // bd
+        for i in range (self.cplength + cpl):
+            off  = i * 11 + self.cp_offset
             boff = 0 # offset in bar
             v = []
             for j in range (11):
@@ -211,19 +262,59 @@ class Rhythm_Semibreve (Rhythm):
                     return tune
                 b.add (Tone (self.parent.mode [0][v [10]], 1))
                 boff += 1
-        b  = Bar (8, 8)
-        # 0.1.1: "The final must be approached by step. If the final is
-        # approached from below, then the leading tone must be raised in
-        # a minor key (Dorian, Hypodorian, Aeolian, Hypoaeolian), but
-        # not in Phrygian or Hypophrygian mode. Thus, in the Dorian mode
-        # on D a C# is necessary at the cadence." We achieve this by
-        # hard-coding the tone prior to the final to be the
-        # subsemitonium for the contrapunctus.
-        b.add (Tone (self.parent.mode [0].subsemitonium, 8))
-        cp.add (b)
-        b  = Bar (8, 8)
-        b.add (Tone (self.parent.mode [0][7], 8))
-        cp.add (b)
+        # Last non-full Bar
+        cp_esl = (bd - cp_esl) % bd
+        if cp_esl:
+            i += 1
+            off  = i * 11 + self.cp_offset
+            boff = 0 # offset in bar
+            b = Bar (8, 8)
+            cp.add (b)
+            if maxidx is not None and off + 1 > maxidx:
+                return tune
+            v = self.parent.get_fixed_allele (p, pop, off)
+            l = min (1 << v, cp_esl - boff)
+            assert 2 <= l <= 8
+            v = self.parent.get_fixed_allele (p, pop, off + 1)
+            b.add (Tone (self.parent.mode [0][v], l))
+            boff += l
+            if boff < cp_esl and boff == 2:
+                if maxidx is not None and off + 3 > maxidx:
+                    return tune
+                v = self.parent.get_fixed_allele (p, pop, off + 2)
+                l = min (1 << v, cp_esl - boff)
+                assert 1 <= l <= 2
+                v = self.parent.get_fixed_allele (p, pop, off + 3)
+                b.add (Tone (self.parent.mode [0][v], l))
+                boff += l
+            if boff < cp_esl and boff == 3:
+                if maxidx is not None and off + 4 > maxidx:
+                    return tune
+                v = self.parent.get_fixed_allele (p, pop, off + 4)
+                b.add (Tone (self.parent.mode [0][v], 1))
+                boff += 1
+            if boff < cp_esl and boff == 4:
+                if maxidx is not None and off + 6 > maxidx:
+                    return tune
+                v = self.parent.get_fixed_allele (p, pop, off + 5)
+                l = min (1 << v, cp_esl - boff)
+                assert 2 <= l <= 4
+                v = self.parent.get_fixed_allele (p, pop, off + 6)
+                b.add (Tone (self.parent.mode [0][v], l))
+                boff += l
+            assert boff != 5
+            if boff < cp_esl and boff == 6:
+                if maxidx is not None and off + 9 > maxidx:
+                    return tune
+                v = self.parent.get_fixed_allele (p, pop, off + 8)
+                l = min (1 << v, cp_esl - boff)
+                assert 1 <= l <= 2
+                v = self.parent.get_fixed_allele (p, pop, off + 9)
+                b.add (Tone (self.parent.mode [0][v], l))
+                boff += l
+            assert cp_esl == boff
+        # Append end sequence
+        self.es.append_end_sequence (cp, sq_idx)
         return tune
     # end def phenotype
 
@@ -240,12 +331,71 @@ class Rhythm_Breve (Rhythm):
     bar_duration = 16 # in 1/8
     unit         =  8
 
+    @classmethod
+    def cf_idx (cls, maxlen):
+        """ Reverse lookup from cf_tbl
+        >>> b = Rhythm_Breve
+        >>> for k in range (4,17):
+        ...     print ('%d: %d' % (k, b.cf_idx (k)))
+        4: 0
+        5: 0
+        6: 1
+        7: 1
+        8: 2
+        9: 2
+        10: 2
+        11: 2
+        12: 3
+        13: 3
+        14: 3
+        15: 3
+        16: 4
+        """
+        assert maxlen >= 4
+        idx = bisect_left (cls.cf_tbl, maxlen)
+        assert 0 <= idx <= len (cls.cf_tbl) - 1
+        if cls.cf_tbl [idx] > maxlen:
+            return idx - 1
+        return idx
+    # end def cf_idx
+
+    @classmethod
+    def cp_idx (cls, maxlen):
+        """ Reverse lookup from cp_tbl
+        >>> b = Rhythm_Breve
+        >>> for k in range (1,17):
+        ...     print ('%d: %d' % (k, b.cp_idx (k)))
+        1: 0
+        2: 1
+        3: 1
+        4: 2
+        5: 2
+        6: 3
+        7: 3
+        8: 4
+        9: 4
+        10: 4
+        11: 4
+        12: 5
+        13: 5
+        14: 5
+        15: 5
+        16: 6
+        """
+        assert maxlen >= 1
+        idx = bisect_left (cls.cp_tbl, maxlen)
+        assert 0 <= idx <= len (cls.cp_tbl) - 1
+        if cls.cp_tbl [idx] > maxlen:
+            return idx - 1
+        return idx
+    # end def cp_idx
+
     @property
     def cflength (self):
         """ Cantus Firmus length *in bars*
         """
         if self.generate_cf:
-            return self.tunelength - 3
+            return self.tunelength - (1 + self.cf_max_esl)
         return 0
     # end def cflength
 
@@ -253,7 +403,7 @@ class Rhythm_Breve (Rhythm):
     def cplength (self):
         """ Contrapunctus length *in bars*
         """
-        return self.tunelength - 2
+        return self.tunelength - self.cp_max_esl
     # end def cplength
 
     def cf_duration (self, p, pop, idx):
@@ -267,7 +417,8 @@ class Rhythm_Breve (Rhythm):
     # end def cp_duration
 
     def compute_init (self):
-        init            = []
+        init           = []
+        self.cp_offset = 0
         # Allow 16/8, 12/8, 8/8, 4/8
         # 12/8 at end may go into next bar!
         # Syncope from 16/8, 8/8
@@ -288,8 +439,11 @@ class Rhythm_Breve (Rhythm):
             init.append ([0, 7]) # pitch
             # offset 14: only 1/4 allowed, only pitch
             init.append ([0, 7]) # pitch
+            self.cp_offset = 6
 
-            for i in range (self.cflength):
+
+            esl_len = self.cf_max_esl - self.cf_min_esl
+            for i in range (self.cflength + esl_len):
                 # offset 0 # [0, 1]
                 init.append ([0, 4]) # duration heavy 4:16, 3:12, 2:8, 1:6, 0:4
                 init.append ([0, 7]) # pitch
@@ -310,15 +464,52 @@ class Rhythm_Breve (Rhythm):
                 init.append ([0, 7]) # pitch
                 # offset 14 [11]: only 1/4 allowed, only pitch
                 init.append ([0, 7]) # pitch
-            # offset 0 # [0, 1]
-            init.append ([0, 2]) # duration heavy 2: 8, 1:6->4
-            init.append ([0, 7]) # pitch
-            # offset 2 # [2]
-            init.append ([0, 7]) # duration light 4/8 pitch
-            # offset 4 # [3]
-            init.append ([0, 7]) # duration light 4/8 pitch
+                self.cp_offset += 12
+            assert self.cf_frac_l < 16
+            if self.cf_frac_l:
+                # offset 0 # [0, 1]
+                m = self.cf_idx (self.cf_frac_l)
+                init.append ([0, m]) # duration heavy 2: 8, 1:6->4
+                self.cp_offset += 1
+                init.append ([0, 7]) # pitch
+                self.cp_offset += 1
+                # offset 2 # [2]
+                if self.cf_frac_l > 2:
+                    init.append ([0, 7]) # duration light 4/8 pitch
+                    self.cp_offset += 1
+                # offset 4 # [3, 4]
+                if self.cf_frac_l > 4:
+                    m = self.cf_idx (min (self.cf_frac_l, 8))
+                    init.append ([0, m]) # duration light 1/2
+                    self.cp_offset += 1
+                    init.append ([0, 7]) # duration light 4/8 pitch
+                    self.cp_offset += 1
+                # offset 6 # [5]: only 1/4 allowed, only pitch
+                if self.cf_frac_l > 6:
+                    init.append ([0, 7]) # pitch
+                    self.cp_offset += 1
+                # offset 8 # [6, 7]
+                if self.cf_frac_l > 8:
+                    m = self.cf_idx (min (self.cf_frac_l, 16))
+                    init.append ([0, m]) # duration heavy
+                    self.cp_offset += 1
+                    init.append ([0, 7]) # pitch
+                    self.cp_offset += 1
+                # offset 10 # [8]: only 1/4 allowed, only pitch
+                if self.cf_frac_l > 10:
+                    init.append ([0, 7]) # pitch
+                    self.cp_offset += 1
+                # offset 12 # [9, 10]
+                if self.cf_frac_l > 12:
+                    m = self.cf_idx (min (self.cf_frac_l, 8))
+                    init.append ([0, m]) # duration light
+                    self.cp_offset += 1
+                    init.append ([0, 7]) # pitch
+                    self.cp_offset += 1
+                assert self.cf_frac_l <= 14
         # Allow 16/8, 12/8, 8/8, 6/8, 4/8, 2/8, 1/8
-        for i in range (self.cplength):
+        esl_len = self.cp_max_esl - self.cp_min_esl
+        for i in range (self.cplength + esl_len):
             # offset 0 # [0, 1]
             init.append ([1,  5]) # heavy: 5:12/8 4:8/8 3:6/8 2:4/8 1:2/8
             init.append ([0,  7]) # pitch
@@ -351,26 +542,71 @@ class Rhythm_Breve (Rhythm):
             init.append ([0,  7]) # pitch
             # offset 15 # [19]
             init.append ([0,  7]) # pitch light 1/8
-        # offset 0 # [0, 1]
-        init.append ([1,  4]) # heavy: 4:8/8 3:6/8 2:4/8 1:2/8
-        init.append ([0,  7]) # pitch
-        # offset 2 # [2, 3]
-        init.append ([0,  2]) # light 1/4: 2:4/8 1:2/8 0:1/8
-        init.append ([0,  7]) # pitch
-        # offset 3 # [4]
-        init.append ([0,  7]) # pitch light 1/8
-        # offset 4 # [5, 6]
-        init.append ([1,  2]) # half-heavy: 2:4/8 1:2/8
-        init.append ([0,  7]) # pitch
-        # offset 6 # [7, 8]
-        init.append ([0,  1]) # light 1/4: 1:2/8 0:1/8
-        init.append ([0,  7]) # pitch
-        # offset 7 # [9]
-        init.append ([0,  7]) # pitch light 1/8
+        assert self.cp_frac_l < 16
+        if self.cp_frac_l:
+            # offset 0 # [0, 1]
+            m = self.cp_idx (self.cp_frac_l)
+            assert m <= 5
+            init.append ([1,  m]) # heavy: 5:12/8 4:8/8 3:6/8 2:4/8 1:2/8
+            init.append ([0,  7]) # pitch
+            # offset 2 # [2, 3]
+            if self.cp_frac_l > 2:
+                m = self.cp_idx (min (self.cp_frac_l, 4))
+                init.append ([0,  m]) # light 1/4: 2:4/8 1:2/8 0:1/8
+                init.append ([0,  7]) # pitch
+            # offset 3 # [4]
+            if self.cp_frac_l > 3:
+                init.append ([0,  7]) # pitch light 1/8
+            # offset 4 # [5, 6]
+            if self.cp_frac_l > 4:
+                m = self.cp_idx (min (self.cp_frac_l, 8))
+                init.append ([1,  m]) # half-heavy: 4:8/8 3:6/8 2:4/8 1:2/8
+                init.append ([0,  7]) # pitch
+            # offset 6 # [7, 8]
+            if self.cp_frac_l > 6:
+                m = self.cp_idx (min (self.cp_frac_l, 4))
+                init.append ([0,  m]) # light 1/4: 2:4/8 1:2/8 0:1/8
+                init.append ([0,  7]) # pitch
+            # offset 7 # [9]
+            if self.cp_frac_l > 7:
+                init.append ([0,  7]) # pitch light 1/8
+            # offset 8 # [10, 11]
+            if self.cp_frac_l > 8:
+                m = self.cp_idx (min (self.cp_frac_l, 12))
+                init.append ([1,  m]) # heavy
+                init.append ([0,  7]) # pitch
+            # offset 10 # [12, 13]
+            if self.cp_frac_l > 10:
+                m = self.cp_idx (min (self.cp_frac_l, 4))
+                init.append ([0,  m]) # light 1/4: 2:4/8 1:2/8 0:1/8
+                init.append ([0,  7]) # pitch
+            # offset 11 # [14]
+            if self.cp_frac_l > 11:
+                init.append ([0,  7]) # pitch light 1/8
+            # offset 12 # [15, 16]
+            if self.cp_frac_l > 12:
+                m = self.cp_idx (min (self.cp_frac_l, 8))
+                init.append ([1,  m]) # half-heavy: 4:8/8 3:6/8 2:4/8 1:2/8
+                init.append ([0,  7]) # pitch
+            # offset 14 # [17, 18]
+            if self.cp_frac_l > 14:
+                m = self.cp_idx (min (self.cp_frac_l, 4))
+                init.append ([0,  m]) # light 1/4: 2:4/8 1:2/8 0:1/8
+                init.append ([0,  7]) # pitch
+            assert self.cp_frac_l <= 15
+        esqlen = len (self.es)
+        if esqlen > 1:
+            init.append ([0, esqlen - 1])
         return init
     # end def compute_init
 
     def phenotype (self, p, pop, maxidx = None):
+        sq_idx = 0
+        if len (self.es) > 1:
+            l = len (self.parent.init)
+            sq_idx = self.parent.get_fixed_allele (p, pop, l - 1)
+        cf_esl = len (self.es.cf [sq_idx])
+        cp_esl = len (self.es.cp [sq_idx])
         tune = Tune \
             ( number = 1
             , meter  = Meter (8, 4)
@@ -420,133 +656,181 @@ class Rhythm_Breve (Rhythm):
             off %= 16
             idx = 6
         tune.add (cf)
-        for i in range (self.cflength):
-            if maxidx is not None and i > maxidx:
-                return tune
-            if off == 0:
-                b = Bar (16, 8)
-                cf.add (b)
-                d = self.cf_duration (p, pop, idx)
-                a = self.parent.get_fixed_allele (p, pop, idx + 1)
-                t, r = self.split_tone (1, a, off, d)
-                assert r is None
-                b.add (t)
-                off += d
-            assert off != 1
-            if off == 2:
-                d = 2
-                assert b.objects [-1].is_dotted
-                assert b.objects [-1].length == 6
-                a = self.parent.get_fixed_allele (p, pop, idx + 2)
-                t, r = self.split_tone (1, a, off, d)
-                assert r is None
-                b.add (t)
-                off += d
-            assert off != 3
-            if off == 4:
-                d = self.cf_duration (p, pop, idx + 3)
-                if b.objects [-1].is_dotted:
-                    assert b.objects [-1].length == 12
-                    d = 4
-                a = self.parent.get_fixed_allele (p, pop, idx + 4)
-                t, r = self.split_tone (1, a, off, d)
-                assert r is None
-                b.add (t)
-                off += d
-            assert off != 5
-            if off == 6:
-                d = 2
-                assert b.objects [-1].is_dotted
-                assert b.objects [-1].length == 6
-                a = self.parent.get_fixed_allele (p, pop, idx + 5)
-                t, r = self.split_tone (1, a, off, d)
-                assert r is None
-                b.add (t)
-                off += d
-            assert off != 7
-            if off == 8:
-                d = self.cf_duration (p, pop, idx + 6)
-                a = self.parent.get_fixed_allele (p, pop, idx + 7)
-                t, r = self.split_tone (1, a, off, d)
-                b.add (t)
-                off += d
-            assert off != 9
-            if off == 10:
-                d = 2
-                assert b.objects [-1].is_dotted
-                assert b.objects [-1].length == 6
-                a = self.parent.get_fixed_allele (p, pop, idx + 8)
-                t, r = self.split_tone (1, a, off, d)
-                assert r is None
-                b.add (t)
-                off += d
-            assert off != 11
-            if off == 12:
-                d = self.cf_duration (p, pop, idx + 9)
-                if b.objects [-1].is_dotted:
-                    assert b.objects [-1].length == 12
-                    d = 4
-                a = self.parent.get_fixed_allele (p, pop, idx + 10)
-                t, r = self.split_tone (1, a, off, d)
-                b.add (t)
-                off += d
-            assert off != 13
-            if off == 14:
-                d = 2
-                assert b.objects [-1].is_dotted
-                assert b.objects [-1].length == 6
-                a = self.parent.get_fixed_allele (p, pop, idx + 11)
-                t, r = self.split_tone (1, a, off, d)
-                b.add (t)
-                off += d
-            if r:
-                b = Bar (16, 8)
-                cf.add (b)
-                b.add (r)
-                assert off % 16 > 0
-            assert off >= 16
-            off %= 16
-            idx += 12
-        # CF end sequence
+        bd  = self.bar_duration
+        cfl = self.cf_max_esl - ceil (cf_esl / bd)
         if self.cflength:
-            if off == 0:
-                b = Bar (16, 8)
-                cf.add (b)
-                d = self.cf_duration (p, pop, idx)
-                # Gene is 2:8, 1:6 but we need 4
-                if d == 6:
-                    d = 4
-                a = self.parent.get_fixed_allele (p, pop, idx + 1)
-                t, r = self.split_tone (1, a, off, d)
-                assert r is None
-                b.add (t)
-                off += d
-            if off == 2:
-                d = 2
-                assert b.objects [-1].is_dotted
-                assert b.objects [-1].length == 6
-                a = self.parent.get_fixed_allele (p, pop, idx + 2)
-                t, r = self.split_tone (1, a, off, d)
-                assert r is None
-                b.add (t)
-                off += d
-            if off == 4:
-                d = 4
-                a = self.parent.get_fixed_allele (p, pop, idx + 3)
-                t, r = self.split_tone (1, a, off, d)
-                assert r is None
-                b.add (t)
-                off += d
-            assert off == 8
-            idx += 4
-            b.add (Tone (self.parent.mode [1].step2, 8))
-            b  = Bar (16, 8)
-            cf.add (b)
-            b.add (Tone (self.parent.mode [1].finalis, 16))
+            for i in range (self.cflength + cfl):
+                if maxidx is not None and i > maxidx:
+                    return tune
+                if off == 0:
+                    b = Bar (16, 8)
+                    cf.add (b)
+                    d = self.cf_duration (p, pop, idx)
+                    a = self.parent.get_fixed_allele (p, pop, idx + 1)
+                    t, r = self.split_tone (1, a, off, d)
+                    assert r is None
+                    b.add (t)
+                    off += d
+                assert off != 1
+                if off == 2:
+                    d = 2
+                    assert b.objects [-1].is_dotted
+                    assert b.objects [-1].length == 6
+                    a = self.parent.get_fixed_allele (p, pop, idx + 2)
+                    t, r = self.split_tone (1, a, off, d)
+                    assert r is None
+                    b.add (t)
+                    off += d
+                assert off != 3
+                if off == 4:
+                    d = self.cf_duration (p, pop, idx + 3)
+                    if b.objects [-1].is_dotted:
+                        assert b.objects [-1].length == 12
+                        d = 4
+                    a = self.parent.get_fixed_allele (p, pop, idx + 4)
+                    t, r = self.split_tone (1, a, off, d)
+                    assert r is None
+                    b.add (t)
+                    off += d
+                assert off != 5
+                if off == 6:
+                    d = 2
+                    assert b.objects [-1].is_dotted
+                    assert b.objects [-1].length == 6
+                    a = self.parent.get_fixed_allele (p, pop, idx + 5)
+                    t, r = self.split_tone (1, a, off, d)
+                    assert r is None
+                    b.add (t)
+                    off += d
+                assert off != 7
+                if off == 8:
+                    d = self.cf_duration (p, pop, idx + 6)
+                    a = self.parent.get_fixed_allele (p, pop, idx + 7)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                assert off != 9
+                if off == 10:
+                    d = 2
+                    assert b.objects [-1].is_dotted
+                    assert b.objects [-1].length == 6
+                    a = self.parent.get_fixed_allele (p, pop, idx + 8)
+                    t, r = self.split_tone (1, a, off, d)
+                    assert r is None
+                    b.add (t)
+                    off += d
+                assert off != 11
+                if off == 12:
+                    d = self.cf_duration (p, pop, idx + 9)
+                    if b.objects [-1].is_dotted:
+                        assert b.objects [-1].length == 12
+                        d = 4
+                    a = self.parent.get_fixed_allele (p, pop, idx + 10)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                assert off != 13
+                if off == 14:
+                    d = 2
+                    assert b.objects [-1].is_dotted
+                    assert b.objects [-1].length == 6
+                    a = self.parent.get_fixed_allele (p, pop, idx + 11)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                if r:
+                    b = Bar (16, 8)
+                    cf.add (b)
+                    b.add (r)
+                    assert off % 16 > 0
+                assert off >= 16
+                off %= 16
+                idx += 12
+            # CF end sequence
+            cf_rv = (bd - cf_esl) % bd
+            if off > cf_rv:
+                lastobj = cf.bars [-1].objects [-1]
+                assert lastobj.duration >= off - cf_rv
+                lastobj.duration -= off - cf_rv
+                if lastobj.duration == 0:
+                    del cf.bars [-1].objects [-1]
+                    if len (cf.bars [-1].objects) == 0:
+                        del cf.bars [-1]
+                        cf.bars [-1].objects [-1].bind = False
+                off = cf_rv
+            if cf_rv:
+                if off < cf_rv and off == 0:
+                    b = Bar (16, 8)
+                    cf.add (b)
+                    d = min (self.cf_duration (p, pop, idx), cf_rv - off)
+                    a = self.parent.get_fixed_allele (p, pop, idx + 1)
+                    t, r = self.split_tone (1, a, off, d)
+                    assert r is None
+                    b.add (t)
+                    off += d
+                if off < cf_rv and off == 2:
+                    d = min (2, cf_rv - off)
+                    assert b.objects [-1].is_dotted
+                    assert b.objects [-1].length == 6
+                    a = self.parent.get_fixed_allele (p, pop, idx + 2)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                if off < cf_rv and off == 4:
+                    d = min (self.cf_duration (p, pop, idx + 3), cf_rv - off)
+                    a = self.parent.get_fixed_allele (p, pop, idx + 4)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                if off < cf_rv and off == 6:
+                    d = min (2, cf_rv - off)
+                    assert b.objects [-1].is_dotted
+                    assert b.objects [-1].length == 6
+                    a = self.parent.get_fixed_allele (p, pop, idx + 5)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                if off < cf_rv and off == 8:
+                    d = min (self.cf_duration (p, pop, idx + 6), cf_rv - off)
+                    a = self.parent.get_fixed_allele (p, pop, idx + 7)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                if off < cf_rv and off == 10:
+                    d = min (2, cf_rv - off)
+                    assert b.objects [-1].is_dotted
+                    assert b.objects [-1].length == 6
+                    a = self.parent.get_fixed_allele (p, pop, idx + 8)
+                    t, r = self.split_tone (1, a, off, d)
+                    assert r is None
+                    b.add (t)
+                    off += d
+                if off < cf_rv and off == 12:
+                    d = min (self.cf_duration (p, pop, idx + 9), cf_rv - off)
+                    if b.objects [-1].is_dotted:
+                        assert b.objects [-1].length == 12
+                        d = min (4, cf_rv - off)
+                    a = self.parent.get_fixed_allele (p, pop, idx + 10)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                if off < cf_rv and off == 14:
+                    d = min (2, cf_rv - off)
+                    assert b.objects [-1].is_dotted
+                    assert b.objects [-1].length == 6
+                    a = self.parent.get_fixed_allele (p, pop, idx + 11)
+                    t, r = self.split_tone (1, a, off, d)
+                    b.add (t)
+                    off += d
+                idx += off
+            assert off == cf_rv
+            self.es.append_end_sequence (cf, sq_idx)
         cp  = Voice (id = 'Contrapunctus', name = 'Contrapunctus')
         tune.add (cp)
         off = 0
-        for i in range (self.cplength):
+        cpl = self.cp_max_esl - ceil (cp_esl / bd)
+        idx = self.cp_offset
+        for i in range (self.cplength + cpl):
             if off == 0:
                 b = Bar (16, 8)
                 cp.add (b)
@@ -659,64 +943,113 @@ class Rhythm_Breve (Rhythm):
             idx += 20
             assert off >= 16
             off %= 16
-        if off == 0:
-            b = Bar (16, 8)
-            cp.add (b)
-            d = self.cp_duration (p, pop, idx)
-            a = self.parent.get_fixed_allele (p, pop, idx + 1)
-            t, r = self.split_tone (0, a, off, d)
-            assert r is None
-            b.add (t)
-            off += d
-        assert off != 1
-        if off == 2:
-            d = self.cp_duration (p, pop, idx + 2)
-            if b.objects [-1].is_dotted:
-                assert b.objects [-1].length == 6
-                d = 2
-            a = self.parent.get_fixed_allele (p, pop, idx + 3)
-            t, r = self.split_tone (0, a, off, d)
-            assert r is None
-            b.add (t)
-            off += d
-        if off == 3:
-            d = 1
-            a = self.parent.get_fixed_allele (p, pop, idx + 4)
-            t, r = self.split_tone (0, a, off, d)
-            assert r is None
-            b.add (t)
-            off += d
-        if off == 4:
-            d = self.cp_duration (p, pop, idx + 5)
-            a = self.parent.get_fixed_allele (p, pop, idx + 6)
-            t, r = self.split_tone (0, a, off, d)
-            assert r is None
-            b.add (t)
-            off += d
-        assert off != 5
-        if off == 6:
-            d = self.cp_duration (p, pop, idx + 7)
-            if b.objects [-1].is_dotted:
-                assert b.objects [-1].length == 6
-                d = 2
-            a = self.parent.get_fixed_allele (p, pop, idx + 8)
-            t, r = self.split_tone (0, a, off, d)
-            assert r is None
-            b.add (t)
-            off += d
-        if off == 7:
-            d = 1
-            a = self.parent.get_fixed_allele (p, pop, idx + 9)
-            t, r = self.split_tone (0, a, off, d)
-            assert r is None
-            b.add (t)
-            off += d
-        # End sequence
-        assert off == 8
-        b.add (Tone (self.parent.mode [0].subsemitonium, 8))
-        b  = Bar (16, 8)
-        cp.add (b)
-        b.add (Tone (self.parent.mode [0][7], 16))
+        # CP end sequence *rest*
+        cp_rv = (bd - cp_esl) % bd
+        assert cp_rv < 16
+        if off > cp_rv:
+            lastobj = cp.bars [-1].objects [-1]
+            assert lastobj.duration >= off - cp_rv
+            lastobj.duration -= off - cp_rv
+            if lastobj.duration == 0:
+                del cp.bars [-1].objects [-1]
+                if len (cp.bars [-1].objects) == 0:
+                    del cp.bars [-1]
+                    cp.bars [-1].objects [-1].bind = False
+            off = cp_rv
+        if cp_rv:
+            if off < cp_rv and off == 0:
+                b = Bar (16, 8)
+                cp.add (b)
+                d = min (self.cp_duration (p, pop, idx), cp_rv - off)
+                a = self.parent.get_fixed_allele (p, pop, idx + 1)
+                t, r = self.split_tone (0, a, off, d)
+                assert r is None
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 2:
+                d = min (self.cp_duration (p, pop, idx + 2), cp_rv - off)
+                if b.objects [-1].is_dotted:
+                    assert b.objects [-1].length == 6
+                    d = min (2, cp_rv - off)
+                a = self.parent.get_fixed_allele (p, pop, idx + 3)
+                t, r = self.split_tone (0, a, off, d)
+                assert r is None
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 3:
+                d = 1
+                a = self.parent.get_fixed_allele (p, pop, idx + 4)
+                t, r = self.split_tone (0, a, off, d)
+                assert r is None
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 4:
+                d = min (self.cp_duration (p, pop, idx + 5), cp_rv - off)
+                a = self.parent.get_fixed_allele (p, pop, idx + 6)
+                t, r = self.split_tone (0, a, off, d)
+                assert r is None
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 6:
+                d = min (self.cp_duration (p, pop, idx + 7), cp_rv - off)
+                if b.objects [-1].is_dotted:
+                    assert b.objects [-1].length == 6
+                    d = min (2, cp_rv - off)
+                a = self.parent.get_fixed_allele (p, pop, idx + 8)
+                t, r = self.split_tone (0, a, off, d)
+                assert r is None
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 7:
+                d = 1
+                a = self.parent.get_fixed_allele (p, pop, idx + 9)
+                t, r = self.split_tone (0, a, off, d)
+                assert r is None
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 8:
+                d = min (self.cp_duration (p, pop, idx + 10), cp_rv - off)
+                a = self.parent.get_fixed_allele (p, pop, idx + 11)
+                t, r = self.split_tone (0, a, off, d)
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 10:
+                d = min (self.cp_duration (p, pop, idx + 12), cp_rv - off)
+                if b.objects [-1].is_dotted:
+                    assert b.objects [-1].length == 6
+                    d = min (2, cp_rv - off)
+                a = self.parent.get_fixed_allele (p, pop, idx + 13)
+                t, r = self.split_tone (0, a, off, d)
+                assert r is None
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 11:
+                d = 1
+                a = self.parent.get_fixed_allele (p, pop, idx + 14)
+                t, r = self.split_tone (0, a, off, d)
+                assert r is None
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 12:
+                d = min (self.cp_duration (p, pop, idx + 15), cp_rv - off)
+                if b.objects [-1].is_dotted:
+                    assert b.objects [-1].length == 12
+                    d = min (4, cp_rv - off)
+                a = self.parent.get_fixed_allele (p, pop, idx + 16)
+                t, r = self.split_tone (0, a, off, d)
+                b.add (t)
+                off += d
+            if off < cp_rv and off == 14:
+                d = min (self.cp_duration (p, pop, idx + 17), cp_rv - off)
+                if b.objects [-1].is_dotted:
+                    assert b.objects [-1].length == 6
+                    d = min (2, cp_rv - off)
+                a = self.parent.get_fixed_allele (p, pop, idx + 18)
+                t, r = self.split_tone (0, a, off, d)
+                b.add (t)
+                off += d
+        assert off == cp_rv
+        self.es.append_end_sequence (cp, sq_idx)
         return tune
     # end def phenotype
 
