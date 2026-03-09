@@ -35,6 +35,7 @@ from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 from contrapunctus.tune import Key
 from contrapunctus.gentune import main as gentune_main
 from contrapunctus import checks
+from contrapunctus.gregorian import end_sequences
 
 tune_output = """
 X: 1
@@ -1927,6 +1928,72 @@ class Test_Contrapunctus:
             ).strip ().split ('\n')
         self.generic_jump_2 (abc, (0, 0, 0, 10, 10, 0, 0, 0))
     # end def test_jump_2_4
+
+    @pytest.mark.xfail
+    def test_end_sequences (self):
+        cmd  = contrapunctus.gentune.contrapunctus_cmd ()
+        args = cmd.parse_args (['-v', '-v', '--new-style'])
+        args.checks = 'special'
+        args.rhythm = 'breve'
+        args.randomize_end_sequence = True
+        contra = contrapunctus.gentune.Contrapunctus_Depth_First (cmd, args)
+        contra.do_explain = True
+        for mode in end_sequences:
+            es = end_sequences [mode]
+            for idx in range (len (es)):
+                tune = Tune \
+                    ( number = 1
+                    , meter  = Meter (4, 4)
+                    , Q      = '1/4=200'
+                    , key    = Key.byname (mode)
+                    , unit   = 8
+                    , score  = '(Contrapunctus) (CantusFirmus)'
+                    )
+                cf = Voice (id = 'CantusFirmus', name = 'Cantus Firmus')
+                cp = Voice (id = 'Contrapunctus', name = 'Contrapunctus')
+                tune.add (cf)
+                tune.add (cp)
+                cf_len = len (es.cf [idx])
+                cp_len = len (es.cp [idx])
+                assert cf_len < 32
+                assert cp_len < 32
+
+                cf.add (Bar (16, 8))
+                cf.bars [-1].add (Tone (halftone ('C'), 8))
+                cf.bars [-1].add (Pause (8))
+                cf.add (Bar (16, 8))
+
+                cp.add (Bar (16, 8))
+                cp.bars [-1].add (Tone (halftone ('C'), 8))
+                cp.bars [-1].add (Pause (8))
+                cp.add (Bar (16, 8))
+
+                if cf_len <= 16:
+                    cf.bars [-1].add (Pause (16))
+                    if cf_len < 16:
+                        cf.add (Bar (16, 8))
+                if cp_len <= 16:
+                    cp.bars [-1].add (Pause (16))
+                    if cp_len < 16:
+                        cp.add (Bar (16, 8))
+                if 16 - cf_len % 16 < 16:
+                    cf.bars [-1].add (Pause (16 - cf_len % 16))
+                if 16 - cp_len % 16 < 16:
+                    cp.bars [-1].add (Pause (16 - cp_len % 16))
+                es.append_end_sequence (cf, idx)
+                es.append_end_sequence (cp, idx)
+                ev = contra.evaluate_tune (tune)
+                print ('\n\nMode: %s idx: %s' % (mode, idx))
+                print (tune.as_abc ())
+                for line in contra.explanation:
+                    print (line)
+                print ('----')
+                for line in contra.exp_explain:
+                    print (line)
+                #assert ev == 1 or (mode == 'dorian' and idx <= 1)
+                #assert ev == 1
+        assert 0
+    # end def test_end_sequences
 
 # end class Test_Contrapunctus
 

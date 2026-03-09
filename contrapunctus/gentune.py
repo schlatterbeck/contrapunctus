@@ -359,6 +359,10 @@ class Contrapunctus:
 
     def evaluate (self, p, pop):
         tune       = self.phenotype (p, pop)
+        self.evaluate_tune (tune)
+    # end def evaluate
+
+    def evaluate_tune (self, tune):
         badness    = 1.0
         ugliness   = 1.0
         dir        = (-1, 1)
@@ -432,7 +436,7 @@ class Contrapunctus:
             assert bsum > 1
             badness *= bsum
         return ugliness * badness
-    # end def evaluate
+    # end def evaluate_tune
 
     def explain (self, check):
         if self.do_explain:

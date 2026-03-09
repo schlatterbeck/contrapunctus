@@ -83,6 +83,8 @@ class End_Sequence:
                 bo = Pause (l1)
             else:
                 bo = Tone (ht, l1)
+                if l2:
+                    bo.bind = True
             last_bar.add (bo)
             remain -= l1
             if l2:
