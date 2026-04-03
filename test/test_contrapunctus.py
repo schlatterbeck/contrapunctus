@@ -1995,6 +1995,38 @@ class Test_Contrapunctus:
         assert 0
     # end def test_end_sequences
 
+    def generic_syncopation (self, abc, expect):
+        check = checks.Check_Harmony_Parallel_Syncopation \
+            ( "Parallel syncopation"
+            , badness  = 10.0
+            )
+        tune = Tune.from_iterator (abc)
+        itr  = enumerate (zip (expect, tune.voices_iter ()))
+        for n, (exp, (cfo, cpo)) in itr:
+            b, u = check.check (cfo, cpo)
+            assert (b == exp), "cfo [%s]: %s  cpo: %s" % (n, cfo, cpo)
+    # end def generic_syncopation
+
+    def test_syncopation (self):
+        """ The bound E8-E8 in voice 2 is length 16/8 (2) on a 8/8 (1)
+            The bound G4-G4 in voice 1 is length 8/8 (1) on 12/8
+        """
+        abc = dedent \
+            ("""
+             X:1
+             %%score 1 2
+             L:1/8
+             M:8/4
+             K:C
+             V:2 clef=bass
+             V:1 clef=treble
+             [V:1] d4 B4 A4 G4- |G4 c6 d2 c4 |
+             [V:2] B,8 E8-      |E8 A,8      |
+             """
+            ).strip ().split ('\n')
+        self.generic_syncopation (abc, (0, 0, 0, 10, 0, 0, 0, 0))
+    # end def test_syncopation
+
 # end class Test_Contrapunctus
 
 class Base_Skip_Nonzero (PGA_Test_Instrumentation):

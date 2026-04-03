@@ -9,7 +9,8 @@ Allgemein
 + Punktierte
 - nicht ständig die Tonlänge ändern (mehr Gruppen von Achteln oder Vierteln)?
 + Synkopen (kurz-lang(-lang-lang-...)-kurz)
-- Fix Synkopen: Parallele Synkopen sind keine
++ Fix Synkopen: Parallele Synkopen sind keine
+- Pattern matching Schlüsse if cantus firmus: use correct contrapunctus
 
 + Notenmaterial (akzidenzien) und ambitus
 + Durchgang, Wechselnote Regeln

@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright (C) 2024-25
+# Copyright (C) 2024-26
 # Magdalena Schlatterbeck
 # Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
@@ -40,7 +40,7 @@ class Check:
     prefix    = ''
     lookahead = 0 # how much we look into the future using next
 
-    def __init__ (self, desc, badness, ugliness):
+    def __init__ (self, desc, badness = 0, ugliness = 0):
         self.desc     = self.msg = desc
         self.badness  = badness
         self.ugliness = ugliness
@@ -945,6 +945,32 @@ class Check_Harmony_Nachschlagende_Parallelen (Check_Harmony_Interval):
 
 # end class Check_Harmony_Nachschlagende_Parallelen
 
+class Check_Harmony_Parallel_Syncopation (Check_Harmony):
+
+    def _check (self, cf_obj, cp_obj):
+        assert cf_obj.overlaps_with_bind (cp_obj)
+        return self.is_syncopation (cf_obj) and self.is_syncopation (cp_obj)
+    # end def _check
+
+    def is_syncopation (self, bar_object):
+        """ It's a syncopation if the start time modulo the length is
+            nonzero. The length must bei 1/4, 1/2 or 1/1. We do not
+            count a pause, so the object needs to be a tone.
+        """
+        if not bar_object.is_tone:
+            return False
+        # Unit must be in 1/8
+        assert bar_object.bar.unit == 8
+        l = len (bar_object)
+        if l not in (2, 4, 8, 16):
+            return False
+        if bar_object.offset % l:
+            return True
+        return False
+    # end def is_syncopation
+
+# end class Check_Harmony_Parallel_Syncopation
+
 class Harmony_Exception:
     """ Base class for exceptions to harmony rules.
         An exception can override a harmony check under certain conditions.
@@ -1843,6 +1869,10 @@ magi_harmony_checks = \
     , Check_Harmony_Nachschlagende_Parallelen
         ( "Avoid nachschlagende Parallelen (Klapperoktaven)"
           " - parallels from weak to strong beats"
+        , badness = BAD_2
+        )
+    , Check_Harmony_Parallel_Syncopation
+        ( "Parallel syncopation"
         , badness = BAD_2
         )
     ]
