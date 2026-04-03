@@ -359,7 +359,7 @@ class Contrapunctus:
 
     def evaluate (self, p, pop):
         tune       = self.phenotype (p, pop)
-        self.evaluate_tune (tune)
+        return self.evaluate_tune (tune)
     # end def evaluate
 
     def evaluate_tune (self, tune):
