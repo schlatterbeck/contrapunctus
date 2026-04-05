@@ -406,6 +406,8 @@ class Contrapunctus:
                 last_cf_obj = cf_obj
                 for check in self.melody_checks_cf:
                     b, u = check.check (cf_obj)
+                    if b == 0 and u == 0:
+                        self.explain_except (check)
                     if b:
                         badness *= b
                     ugliness += u
@@ -414,6 +416,8 @@ class Contrapunctus:
                 last_cp_obj = cp_obj
                 for check in self.melody_checks_cp:
                     b, u = check.check (cp_obj)
+                    if b == 0 and u == 0:
+                        self.explain_except (check)
                     b = b * len (cp_obj) ** 2
                     if self.args.divide_by_unit:
                         b /= cp_obj.bar.unit

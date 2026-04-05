@@ -41,9 +41,10 @@ class Check:
     lookahead = 0 # how much we look into the future using next
 
     def __init__ (self, desc, badness = 0, ugliness = 0):
-        self.desc     = self.msg = desc
-        self.badness  = badness
-        self.ugliness = ugliness
+        self.desc      = self.msg = desc
+        self.badness   = badness
+        self.ugliness  = ugliness
+        self.match_exc = None
     # end def __init__
 
     def __str__ (self):
@@ -69,6 +70,7 @@ class Check:
             This *must* return True when the check condition matches,
             i.e., when there is a violation of the rule.
         """
+        self.match_exc  = None
         self.store_context (*args, **kw)
         self.result = self._check (*args, **kw)
         # We need to keep some context for explanations and it might
@@ -83,6 +85,12 @@ class Check:
         raise NotImplementedError ('Need compute_description method') \
             # pragma: no cover
     # end def compute_description
+
+    def explain_exception (self):
+        if not self.match_exc:
+            return ''
+        return self.match_exc.explanation (self)
+    # end def explain_exception
 
 # end class Check
 
@@ -100,6 +108,8 @@ class History_Mixin:
     def _check (self, *args, **kw):
         result = super ()._check (*args, **kw)
         if self.prev_match and result:
+            if self.check_exceptions (*args, **kw):
+                return False
             return True
         self.prev_match = result
         return False
@@ -133,6 +143,7 @@ class Check_Melody (Check):
         , badness_2     = 0
         , ugliness_2    = 0
         , msg_2         = None
+        , exceptions    = None
         ):
         super ().__init__ (desc, badness, ugliness)
         self.interval      = set (interval)
@@ -151,12 +162,23 @@ class Check_Melody (Check):
         self.badness_1     = badness
         self.ugliness_1    = ugliness
         self.msg_2         = msg_2 or self.desc
+        self.exceptions    = exceptions or []
         if self.badness_2 == 0 and self.ugliness_2 == 0:
             self.badness_2  = self.badness_1
             self.ugliness_2 = self.ugliness_1
         # signed and octave flags may not currently be combined
         assert not (self.signed and self.octave)
     # end def __init__
+
+    def check_exceptions (self, obj):
+        """ Check if any exception applies """
+        self.match_exc = None
+        for exception in self.exceptions:
+            if exception.applies (self, obj):
+                self.match_exc = exception
+                return True
+        return False
+    # end def check_exceptions
 
     def compute_description (self):
         bar   = self.current.bar
@@ -219,18 +241,28 @@ class Check_Melody_Interval (Check_Melody):
     """
 
     def _check (self, current):
+        self.match_exc  = None
         if not self.timing_check (current):
             return
         d = self.compute_interval ()
         if d is not None and d in self.interval:
+            if not isinstance (self, History_Mixin):
+                if self.check_exceptions (current):
+                    return False
             return True
         if self.next_interval:
             d = self.compute_interval (self.next_with_bind)
             if d is not None and d in self.next_interval:
+                if not isinstance (self, History_Mixin):
+                    if self.check_exceptions (current):
+                        return False
                 return True
         if self.prev_interval:
             d = self.compute_interval (self.prev_with_bind)
             if d is not None and d in self.prev_interval:
+                if not isinstance (self, History_Mixin):
+                    if self.check_exceptions (current):
+                        return False
                 return True
     # end def _check
 
@@ -252,6 +284,7 @@ class Check_Melody_Jump (Check_Melody_History):
     # end def __init__
 
     def _check (self, current):
+        self.match_exc  = None
         if not current.prev:
             return False
         d = self.compute_interval ()
@@ -302,6 +335,7 @@ class Check_Melody_Avoid_Notelen_Jump (Check_Melody_Interval):
     # end def __init__
 
     def _check (self, current):
+        self.match_exc  = None
         # Check if current note fits the given length (typically 1/8)
         if current.length == self.note_length and current.is_tone:
             # Check if reached by jump
@@ -336,6 +370,7 @@ class Check_Melody_Note_Length_Jump (Check_Melody_Interval):
     # end def __init__
 
     def _check (self, current):
+        self.match_exc  = None
         # No check if this is a pause
         if not current.is_tone:
             return False
@@ -365,6 +400,7 @@ class Check_Melody_Note_Length_Double_Jump (Check_Melody_Interval):
     # end def __init__
 
     def _check (self, current):
+        self.match_exc  = None
         # No check if this is a pause
         if not current.is_tone:
             return False
@@ -402,6 +438,7 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
     """
 
     def _check (self, current):
+        self.match_exc  = None
         if not current.prev or not current.next:
             return False
 
@@ -453,6 +490,7 @@ class Check_Melody_Jump_Magdalena (Check_Melody_Jump):
     jump_sum = 0
 
     def _check (self, current):
+        self.match_exc  = None
         d = self.compute_interval ()
         if d is None:
             return False
@@ -538,9 +576,10 @@ class Check_Harmony_Interval (Check_Harmony):
             return False
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d in self.interval:
-            if self.check_exceptions (cf_obj, cp_obj):
-                self.h_interval = [cf_obj, cp_obj]
-                return False
+            if not isinstance (self, History_Mixin):
+                if self.check_exceptions (cf_obj, cp_obj):
+                    self.h_interval = [cf_obj, cp_obj]
+                    return False
             self.h_interval = [cf_obj, cp_obj]
             return True
         self.h_interval = [cf_obj, cp_obj]
@@ -571,12 +610,6 @@ class Check_Harmony_Interval (Check_Harmony):
         return d
     # end def compute_interval
 
-    def explain_exception (self):
-        if not self.match_exc:
-            return ''
-        return self.match_exc.explanation (self)
-    # end def explain_exception
-
     def reset (self):
         if hasattr (super (), 'reset'):
             super ().reset ()
@@ -594,6 +627,7 @@ class Check_Harmony_First_Interval (Check_Harmony_Interval):
     def _check (self, cf_obj, cp_obj):
         """ We check the first two objects *which are not a Pause*
         """
+        self.match_exc  = None
         assert cf_obj.overlaps_with_bind (cp_obj)
         if cf_obj.is_pause or cp_obj.is_pause:
             return False
@@ -655,6 +689,7 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
+        self.match_exc  = None
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d > self.maximum:
             if self.stepped_bad_ugly:
@@ -671,15 +706,22 @@ class Check_Harmony_Interval_Min (Check_Harmony_Interval):
     def __init__ \
         ( self, desc, minimum
         , badness = 0, ugliness = 0
+        , exceptions = None
         ):
         self.minimum = minimum
-        super ().__init__ (desc, None, badness, ugliness, False, signed = True)
+        super ().__init__ \
+            ( desc, None, badness, ugliness, False
+            , signed = True, exceptions = exceptions
+            )
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
+        self.match_exc  = None
         # FIXME: If the contrapunctus is the lower voice this is different
         d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d < self.minimum:
+            if self.check_exceptions (cf_obj, cp_obj):
+                return False
             return True
         return False
     # end def _check
@@ -694,6 +736,7 @@ class Check_Melody_Jump_2 (Check_Harmony):
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
+        self.match_exc  = None
         assert cf_obj.overlaps_with_bind (cp_obj)
         # First we must establish that cp_obj and cf_obj both start at
         # the same offset, otherwise we won't have a jump on both
@@ -749,6 +792,7 @@ class Check_Harmony_Melody_Direction (Check_Harmony_Interval):
             current time (i.e. the *latest* prev object), otherwise we
             do not correctly determine a movement.
         """
+        self.match_exc  = None
         assert cf_obj.overlaps_with_bind (cp_obj)
         p_cp_obj = cp_obj.prev_with_bind
         p_cf_obj = cf_obj.prev_with_bind
@@ -829,6 +873,7 @@ class Check_Harmony_Akzentparallelen (Check_Harmony_Interval):
 
     def _check (self, cf_obj, cp_obj):
         """ Check for accent parallels between strong beats across measures """
+        self.match_exc  = None
         assert cf_obj.overlaps_with_bind (cp_obj)
 
         # Only check on strong beats (offset 0 in a bar)
@@ -889,6 +934,7 @@ class Check_Harmony_Nachschlagende_Parallelen (Check_Harmony_Interval):
 
     def _check (self, cf_obj, cp_obj):
         """ Check for nachschlagende parallels from weak to strong beats """
+        self.match_exc  = None
         assert cf_obj.overlaps_with_bind (cp_obj)
 
         # Only check on weak beats
@@ -948,6 +994,7 @@ class Check_Harmony_Nachschlagende_Parallelen (Check_Harmony_Interval):
 class Check_Harmony_Parallel_Syncopation (Check_Harmony):
 
     def _check (self, cf_obj, cp_obj):
+        self.match_exc  = None
         assert cf_obj.overlaps_with_bind (cp_obj)
         return self.is_syncopation (cf_obj) and self.is_syncopation (cp_obj)
     # end def _check
@@ -971,7 +1018,39 @@ class Check_Harmony_Parallel_Syncopation (Check_Harmony):
 
 # end class Check_Harmony_Parallel_Syncopation
 
-class Harmony_Exception:
+class Generic_Exception:
+    """ Base class for exceptions to harmony and melody rules.
+    """
+
+    @property
+    def name (self):
+        v = self.__class__.__name__.split ('_')
+        assert v [0] == 'Exception'
+        if v [1] not in ('Harmony', 'Melody'):
+            return ' '.join (v [1:])
+        return ' '.join (v [2:])
+    # end def name
+
+    def applies (self, parent, obj):
+        """ Check if this exception applies to the given objects.
+            Should be overridden by subclasses.
+            The 'parent' argument is the Check instance.
+            Returns True if the exception applies
+            (i.e., the rule from which it is called should be ignored).
+        """
+        raise NotImplementedError ('Need applies method') # pragma: no cover
+    # end def applies
+
+    def explanation (self, parent):
+        parent.compute_description ()
+        name = getattr (self, 'msg', self.name)
+        desc = parent.prefix + ':\n    ' + name
+        return desc
+    # end def explanation
+
+# end class Generic_Exception
+
+class Harmony_Exception (Generic_Exception):
     """ Base class for exceptions to harmony rules.
         An exception can override a harmony check under certain conditions.
     """
@@ -983,14 +1062,6 @@ class Harmony_Exception:
         self.interval = set (interval)
     # end def __init__
 
-    @property
-    def name (self):
-        v = self.__class__.__name__.split ('_')
-        assert v [0] == 'Exception'
-        assert v [1] == 'Harmony'
-        return ' '.join (v [2:])
-    # end def name
-
     def applies (self, parent, cf_obj, cp_obj):
         """ Check if this exception applies to the given objects.
             Should be overridden by subclasses.
@@ -1000,12 +1071,6 @@ class Harmony_Exception:
         """
         raise NotImplementedError ('Need applies method') # pragma: no cover
     # end def applies
-
-    def explanation (self, parent):
-        parent.compute_description ()
-        desc = parent.prefix + ':\n    ' + self.name
-        return desc
-    # end def explanation
 
     def is_consonant (self, p_cf_obj, p_cp_obj):
         interval = abs (p_cf_obj.halftone.offset - p_cp_obj.halftone.offset)
@@ -1017,6 +1082,22 @@ class Harmony_Exception:
     # end def is_consonant
 
 # end class Harmony_Exception
+
+class Exception_End_Sequence (Generic_Exception):
+    """ The end sequences need not pass all harmony checks
+    """
+    interval = None
+    lookahead = 0
+
+    def applies (self, parent, *objs):
+        for obj in objs:
+            if not obj.is_in_end_sequence:
+                return False
+        self.msg = self.name + ' (%s)' % parent.desc
+        return True
+    # end def applies
+
+# end class Exception_End_Sequence
 
 class Exception_Harmony_Passing_Tone (Harmony_Exception):
     """ If a note is reached by step and left by step in the *same*
@@ -1471,7 +1552,7 @@ class Exception_Harmony_Suspension (Harmony_Exception):
 
 # end class Exception_Harmony_Suspension
 
-# Define passing tone exceptions
+# Define tone exceptions
 tone_exceptions = \
     [ Exception_Harmony_Passing_Tone
         ( interval       = (1, 2, 5, 6, 10, 11)
@@ -1514,6 +1595,8 @@ tone_exceptions = \
         , octave         = True
         )
     ]
+
+end_seq_exception = [Exception_End_Sequence ()]
 
 # 0.1.2: "Permitted melodic intervals are the perfect fourth, fifth,
 # and octave, as well as the major and minor second, major and minor
@@ -1578,9 +1661,10 @@ magi_melody_checks_cf = \
         )
     , Check_Melody_Interval
         ("No unison (Prim) allowed"
-        , interval =  (0,)
-        , badness  = BAD_4
-        , octave   = False
+        , interval   =  (0,)
+        , badness    = BAD_4
+        , octave     = False
+        , exceptions = end_seq_exception
         )
     , Check_Melody_Interval
         ( "Small Sixth down, large sixth"
@@ -1639,9 +1723,10 @@ magi_melody_checks_cp = \
         )
     , Check_Melody_Interval
         ("No unison (Prim) allowed"
-        , interval =  (0,)
-        , badness  = BAD_4
-        , octave   = False
+        , interval   =  (0,)
+        , badness    = BAD_4
+        , octave     = False
+        , exceptions = end_seq_exception
         )
     , Check_Melody_Interval
         ( "No seventh (Septime)"
@@ -1783,24 +1868,24 @@ magi_harmony_checks = \
         )
     , Check_Harmony_Interval
         ( "No Sekund"
-        , interval = (1, 2)
-        , badness  = BAD_MAX
-        , octave   = True
+        , interval   = (1, 2)
+        , badness    = BAD_MAX
+        , octave     = True
         , exceptions = tone_exceptions
         )
     , Check_Harmony_Interval \
         ( "Magdalena: 5/6 verboten"
-        , interval = (5, 6)
-        , badness  = BAD_MAX
-        , octave   = True
-        , exceptions = tone_exceptions
+        , interval   = (5, 6)
+        , badness    = BAD_MAX
+        , octave     = True
+        , exceptions = tone_exceptions + end_seq_exception
         )
     , Check_Harmony_Interval \
         ( "Magdalena: 10/11 verboten"
-        , interval = (10, 11)
-        , badness  = BAD_MAX
-        , octave   = True
-        , exceptions = tone_exceptions
+        , interval   = (10, 11)
+        , badness    = BAD_MAX
+        , octave     = True
+        , exceptions = tone_exceptions + end_seq_exception
         )
     , Check_Harmony_Interval_Max
         ( "Distance between voices should not exceed Duodezime"
@@ -1836,13 +1921,15 @@ magi_harmony_checks = \
         )
     , Check_Harmony_History
         ( "Magdalena: Avoid parallel unison, octaves, fifths"
-        , interval = (0, 7, 12)
-        , badness  = BAD_MAX
+        , interval   = (0, 7, 12)
+        , badness    = BAD_MAX
+        , exceptions = end_seq_exception
         )
     , Check_Harmony_History
         ( "For sext (sixth) don't allow several in a row"
-        , interval = (8, 9)
-        , ugliness = 1
+        , interval   = (8, 9)
+        , ugliness   = 1
+        , exceptions = end_seq_exception
         )
     , Check_Harmony_History
         ( "For terz (third) don't allow several in a row"

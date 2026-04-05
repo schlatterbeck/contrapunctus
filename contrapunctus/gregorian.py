@@ -72,6 +72,7 @@ class End_Sequence:
         assert not last_obj.bind
         remain   = dur - (last_obj.offset + last_obj.duration)
         assert len (self) % dur == remain % dur
+        voice.end_seq_duration = len (self)
         for ht, l in self:
             if remain == 0:
                 remain = dur

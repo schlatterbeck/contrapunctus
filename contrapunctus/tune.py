@@ -592,6 +592,24 @@ class Bar_Object:
     # end def is_bound
 
     @property
+    def is_in_end_sequence (self):
+        """ Check if the offset of this bar object is within the end
+            sequence of the voice. This uses voice.end_seq_duration.
+        """
+        voice = self.bar.voice
+        if not voice.end_seq_duration:
+            return False
+        idx, off = voice.end_offset ()
+        if self.bar.idx < idx:
+            return False
+        if self.bar.idx > idx:
+            return True
+        if self.offset >= off:
+            return True
+        return False
+    # end def is_in_end_sequence
+
+    @property
     def length (self):
         return len (self)
     # end def length
@@ -1246,6 +1264,9 @@ class Voice:
         for b in bars:
             self.add (b)
         self.properties = properties
+        # If non-zero we can allow harmony and melody exceptions for
+        # end-sequence
+        self.end_seq_duration = 0
     # end def __init__
 
     def __getattr__ (self, prop):
@@ -1313,6 +1334,19 @@ class Voice:
             bars.append (bar.copy ())
         return self.__class__ (self.id, *bars, **self.properties)
     # end def copy
+
+    def end_offset (self, offset = None):
+        """ Return index of bar and offset into bar, offset from end.
+            If offset is not given, use self.end_seq_duration.
+        """
+        if offset is None:
+            offset = self.end_seq_duration
+        bar = self.bars [0]
+        bar_idx, bar_pos = divmod (offset, bar.duration)
+        bar_idx = self.bars [-bar_idx - 1].idx
+        bar_pos = bar.duration - bar_pos
+        return bar_idx, bar_pos
+    # end def end_offset
 
     def replace (self, idx, bar):
         """ Replace bar at position idx
