@@ -10,7 +10,7 @@ Allgemein
 - nicht ständig die Tonlänge ändern (mehr Gruppen von Achteln oder Vierteln)?
 + Synkopen (kurz-lang(-lang-lang-...)-kurz)
 + Fix Synkopen: Parallele Synkopen sind keine
-- Pattern matching Schlüsse if cantus firmus: use correct contrapunctus
++ Pattern matching Schlüsse if cantus firmus: use correct contrapunctus
 
 + Notenmaterial (akzidenzien) und ambitus
 + Durchgang, Wechselnote Regeln
@@ -36,6 +36,11 @@ Allgemein
   correct thing: In that case the CF is the upper voice
 - For hypo-modes when generating abc-notation, put the CF in the upper
   stave
+- There is currently a bug when --new-style is in effect and a cantus
+  firmus is given we get a traceback while the cantus firmus is verified
+  for feasibility
+- Option --match-end should imply --no-cf-feasibility: We already *find*
+  a matching CF and use only the compatible CPs for the end sequence
 
 Done
 ++++
