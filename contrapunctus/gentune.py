@@ -148,13 +148,17 @@ class Contrapunctus:
         if args.optimize_depth_first or not args.gene_file:
             if args.verbose < 2:
                 args.verbose = 2
-        if args.cantus_firmus:
+        if args.cantus_firmus or args.evaluate_tune:
+            assert not args.cantus_firmus or not args.evaluate_tune
+            fn = args.cantus_firmus
+            if args.evaluate_tune:
+                fn = args.evaluate_tune
             assert args.cantus_firmus != '+'
-            with Infile (args.cantus_firmus) as f:
+            with Infile (fn) as f:
                 tune = Tune.from_iterator (f)
             bd = self.rhythm.bar_duration / self.rhythm.unit
             assert bd == tune.meter.fraction
-            if args.transpose_cf:
+            if args.cantus_firmus and args.transpose_cf:
                 tune = tune.transpose (args.transpose_cf)
             self.tune = tune
         self.rhythm.update_es ()
@@ -333,15 +337,20 @@ class Contrapunctus:
         if self.args.verbose:
             self.do_explain = True
             r.append ('%% Eval: %g' % self.evaluate (p, pop))
-            exp  = '\n'.join (self.explanation)
-            if self.exp_explain:
-                exp += '\nExceptions:\n'
-                exp += '\n'.join (self.exp_explain)
+            exp = self.as_explanation ()
             r.append ('% '+ exp.replace ('\n', '\n% '))
         if self.args.verbose > 1:
             r.append (self.as_tune_gene (p, pop))
         return '\n'.join (r)
     # end def as_complete_tune
+
+    def as_explanation (self):
+        exp  = '\n'.join (self.explanation)
+        if self.exp_explain:
+            exp += '\nExceptions:\n'
+            exp += '\n'.join (self.exp_explain)
+        return exp
+    # end def as_explanation
 
     def as_tune (self, p = 1, pop = pga.PGA_NEWPOP):
         tune = self.phenotype (p, pop)
@@ -1040,6 +1049,10 @@ def contrapunctus_cmd (argv = None):
         , default = True
         )
     cmd.add_argument \
+        ( "--evaluate-tune"
+        , help    = "Evaluate the given tune"
+        )
+    cmd.add_argument \
         ( "--explain-cp-cf"
         , help    = "Explain results when checking if a Contrapunctus"
                     " exists for a given Cantus Firmus"
@@ -1186,6 +1199,9 @@ def main (argv = None):
         args.checks = 'special'
         args.rhythm = 'breve'
         args.randomize_end_sequence = True
+    if args.cantus_firmus and args.evaluate_tune:
+        print ('--cantus-firmus and --evaluate-tune must not both be specified')
+        return 1
     if args.cantus_firmus == '+' and not args.gene_file:
         print ('--cantus-firmus=+ needs --gene-file option')
         return 1
@@ -1196,12 +1212,18 @@ def main (argv = None):
         if args.optimize_depth_first:
             print ('CF checking can not be turned off for depth first search')
             return 1
-    if args.gene_file or args.optimize_depth_first:
+    if args.gene_file or args.optimize_depth_first or args.evaluate_tune:
         cp = Contrapunctus_Depth_First (cmd, args)
         if args.gene_file:
             cp.from_gene ()
             with Outfile (args.output_file) as f:
                 print (cp.as_complete_tune (), file = f)
+        elif args.evaluate_tune:
+            cp.do_explain  = True
+            cp.exp_explain = True
+            ev = cp.evaluate_tune (cp.tune)
+            with Outfile (args.output_file) as f:
+                print (cp.as_explanation (), file = f)
         else:
             cp.run ()
     else:
