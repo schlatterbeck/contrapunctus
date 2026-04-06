@@ -157,6 +157,7 @@ class Contrapunctus:
             if args.transpose_cf:
                 tune = tune.transpose (args.transpose_cf)
             self.tune = tune
+        self.rhythm.update_es ()
         if not getattr (self, 'init', None):
             self.init = self.rhythm.compute_init ()
         self.get_checks ()
@@ -232,6 +233,7 @@ class Contrapunctus:
         self.mode = gregorian_modes [self.args.gregorian_mode]
         # Set tune length accordingly
         self.set_rhythm (tune_length = self.orig_args.tune_length)
+        self.rhythm.update_es (self.orig_args)
         self.tunelength = self.orig_args.tune_length
         if self.orig_args.no_check_cf:
             self.args.no_check_cf = self.orig_args.no_check_cf
@@ -1058,6 +1060,11 @@ def contrapunctus_cmd (argv = None):
         , help    = "Length of generated tune, default=%(default)s"
         , type    = int
         , default = 12
+        )
+    cmd.add_argument \
+        ( "--match-end-sequence"
+        , help    = "For given CF match end sequence(s)"
+        , action  = 'store_true'
         )
     cmd.add_argument \
         ( "--max-evals"

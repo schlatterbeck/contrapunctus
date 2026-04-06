@@ -55,14 +55,6 @@ class End_Sequence:
         return halftone (x)
     # end def halftone
 
-    def transpose (self, key1, key2):
-        """ Transpose from key1 to key2
-        """
-        offset = key1.transpose_offset (key2)
-        return self.__class__ \
-            ((a.transpose (offset), b) for a, b in self.sequence)
-    # end def transpose
-
     def append_end_sequence (self, voice):
         last_bar = voice.bars [-1]
         assert last_bar.unit == 8
@@ -104,6 +96,38 @@ class End_Sequence:
         assert lastobj.offset + lastobj.duration == dur
     # end def append_end_sequence
 
+    def compare_end_sequence (self, voice):
+        """ Used for comparing a *given* Cantus Firmus to this end
+            sequence. Returns True if matching.
+        """
+        bar_idx, bar_offset = voice.end_offset (self.len)
+        bar = voice.bars [bar_idx]
+        for bo in bar.objects:
+            if bo.offset == bar_offset:
+                break
+        else:
+            return False
+        for ht, l in self:
+            if bo is None or l != len (bo):
+                return False
+            if bo.is_tone:
+                if ht == 'z' or ht != bo.halftone:
+                    return False
+            else:
+                if ht != 'z':
+                    return False
+            bo = bo.next_with_bind
+        return True
+    # end def compare_end_sequence
+
+    def transpose (self, key1, key2):
+        """ Transpose from key1 to key2
+        """
+        offset = key1.transpose_offset (key2)
+        return self.__class__ \
+            ((a.transpose (offset), b) for a, b in self.sequence)
+    # end def transpose
+
 # end class End_Sequence
 ES = End_Sequence
 
@@ -138,6 +162,24 @@ class Mode_End_Sequences:
             sq = self.cp [sq_idx]
         sq.append_end_sequence (voice)
     # end def append_end_sequence
+
+    def compare_end_sequence (self, voice, sq_idx):
+        assert voice.id == 'CantusFirmus'
+        sq = self.cf [sq_idx]
+        return sq.compare_end_sequence (voice)
+    # end def compare_end_sequence
+
+    def filter (self, idx):
+        """ Create new Mode_End_Sequences object with only the end
+            sequences given by the idx list
+        """
+        cp = []
+        cf = []
+        for i in idx:
+            cp.append (self.cp [i])
+            cf.append (self.cf [i])
+        return self.__class__ (self.modename, cf, cp)
+    # end def filter
 
     def transpose (self, other_modename):
         frm = Key.byname (self.modename)

@@ -1982,6 +1982,7 @@ class Test_Contrapunctus:
             for line in contra.exp_explain:
                 print (line)
             assert (ev == 1.0)
+            assert es.compare_end_sequence (tune.voices [0], idx)
     # end def check_end_sequence
 
     def generic_end_sequence (self, hypo = False):
@@ -2059,6 +2060,9 @@ class Test_Contrapunctus:
         assert tune.voices [0].end_offset ()   == (1, 4)
         assert tune.voices [0].end_offset (5)  == (1, 11)
         assert tune.voices [0].end_offset (17) == (0, 15)
+        assert tune.voices [0].end_offset (16) == (1, 0)
+        with pytest.raises (AssertionError):
+            tune.voices [0].end_offset (0)
         obj = tune.voices [0].bars [1].objects [1]
         assert obj.is_in_end_sequence
         obj = tune.voices [0].bars [1].objects [0]

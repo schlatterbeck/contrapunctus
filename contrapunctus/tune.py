@@ -1341,10 +1341,14 @@ class Voice:
         """
         if offset is None:
             offset = self.end_seq_duration
+        # This is only defined if offset is > 0
+        assert offset > 0
         bar = self.bars [0]
         bar_idx, bar_pos = divmod (offset, bar.duration)
+        if bar_pos == 0:
+            bar_idx -= 1
         bar_idx = self.bars [-bar_idx - 1].idx
-        bar_pos = bar.duration - bar_pos
+        bar_pos = (-bar_pos) % bar.duration
         return bar_idx, bar_pos
     # end def end_offset
 

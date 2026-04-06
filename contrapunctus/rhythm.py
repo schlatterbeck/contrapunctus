@@ -32,6 +32,7 @@ class Rhythm:
     """
 
     def __init__ (self, parent, tunelength):
+        self.es_idx      = []
         self.parent      = parent
         self.tunelength  = tunelength
         dur = self.bar_duration
@@ -60,6 +61,17 @@ class Rhythm:
     def phenotype (self, p, pop, maxidx = None):
         raise NotImplementedError ("Must be implemented in derived class")
     # end def phenotype
+
+    def update_es (self, args = None):
+        if args is None:
+            args = self.parent.args
+        if args.cantus_firmus and args.match_end_sequence:
+            idx = []
+            for i in range (len (self.es)):
+                if self.es.compare_end_sequence (self.parent.cantus_firmus, i):
+                    idx.append (i)
+            self.es = self.es.filter (idx)
+    # end def update_es
 
 # end class Rhythm
 
@@ -178,6 +190,8 @@ class Rhythm_Semibreve (Rhythm):
         if self.parent.cantus_firmus:
             cf = self.parent.cantus_firmus.copy ()
             assert self.cflength == 0
+            if self.parent.args.match_end_sequence:
+                cf.end_seq_duration = cf_esl
         else:
             cf = Voice (id = 'CantusFirmus', name = 'Cantus Firmus')
             b  = Bar (8, 8)
@@ -618,6 +632,8 @@ class Rhythm_Breve (Rhythm):
         if self.parent.cantus_firmus:
             cf = self.parent.cantus_firmus.copy ()
             assert self.cflength == 0
+            if self.parent.args.match_end_sequence:
+                cf.end_seq_duration = cf_esl
             idx = 0
         else:
             r  = None
