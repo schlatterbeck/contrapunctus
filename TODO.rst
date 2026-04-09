@@ -41,6 +41,8 @@ Allgemein
   for feasibility
 - Option --match-end should imply --no-cf-feasibility: We already *find*
   a matching CF and use only the compatible CPs for the end sequence
+- End sequences should not need a generic exception, instead we should
+  define what's allowed in an end sequence and create appropriate rules
 
 Done
 ++++

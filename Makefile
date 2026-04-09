@@ -29,7 +29,7 @@ all: $(VERSIONPY)
 	abcm2ps -O $@ $<
 
 %.pdf: %.ps
-	ps2pdf $<
+	ps2pdf $< $@
 
 %.mid: %.abc
 	abc2midi $< -o $@

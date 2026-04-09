@@ -619,7 +619,7 @@ class Contrapunctus:
                     with Outfile (self.args.output_file) as f:
                         print ('\n'.join (self.explanation), file = f)
                         if self.exp_explain:
-                            print ('\nExceptions:')
+                            print ('\nExceptions:', file = f)
                             print ('\n'.join (self.exp_explain), file = f)
                         for v in bd.tune.voices:
                             print (v.as_abc (), file = f)
@@ -809,7 +809,7 @@ class Contrapunctus_PGA (Contrapunctus, pga.PGA):
             self.evaluate (p, pop)
             print ('\n'.join (self.explanation), file = file)
             if self.exp_explain:
-                print ('\nExceptions:')
+                print ('\nExceptions:', file = f)
                 print ('\n'.join (self.exp_explain), file = file)
         file.flush ()
         super ().print_string (file, p, pop)

@@ -71,6 +71,8 @@ class Rhythm:
                 if self.es.compare_end_sequence (self.parent.cantus_firmus, i):
                     idx.append (i)
             self.es = self.es.filter (idx)
+        if len (self.es) <= 0:
+            raise ValueError ('No end sequence matched the CF')
     # end def update_es
 
 # end class Rhythm
@@ -616,6 +618,7 @@ class Rhythm_Breve (Rhythm):
 
     def phenotype (self, p, pop, maxidx = None):
         sq_idx = 0
+        assert len (self.es) > 0
         if len (self.es) > 1:
             l = len (self.parent.init)
             sq_idx = self.parent.get_fixed_allele (p, pop, l - 1)
