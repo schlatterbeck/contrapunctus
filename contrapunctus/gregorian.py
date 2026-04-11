@@ -576,13 +576,10 @@ class Gregorian (object):
             When parent has set randomize_end_sequence we return
             self.es, otherwise we compute the default es.
         """
-        if getattr (self, 'mes', None):
-            return self.mes
         if parent.args.randomize_end_sequence and len (self.es):
-            self.mes = self.es
-            return self.mes
+            return self.es
         l = bar_duration
-        e = Mode_End_Sequences \
+        return Mode_End_Sequences \
             ( self.mode
             , cf =
                 [ ES ([ (str (self.other.step2),   8)
@@ -595,8 +592,6 @@ class Gregorian (object):
                       ])
                 ]
             )
-        self.mes = e
-        return self.mes
     # end def mode_end_sequences
 
 # end class Gregorian

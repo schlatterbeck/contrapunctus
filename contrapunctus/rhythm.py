@@ -65,12 +65,16 @@ class Rhythm:
     def update_es (self, args = None):
         if args is None:
             args = self.parent.args
+        dur = self.bar_duration
+        es  = self.parent.mode [0].mode_end_sequences (self.parent, dur)
         if args.cantus_firmus and args.match_end_sequence:
             idx = []
-            for i in range (len (self.es)):
-                if self.es.compare_end_sequence (self.parent.cantus_firmus, i):
+            for i in range (len (es)):
+                if es.compare_end_sequence (self.parent.cantus_firmus, i):
                     idx.append (i)
-            self.es = self.es.filter (idx)
+            self.es = es.filter (idx)
+        else:
+            self.es = es
         if len (self.es) <= 0:
             raise ValueError ('No end sequence matched the CF')
     # end def update_es

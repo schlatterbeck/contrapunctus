@@ -231,7 +231,9 @@ class Contrapunctus:
         self.orig_args = self.cmd.parse_args (argv)
         # Get necessery args to self.args:
         for a in \
-            ('checks', 'gregorian_mode', 'rhythm', 'randomize_end_sequence'):
+            ( 'checks', 'gregorian_mode', 'rhythm', 'randomize_end_sequence'
+            , 'match_end_sequence'
+            ):
             setattr (self.args, a, getattr (self.orig_args, a))
         self.get_checks ()
         self.mode = gregorian_modes [self.args.gregorian_mode]
@@ -532,7 +534,6 @@ class Contrapunctus:
                 self.set_allele (1, pga.PGA_NEWPOP, idx + offs, a)
             idx += offs + 1
         if idx > 0:
-            self.rhythm.update_es (args = self.orig_args)
             yield idx, tune
     # end def _from_gene_lines
 
@@ -543,6 +544,7 @@ class Contrapunctus:
                 self.tune = tune
                 if self.args.fix_gene:
                     self.fix_gene ()
+                self.rhythm.update_es (args = self.orig_args)
                 yield genelength
             if not self.orig_args or not self.orig_args.tune_length:
                 # tunelength with CF doesn't include the gene part for the
