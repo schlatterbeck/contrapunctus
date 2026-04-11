@@ -1058,7 +1058,7 @@ class Harmony_Exception (Generic_Exception):
     consonant_allowed = (0, 3, 4, 7, 8, 9)
     consonant_octave  = True
 
-    def __init__ (self, interval):
+    def __init__ (self, interval = ()):
         self.interval = set (interval)
     # end def __init__
 
@@ -1098,6 +1098,19 @@ class Exception_End_Sequence (Generic_Exception):
     # end def applies
 
 # end class Exception_End_Sequence
+
+class Exception_Harmony_CF_Voice_High (Harmony_Exception):
+    """ If the CF Voice is too high, we allow the contrapunctus to be
+        *lower* than the CF.
+    """
+
+    def applies (self, parent, cf_obj, cp_obj):
+        ambitus = cp_obj.bar.voice.tune.mode [1].ambitus
+        if cf_obj.halftone.offset >= ambitus [-2].offset:
+            return True
+    # end def applies
+
+# end def Exception_Harmony_CF_Voice_High
 
 class Exception_Harmony_Passing_Tone (Harmony_Exception):
     """ If a note is reached by step and left by step in the *same*
@@ -1597,6 +1610,7 @@ tone_exceptions = \
     ]
 
 end_seq_exception = [Exception_End_Sequence ()]
+ambitus_exception = [Exception_Harmony_CF_Voice_High ()]
 
 # 0.1.2: "Permitted melodic intervals are the perfect fourth, fifth,
 # and octave, as well as the major and minor second, major and minor
@@ -1895,8 +1909,9 @@ magi_harmony_checks = \
         )
     , Check_Harmony_Interval_Min
         ( "Contrapunctus voice must be *up*"
-        , minimum  = 0
-        , badness  = BAD_MAX
+        , minimum    = 0
+        , badness    = BAD_MAX
+        , exceptions = ambitus_exception
         )
     , Check_Harmony_First_Interval
         ( "1.1. Begin and end on either unison, octave, fifth,"

@@ -370,7 +370,7 @@ class Contrapunctus:
     # end def as_tune_gene
 
     def evaluate (self, p, pop):
-        tune       = self.phenotype (p, pop)
+        tune = self.phenotype (p, pop)
         return self.evaluate_tune (tune)
     # end def evaluate
 
@@ -593,7 +593,9 @@ class Contrapunctus:
     # end def get_fixed_allele
 
     def phenotype (self, p, pop, maxidx = None):
-        return self.rhythm.phenotype (p, pop, maxidx)
+        tune = self.rhythm.phenotype (p, pop, maxidx)
+        tune.mode = self.mode
+        return tune
     # end def phenotype
 
     def _run_cf_end_check (self, bd, bar = None, b = 0, t = 0):
@@ -1223,6 +1225,7 @@ def main (argv = None):
         elif args.evaluate_tune:
             cp.do_explain  = True
             cp.exp_explain = True
+            cp.tune.mode   = cp.mode
             ev = cp.evaluate_tune (cp.tune)
             with Outfile (args.output_file) as f:
                 print (cp.as_explanation (), file = f)
