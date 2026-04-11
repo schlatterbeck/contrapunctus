@@ -24,6 +24,13 @@
 from .tune import Tone, halftone, Key, Bar, Pause
 
 class End_Sequence:
+    # When comparing end sequences against a given CF voice we either
+    # match it literally (DOUBLE_NONE), with last tone doubled
+    # (DOUBLE_LAST) or with *all* tones doubled (DOUBLE_ALL).
+    DOUBLE_NONE = 0
+    DOUBLE_LAST = 1
+    DOUBLE_ALL  = 2
+    double_variants = (DOUBLE_NONE, DOUBLE_LAST, DOUBLE_ALL)
 
     def __init__ (self, sequence):
         self.sequence = tuple ((self.halftone (a), b) for a, b in sequence)
@@ -96,10 +103,13 @@ class End_Sequence:
         assert lastobj.offset + lastobj.duration == dur
     # end def append_end_sequence
 
-    def compare_end_sequence (self, voice):
+    def compare_end_sequence (self, voice, dbl = DOUBLE_NONE):
         """ Used for comparing a *given* Cantus Firmus to this end
             sequence. Returns True if matching.
         """
+        if dbl != self.DOUBLE_NONE:
+            obj = self.copy (dbl)
+            return obj.compare_end_sequence (voice, self.DOUBLE_NONE)
         bar_idx, bar_offset = voice.end_offset (self.len)
         bar = voice.bars [bar_idx]
         for bo in bar.objects:
@@ -119,6 +129,26 @@ class End_Sequence:
             bo = bo.next_with_bind
         return True
     # end def compare_end_sequence
+
+    def copy (self, dbl = DOUBLE_NONE):
+        """ Copy myself, optionally doubling tones indicated by one of
+            the DOUBLE_XX constants above.
+        """
+        sq = []
+        for i, (ht, l) in enumerate (self.sequence):
+            if dbl == self.DOUBLE_NONE:
+                sq.append ((ht, l))
+            elif dbl == self.DOUBLE_LAST:
+                if i == len (self.sequence) - 1:
+                    sq.append ((ht, 2 * l))
+                else:
+                    sq.append ((ht, l))
+            elif dbl == self.DOUBLE_ALL:
+                sq.append ((ht, 2 * l))
+            else:
+                assert (0)
+        return self.__class__ (sq)
+    # end def copy
 
     def transpose (self, key1, key2):
         """ Transpose from key1 to key2
@@ -163,21 +193,48 @@ class Mode_End_Sequences:
         sq.append_end_sequence (voice)
     # end def append_end_sequence
 
-    def compare_end_sequence (self, voice, sq_idx):
+    def compare_end_sequence \
+        (self, voice, sq_idx, dbl = End_Sequence.DOUBLE_NONE):
         assert voice.id == 'CantusFirmus'
         sq = self.cf [sq_idx]
-        return sq.compare_end_sequence (voice)
+        return sq.compare_end_sequence (voice, dbl)
     # end def compare_end_sequence
 
-    def filter (self, idx):
+    def filtered_end_sequences (self, voice):
+        """ Compare *all* end sequences to this voice
+            Return a new filtered Mode_End_Sequences object that
+            contains all matching end sequences or raises a ValueError
+            if none are matching.
+            Note that we compare end sequences with the following
+            modifications:
+            - Match end sequence literally
+            - Double the last tone of the end sequence and return end
+              Mode_End_Sequences with doubled tone (both in CF and CP)
+            - Double *all* tones of the end sequence and return
+              Mode_End_Sequences object with all tones doubled
+        """
+        for dbl in End_Sequence.double_variants:
+            idxs = []
+            for i in range (len (self)):
+                if self.compare_end_sequence (voice, i, dbl):
+                    idxs.append (i)
+            if idxs:
+                es = self.filter (idxs, dbl)
+                break
+        else:
+            raise ValueError ('No end sequence matched the CF')
+        return es
+    # end def filtered_end_sequences
+
+    def filter (self, idx, dbl = End_Sequence.DOUBLE_NONE):
         """ Create new Mode_End_Sequences object with only the end
             sequences given by the idx list
         """
         cp = []
         cf = []
         for i in idx:
-            cp.append (self.cp [i])
-            cf.append (self.cf [i])
+            cp.append (self.cp [i].copy (dbl))
+            cf.append (self.cf [i].copy (dbl))
         return self.__class__ (self.modename, cf, cp)
     # end def filter
 
