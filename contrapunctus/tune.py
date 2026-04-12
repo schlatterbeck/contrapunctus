@@ -592,24 +592,6 @@ class Bar_Object:
     # end def is_bound
 
     @property
-    def is_in_end_sequence (self):
-        """ Check if the offset of this bar object is within the end
-            sequence of the voice. This uses voice.end_seq_duration.
-        """
-        voice = self.bar.voice
-        if not voice.end_seq_duration:
-            return False
-        idx, off = voice.end_offset ()
-        if self.bar.idx < idx:
-            return False
-        if self.bar.idx > idx:
-            return True
-        if self.offset >= off:
-            return True
-        return False
-    # end def is_in_end_sequence
-
-    @property
     def length (self):
         return len (self)
     # end def length
@@ -684,6 +666,25 @@ class Bar_Object:
     def copy (self):
         return self.__class__ (self.duration)
     # end def copy
+
+    def is_in_end_sequence (self, check_first_note = True):
+        """ Check if the offset of this bar object is within the end
+            sequence of the voice. This uses voice.end_seq_duration.
+        """
+        voice = self.bar.voice
+        if not voice.end_seq_duration:
+            return False
+        idx, off = voice.end_offset ()
+        if self.bar.idx < idx:
+            return False
+        if self.bar.idx > idx:
+            return True
+        if self.offset >= off:
+            if self.offset == off and not check_first_note:
+                return False
+            return True
+        return False
+    # end def is_in_end_sequence
 
     def overlaps (self, other):
         """ Check if two bar objects overlap. For now we do not take

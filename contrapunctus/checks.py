@@ -1089,9 +1089,14 @@ class Exception_End_Sequence (Generic_Exception):
     interval = None
     lookahead = 0
 
+    def __init__ (self, check_first_note = True):
+        super ().__init__ ()
+        self.check_first_note = check_first_note
+    # end def __init__
+
     def applies (self, parent, *objs):
         for obj in objs:
-            if not obj.is_in_end_sequence:
+            if not obj.is_in_end_sequence (self.check_first_note):
                 return False
         self.msg = self.name + ' (%s)' % parent.desc
         return True
@@ -1610,6 +1615,7 @@ tone_exceptions = \
     ]
 
 end_seq_exception = [Exception_End_Sequence ()]
+end_seq_exc_note1 = [Exception_End_Sequence (check_first_note = False)]
 ambitus_exception = [Exception_Harmony_CF_Voice_High ()]
 
 # 0.1.2: "Permitted melodic intervals are the perfect fourth, fifth,
@@ -1938,13 +1944,13 @@ magi_harmony_checks = \
         ( "Magdalena: Avoid parallel unison, octaves, fifths"
         , interval   = (0, 7, 12)
         , badness    = BAD_MAX
-        , exceptions = end_seq_exception
+        , exceptions = end_seq_exc_note1
         )
     , Check_Harmony_History
         ( "For sext (sixth) don't allow several in a row"
         , interval   = (8, 9)
         , ugliness   = 1
-        , exceptions = end_seq_exception
+        , exceptions = end_seq_exc_note1
         )
     , Check_Harmony_History
         ( "For terz (third) don't allow several in a row"

@@ -2064,9 +2064,9 @@ class Test_Contrapunctus:
         with pytest.raises (AssertionError):
             tune.voices [0].end_offset (0)
         obj = tune.voices [0].bars [1].objects [1]
-        assert obj.is_in_end_sequence
+        assert obj.is_in_end_sequence ()
         obj = tune.voices [0].bars [1].objects [0]
-        assert not obj.is_in_end_sequence
+        assert not obj.is_in_end_sequence ()
     # end def test_end_offset
 
 # end class Test_Contrapunctus
