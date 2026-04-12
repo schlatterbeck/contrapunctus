@@ -2069,6 +2069,42 @@ class Test_Contrapunctus:
         assert not obj.is_in_end_sequence ()
     # end def test_end_offset
 
+    def test_end_sequence_match_dbl_last (self):
+        abc = dedent \
+            ("""
+             X:1
+             %%score (CantusFirmus)
+             L:1/8
+             M:8/4
+             K:DDor
+             V:CantusFirmus name="Cantus Firmus"
+             [V:CantusFirmus] B,8 A,8 | F8 G8 | D8 E8 | D16 |
+             """
+            ).strip ().split ('\n')
+        tune = Tune.from_iterator (abc)
+        es = end_sequences ['dorian'].filtered_end_sequences (tune.voices [0])
+        # Only the two shorter ones match
+        assert len (es) == 2
+    # end def test_end_sequence_match_dbl_last
+
+    def test_end_sequence_match_dbl_all (self):
+        abc = dedent \
+            ("""
+             X:1
+             %%score (CantusFirmus)
+             L:1/8
+             M:8/4
+             K:DDor
+             V:CantusFirmus name="Cantus Firmus"
+             [V:CantusFirmus] G16 | F16 | E16 | D16 |
+             """
+            ).strip ().split ('\n')
+        tune = Tune.from_iterator (abc)
+        es = end_sequences ['dorian'].filtered_end_sequences (tune.voices [0])
+        # There is one of seven end sequences containing 1/8
+        assert len (es) == 6
+    # end def test_end_sequence_match_dbl_all
+
 # end class Test_Contrapunctus
 
 class Base_Skip_Nonzero (PGA_Test_Instrumentation):

@@ -35,6 +35,11 @@ class End_Sequence:
     def __init__ (self, sequence):
         self.sequence = tuple ((self.halftone (a), b) for a, b in sequence)
         self.len = sum (k [1] for k in self.sequence)
+        self.has_eights = False
+        for ht, l in self.sequence:
+            if l == 1:
+                self.has_eights = True
+                break
     # end def __init__
 
     def __getitem__ (self, idx):
@@ -106,8 +111,13 @@ class End_Sequence:
     def compare_end_sequence (self, voice, dbl = DOUBLE_NONE):
         """ Used for comparing a *given* Cantus Firmus to this end
             sequence. Returns True if matching.
+            Note that we return False if dbl == DOUBLE_ALL and
+            self.has_eights: eights notes may do special things that are
+            not allowed when doubling the length.
         """
         if dbl != self.DOUBLE_NONE:
+            if dbl == self.DOUBLE_ALL and self.has_eights:
+                return False
             obj = self.copy (dbl)
             return obj.compare_end_sequence (voice, self.DOUBLE_NONE)
         bar_idx, bar_offset = voice.end_offset (self.len)
@@ -193,8 +203,7 @@ class Mode_End_Sequences:
         sq.append_end_sequence (voice)
     # end def append_end_sequence
 
-    def compare_end_sequence \
-        (self, voice, sq_idx, dbl = End_Sequence.DOUBLE_NONE):
+    def compare_end_sequence (self, voice, sq_idx, dbl = ES.DOUBLE_NONE):
         assert voice.id == 'CantusFirmus'
         sq = self.cf [sq_idx]
         return sq.compare_end_sequence (voice, dbl)
@@ -216,6 +225,9 @@ class Mode_End_Sequences:
         for dbl in End_Sequence.double_variants:
             idxs = []
             for i in range (len (self)):
+                # sequences with eights may not be doubled
+                if dbl == ES.DOUBLE_ALL and self.cp [i].has_eights:
+                    continue
                 if self.compare_end_sequence (voice, i, dbl):
                     idxs.append (i)
             if idxs:
@@ -226,7 +238,7 @@ class Mode_End_Sequences:
         return es
     # end def filtered_end_sequences
 
-    def filter (self, idx, dbl = End_Sequence.DOUBLE_NONE):
+    def filter (self, idx, dbl = ES.DOUBLE_NONE):
         """ Create new Mode_End_Sequences object with only the end
             sequences given by the idx list
         """
