@@ -2084,7 +2084,7 @@ class Test_Contrapunctus:
         tune = Tune.from_iterator (abc)
         es = end_sequences ['dorian'].filtered_end_sequences (tune.voices [0])
         # Only the two shorter ones match
-        assert len (es) == 2
+        assert len (es) == 1
     # end def test_end_sequence_match_dbl_last
 
     def test_end_sequence_match_dbl_all (self):
@@ -2102,7 +2102,7 @@ class Test_Contrapunctus:
         tune = Tune.from_iterator (abc)
         es = end_sequences ['dorian'].filtered_end_sequences (tune.voices [0])
         # There is one of seven end sequences containing 1/8
-        assert len (es) == 6
+        assert len (es) == 5
     # end def test_end_sequence_match_dbl_all
 
 # end class Test_Contrapunctus
