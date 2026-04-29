@@ -1067,7 +1067,7 @@ def contrapunctus_cmd (argv = None):
         , help    = "Read gene-file and output phenotype, no searching"
         )
     cmd.add_argument \
-        ( "--gregorian_mode"
+        ( "--gregorian-mode"
         , help    = "Gregorian mode, default=%(default)s"
         , default = 'dorian'
         , choices = gregorian_modes.keys ()

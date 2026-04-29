@@ -1841,8 +1841,6 @@ old_harmony_checks = \
     , Check_Melody_Jump_2
         ( "Not both voices may jump"
         , badness  = 10.0
-        #FIXME: If one of the voices is a third jump, the other may
-        #jump in the opposite direction
         )
     , Check_Harmony_History
         ( "Magdalena: Avoid parallel fifth"
@@ -1915,7 +1913,6 @@ magi_harmony_checks = \
         , minimum    = 0
         , badness    = BAD_MAX
         , exceptions = ambitus_exception
-        # FIXME: wenn CF am Rand des Ambitus ist, wärs ok
         )
     , Check_Harmony_First_Interval
         ( "1.1. Begin and end on either unison, octave, fifth,"
@@ -1928,7 +1925,8 @@ magi_harmony_checks = \
         # different variants
         )
     , Check_Melody_Jump_2
-        ( "Both voices may not jump"
+        ( "Both voices may not jump more than a third"
+        , limit = 4
         , badness  = BAD_MAX
         )
     , Check_Harmony_Melody_Direction
