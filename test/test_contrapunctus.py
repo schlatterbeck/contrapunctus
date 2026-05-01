@@ -35,7 +35,7 @@ from contrapunctus.tune import Voice, Bar, Tone, Tune, Pause, halftone, Meter
 from contrapunctus.tune import Key
 from contrapunctus.gentune import main as gentune_main
 from contrapunctus import checks
-from contrapunctus.gregorian import end_sequences
+from contrapunctus.gregorian import end_sequences, gregorian_modes
 
 tune_output = """
 X: 1
@@ -1930,6 +1930,7 @@ class Test_Contrapunctus:
     # end def test_jump_2_4
 
     def check_end_sequence (self, mode, contra):
+        mode_lookup = dict (major = 'ionian', minor = 'aeolian')
         es = end_sequences [mode]
         for idx in range (len (es)):
             tune = Tune \
@@ -1940,6 +1941,9 @@ class Test_Contrapunctus:
                 , unit   = 8
                 , score  = '(Contrapunctus) (CantusFirmus)'
                 )
+            tune.modename = mode
+            modekey       = mode_lookup.get (mode, mode)
+            tune.mode     = gregorian_modes [modekey]
             cf = Voice (id = 'CantusFirmus', name = 'Cantus Firmus')
             cp = Voice (id = 'Contrapunctus', name = 'Contrapunctus')
             tune.add (cf)

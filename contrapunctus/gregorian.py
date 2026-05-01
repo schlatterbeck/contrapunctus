@@ -694,13 +694,20 @@ Gregorian.locrian      = locrian
 Gregorian.hypolocrian  = hypolocrian
 
 gregorian_modes = dict \
-    ( ionian     = (ionian,     hypoionian)
-    , dorian     = (dorian,     hypodorian)
-    , phrygian   = (phrygian,   hypophrygian)
-    , lydian     = (lydian,     hypolydian)
-    , mixolydian = (mixolydian, hypomixolydian)
-    , aeolian    = (aeolian,    hypoaeolian)
-    , locrian    = (locrian,    hypolocrian)
+    ( ionian         = (ionian,         hypoionian)
+    , dorian         = (dorian,         hypodorian)
+    , phrygian       = (phrygian,       hypophrygian)
+    , lydian         = (lydian,         hypolydian)
+    , mixolydian     = (mixolydian,     hypomixolydian)
+    , aeolian        = (aeolian,        hypoaeolian)
+    , locrian        = (locrian,        hypolocrian)
+    , hypoionian     = (hypoionian,     ionian)
+    , hypodorian     = (hypodorian,     dorian)
+    , hypophrygian   = (hypophrygian,   phrygian)
+    , hypolydian     = (hypolydian,     lydian)
+    , hypomixolydian = (hypomixolydian, mixolydian)
+    , hypoaeolian    = (hypoaeolian,    aeolian)
+    , hypolocrian    = (hypolocrian,    locrian)
     )
 
 __all__ = [ 'dorian', 'hypodorian', 'phrygian', 'hypophrygian', 'lydian'

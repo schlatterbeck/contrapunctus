@@ -36,15 +36,21 @@ BAD_8   = 2 ** (1/8)
 class Check:
     """ Super class of all checks
         This gets the description of the check.
+        The for_hypo variable defines if this is for modes starting with
+        hypo, e.g. hypodorian. If the variable is None (the default),
+        the check is used for hypo and non-hypo modes. If it is False,
+        the check is used for non-hypo modes only, if it is True, the
+        check is used for hypo modes only.
     """
     prefix    = ''
     lookahead = 0 # how much we look into the future using next
 
-    def __init__ (self, desc, badness = 0, ugliness = 0):
+    def __init__ (self, desc, badness = 0, ugliness = 0, for_hypo = None):
         self.desc      = self.msg = desc
         self.badness   = badness
         self.ugliness  = ugliness
         self.match_exc = None
+        self.for_hypo  = for_hypo
     # end def __init__
 
     def __str__ (self):
@@ -69,7 +75,13 @@ class Check:
         """ We require an _check method for the actual implementation.
             This *must* return True when the check condition matches,
             i.e., when there is a violation of the rule.
+            We asume that args [0] is a Bar_Object belonging to a tune
+            that has modename set.
         """
+        if self.for_hypo is not None:
+            if self.is_hypo (args [0]) != self.for_hypo:
+                self.result = False
+                return 0, 0
         self.match_exc  = None
         self.store_context (*args, **kw)
         self.result = self._check (*args, **kw)
@@ -91,6 +103,10 @@ class Check:
             return ''
         return self.match_exc.explanation (self)
     # end def explain_exception
+
+    def is_hypo (self, bar_object):
+        return bar_object.bar.voice.tune.modename.startswith ('hypo')
+    # end def is_hypo
 
 # end class Check
 
@@ -144,8 +160,9 @@ class Check_Melody (Check):
         , ugliness_2    = 0
         , msg_2         = None
         , exceptions    = None
+        , for_hypo      = None
         ):
-        super ().__init__ (desc, badness, ugliness)
+        super ().__init__ (desc, badness, ugliness, for_hypo = for_hypo)
         self.interval      = set (interval)
         self.signed        = signed
         self.octave        = octave
@@ -545,6 +562,7 @@ class Check_Harmony_Interval (Check_Harmony):
         , signed     = False
         , not_first  = False
         , not_last   = False
+        , for_hypo   = None
         , exceptions = None
         ):
         self.interval   = set (interval or ())
@@ -565,7 +583,7 @@ class Check_Harmony_Interval (Check_Harmony):
             if self.interval.intersection (exc.interval):
                 self.lookahead = max (self.lookahead, exc.lookahead)
                 self.exceptions.append (exc)
-        super ().__init__ (desc, badness, ugliness)
+        super ().__init__ (desc, badness, ugliness, for_hypo = for_hypo)
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
@@ -678,6 +696,7 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
         ( self, desc, maximum
         , badness = 0, ugliness = 0
         , stepped_bad_ugly = False
+        , for_hypo = None
         ):
         # We keep a copy of badness, ugliness if we want to set it
         # depending on overflow
@@ -685,7 +704,10 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
         self.ugliness_default = ugliness
         self.stepped_bad_ugly = stepped_bad_ugly
         self.maximum          = maximum
-        super ().__init__ (desc, None, badness, ugliness, False, signed = True)
+        super ().__init__ \
+            ( desc, None, badness, ugliness, False
+            , signed = True, for_hypo = for_hypo
+            )
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
@@ -702,23 +724,32 @@ class Check_Harmony_Interval_Max (Check_Harmony_Interval):
 # end class Check_Harmony_Interval_Max
 
 class Check_Harmony_Interval_Min (Check_Harmony_Interval):
+    """ Check for minimum interval between cf and cp
+        If the contrapunctus is the lower voice this is different, we
+        take care of this with an invert parameter.
+    """
 
     def __init__ \
         ( self, desc, minimum
         , badness = 0, ugliness = 0
         , exceptions = None
+        , invert     = False # exchange cp/cf
+        , for_hypo   = None
         ):
         self.minimum = minimum
+        self.invert  = invert
         super ().__init__ \
             ( desc, None, badness, ugliness, False
-            , signed = True, exceptions = exceptions
+            , signed = True, exceptions = exceptions, for_hypo = for_hypo
             )
     # end def __init__
 
     def _check (self, cf_obj, cp_obj):
         self.match_exc  = None
-        # FIXME: If the contrapunctus is the lower voice this is different
-        d = self.compute_interval (cf_obj, cp_obj)
+        if self.invert:
+            d = self.compute_interval (cp_obj, cf_obj)
+        else:
+            d = self.compute_interval (cf_obj, cp_obj)
         if d is not None and d < self.minimum:
             if self.check_exceptions (cf_obj, cp_obj):
                 return False
@@ -1106,13 +1137,20 @@ class Exception_End_Sequence (Generic_Exception):
 
 class Exception_Harmony_CF_Voice_High (Harmony_Exception):
     """ If the CF Voice is too high, we allow the contrapunctus to be
-        *lower* than the CF.
+        *lower* than the CF. For hypo modes it is the other way round,
+        if the CF Voice is too low, we allow the contrapunctus to be
+        *higher* than the CF.
     """
 
     def applies (self, parent, cf_obj, cp_obj):
         ambitus = cp_obj.bar.voice.tune.mode [1].ambitus
-        if cf_obj.halftone.offset >= ambitus [-2].offset:
-            return True
+        if parent.invert:
+            if cf_obj.halftone.offset <= ambitus [2].offset:
+                self.msg = 'CF Voice Low'
+                return True
+        else:
+            if cf_obj.halftone.offset >= ambitus [-2].offset:
+                return True
     # end def applies
 
 # end def Exception_Harmony_CF_Voice_High
@@ -1830,6 +1868,14 @@ old_harmony_checks = \
         ( "Contrapunctus voice must be *up*"
         , minimum  = 0
         , badness  = 10.0
+        , for_hypo = False
+        )
+    , Check_Harmony_Interval_Min
+        ( "Contrapunctus voice must be *down*"
+        , minimum  = 0
+        , badness  = 10.0
+        , invert   = True
+        , for_hypo = True
         )
     , Check_Harmony_First_Interval
         ( "1.1. Begin and end on either unison, octave, fifth,"
@@ -1912,6 +1958,15 @@ magi_harmony_checks = \
         ( "Contrapunctus voice must be *up*"
         , minimum    = 0
         , badness    = BAD_MAX
+        , for_hypo   = False
+        , exceptions = ambitus_exception
+        )
+    , Check_Harmony_Interval_Min
+        ( "Contrapunctus voice must be *up*"
+        , minimum    = 0
+        , badness    = BAD_MAX
+        , for_hypo   = True
+        , invert     = True
         , exceptions = ambitus_exception
         )
     , Check_Harmony_First_Interval
@@ -1920,9 +1975,16 @@ magi_harmony_checks = \
           " in which case begin and end only on unison or octave."
         , interval = (0, 7, 12, -12)
         , badness  = BAD_MAX ** 2
-        # FIXME: With Hypo the '7' is not allowed at all
-        # So we need something like is_hypo here and instantiate two
-        # different variants
+        , for_hypo = False
+        )
+    # With Hypo the '7' is not allowed at all
+    , Check_Harmony_First_Interval
+        ( "1.1. Begin and end on either unison, octave, fifth,"
+          " unless the added part is underneath [it isn't here],"
+          " in which case begin and end only on unison or octave."
+        , interval = (0, 12, -12)
+        , badness  = BAD_MAX ** 2
+        , for_hypo = True
         )
     , Check_Melody_Jump_2
         ( "Both voices may not jump more than a third"

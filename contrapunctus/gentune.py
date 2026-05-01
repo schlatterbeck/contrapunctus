@@ -161,6 +161,7 @@ class Contrapunctus:
             if args.cantus_firmus and args.transpose_cf:
                 tune = tune.transpose (args.transpose_cf)
             self.tune = tune
+            self.tune.modename = self.args.gregorian_mode
         self.rhythm.update_es ()
         if not getattr (self, 'init', None):
             self.init = self.rhythm.compute_init ()
@@ -497,6 +498,7 @@ class Contrapunctus:
                 tmp_iter  = iter ([line])
                 tune = Tune.from_iterator \
                     (itertools.chain (tmp_iter, itr), True)
+                tune.modename = self.args.gregorian_mode
                 c += tune.nlines - 1 # first line already counted
                 line = getattr (tune, 'lastline', None)
                 # When reading abc file the abc parser has picked up the
@@ -593,8 +595,9 @@ class Contrapunctus:
     # end def get_fixed_allele
 
     def phenotype (self, p, pop, maxidx = None):
-        tune = self.rhythm.phenotype (p, pop, maxidx)
-        tune.mode = self.mode
+        tune          = self.rhythm.phenotype (p, pop, maxidx)
+        tune.mode     = self.mode
+        tune.modename = self.args.gregorian_mode
         return tune
     # end def phenotype
 
