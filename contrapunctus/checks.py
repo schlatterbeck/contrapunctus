@@ -447,12 +447,21 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
           direction is allowed
         - For upward movement, the larger interval should come first
         - For downward movement, the smaller interval should come first
-        - Not yet implemented:
+        - Implemented differently -- we allow larger intervals:
           You may combine third jumps with the bigger jumps
           Three jumps are allowed if first and last is a third jump and
           they are in contrary motion
         laMotte 1981, p. 69ff
     """
+
+    def __init__ (self, desc, bad_contrary, bad_large, bad_first):
+        """ Messages are hardcoded, badness is assigned before returning
+        """
+        super ().__init__ (desc)
+        self.bad_contrary = bad_contrary
+        self.bad_large    = bad_large
+        self.bad_first    = bad_first
+    # end def __init__
 
     def _check (self, current):
         self.match_exc  = None
@@ -464,6 +473,7 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
             return False
 
         next_d = current.next.halftone.offset - current.halftone.offset
+        self.badness = 1
 
         # Check for sixth or octave jumps
         if abs (d) in (8, 12):
@@ -476,6 +486,15 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
             if sgn (d) == sgn (prev_d) or sgn (d) == sgn (next_d):
                 self.msg = "For sixth or octave jumps, " \
                            "there must be contrary motion before and after"
+                self.badness *= self.bad_contrary
+
+            # Check that prev and next interval is <= fifth (quint)
+            if abs (prev_d) > 7 or abs (next_d) > 7:
+                self.msg = "Sixth and octave jumps must be preceded/" \
+                           "followed by smaller interval (max. fifth)"
+                self.badness *= self.bad_large
+
+            if self.badness > 1:
                 return True
 
         # Check for third, fourth, fifth jumps in same direction
@@ -486,11 +505,13 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
                 if d > 0 and abs (d) < abs (next_d):
                     self.msg = "For upward movement, " \
                                "the larger interval should come first"
+                    self.badness = self.bad_first
                     return True
                 # Downward: smaller interval should come first
                 elif d < 0 and abs (d) > abs (next_d):
                     self.msg = "For downward movement, " \
                                "the smaller interval should come first"
+                    self.badness = self.bad_first
                     return True
         return False
     # end def _check
@@ -1733,7 +1754,9 @@ magi_melody_checks_cf = \
         )
     , Check_Melody_laMotte_Jump
         ( "Jump according to laMotte rules"
-        , badness      = BAD_MAX
+        , bad_contrary = BAD_4
+        , bad_large    = BAD_MAX
+        , bad_first    = BAD_8
         )
     , Check_Melody_Avoid_Notelen_Jump
         ( "Fourth should not be reached or left by large jumps"
@@ -1793,21 +1816,17 @@ magi_melody_checks_cp = \
         )
     , Check_Melody_laMotte_Jump
         ( "Jump according to laMotte rules"
-        , badness      = BAD_MAX
+        , bad_contrary = BAD_4
+        , bad_large    = BAD_MAX
+        , bad_first    = BAD_8
         )
     , Check_Melody_Avoid_Notelen_Jump
         ( "Eighth should not be reached by jumps and should be followed by step"
-        , badness      = BAD_MAX
-        )
-    , Check_Melody_Avoid_Notelen_Jump
-        ( "Fourth should not be reached or left by large jumps"
-        , limit        = 7
-        , badness      = BAD_MAX
-        , note_length  = 2
+        , badness      = BAD_4
         )
     , Check_Melody_Note_Length_Double_Jump
         ( "No double jumps between short notes"
-        , note_length  = (1, 2)
+        , note_length  = (1,)
         , badness      = BAD_MAX
         )
     , Check_Melody_Interval

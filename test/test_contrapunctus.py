@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Copyright (C) 2017-2026 Dr. Ralf Schlatterbeck Open Source Consulting.
 # Reichergasse 131, A-3411 Weidling.
 # Web: http://www.runtux.com Email: office@runtux.com
@@ -17,8 +18,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 # ****************************************************************************
-
-#!/usr/bin/python3
 
 import os
 import pytest
