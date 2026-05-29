@@ -439,6 +439,48 @@ class Check_Melody_Note_Length_Double_Jump (Check_Melody_Interval):
 
 # end class Check_Melody_Note_Length_Double_Jump
 
+class Check_Melody_Consecutive_Jumps (Check_Melody_Interval):
+    """ Forbid more than three jumps in a row.
+        A jump is a melodic interval larger than the given limit (default
+        2 halftones, i.e. anything larger than a major second). We count
+        consecutive jumps and the check matches (i.e. there is a
+        violation) as soon as a fourth jump in a row occurs.
+    """
+
+    def __init__ (self, desc, badness = 0, ugliness = 0, limit = 2, max_jumps = 3):
+        super ().__init__ (desc, (), badness, ugliness, True, False)
+        self.limit     = limit
+        self.max_jumps = max_jumps
+        self.reset ()
+    # end def __init__
+
+    def _check (self, current):
+        self.match_exc = None
+        # A pause interrupts a series of jumps
+        if not current.is_tone:
+            self.jump_count = 0
+            return False
+        d = self.compute_interval ()
+        if d is None:
+            self.jump_count = 0
+            return False
+        if abs (d) > self.limit:
+            self.jump_count += 1
+            if self.jump_count > self.max_jumps:
+                return True
+        else:
+            self.jump_count = 0
+        return False
+    # end def _check
+
+    def reset (self):
+        if hasattr (super (), 'reset'):
+            super ().reset ()
+        self.jump_count = 0
+    # end def reset
+
+# end class Check_Melody_Consecutive_Jumps
+
 class Check_Melody_laMotte_Jump (Check_Melody_Jump):
     """ Implements laMotte's rules for jumps:
         - When jumping a minor sixth or octave, there must be a contrary
@@ -1764,6 +1806,10 @@ magi_melody_checks_cf = \
         , badness      = BAD_MAX
         , note_length  = 2
         )
+    , Check_Melody_Consecutive_Jumps
+        ( "No more than three jumps in a row"
+        , badness      = BAD_MAX
+        )
     ]
 old_melody_checks_cp = \
     [ Check_Melody_Interval
@@ -1827,6 +1873,10 @@ magi_melody_checks_cp = \
     , Check_Melody_Note_Length_Double_Jump
         ( "No double jumps between short notes"
         , note_length  = (1,)
+        , badness      = BAD_MAX
+        )
+    , Check_Melody_Consecutive_Jumps
+        ( "No more than three jumps in a row"
         , badness      = BAD_MAX
         )
     , Check_Melody_Interval

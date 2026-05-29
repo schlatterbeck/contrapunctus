@@ -1847,6 +1847,53 @@ class Test_Contrapunctus:
         self.generic_exception_suspension (abc_notation, expect, exp2)
     # end def test_exception_suspension_breve
 
+    def generic_consecutive_jumps (self, abc, expect):
+        check = checks.Check_Melody_Consecutive_Jumps \
+            ( "No more than three jumps in a row"
+            , badness = 10.0
+            )
+        check.reset ()
+        tune  = Tune.from_iterator (abc)
+        voice = next (iter (tune.voices))
+        res   = []
+        for bar in voice.bars:
+            for obj in bar.objects:
+                b, u = check.check (obj)
+                res.append (b)
+        assert tuple (res) == tuple (expect), res
+    # end def generic_consecutive_jumps
+
+    def test_consecutive_jumps (self):
+        # C->G,->D->A, are three jumps (ok), A,->E is the fourth (bad),
+        # E->G, the fifth (bad)
+        abc = dedent \
+            ("""
+             X:1
+             L:1/8
+             M:8/4
+             K:C
+             V:1 clef=treble
+             [V:1] C4 G,4 D4 A,4 | E4 G,4 |
+             """
+            ).strip ().split ('\n')
+        self.generic_consecutive_jumps (abc, (0, 0, 0, 0, 10, 10))
+    # end def test_consecutive_jumps
+
+    def test_consecutive_jumps_step_reset (self):
+        # A step between jumps resets the counter, so no violation
+        abc = dedent \
+            ("""
+             X:1
+             L:1/8
+             M:8/4
+             K:C
+             V:1 clef=treble
+             [V:1] C4 G,4 D4 A,4 | B,4 F4 |
+             """
+            ).strip ().split ('\n')
+        self.generic_consecutive_jumps (abc, (0, 0, 0, 0, 0, 0))
+    # end def test_consecutive_jumps_step_reset
+
     def generic_jump_2 (self, abc, expect):
         check = checks.Check_Melody_Jump_2 \
             ( "Not both voices may jump"
