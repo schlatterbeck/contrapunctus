@@ -496,18 +496,33 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
         laMotte 1981, p. 69ff
     """
 
-    def __init__ (self, desc, bad_contrary, bad_large, bad_first):
-        """ Messages are hardcoded, badness is assigned before returning
+    def __init__ \
+        (self, desc, bad_contrary, bad_large, bad_first, min_notelen = 3):
+        """ Messages are hardcoded, badness is assigned before returning.
+            min_notelen is given in 1/8 and defaults to 3: the laMotte
+            rules do not apply when at least one of the two notes of a
+            jump is shorter than min_notelen (e.g. a quarter note, which
+            has length 2, or shorter). Those jumps are handled by the
+            Daniel jump rules instead.
         """
         super ().__init__ (desc)
         self.bad_contrary = bad_contrary
         self.bad_large    = bad_large
         self.bad_first    = bad_first
+        self.min_notelen  = min_notelen
     # end def __init__
 
     def _check (self, current):
         self.match_exc  = None
         if not current.prev or not current.next:
+            return False
+
+        # The rules only apply when both notes of the jump are at least
+        # min_notelen long. Shorter jumps (e.g. involving quarter notes)
+        # are handled by the Daniel jump rules.
+        if  (  current.length < self.min_notelen
+            or current.prev.length < self.min_notelen
+            ):
             return False
 
         d = self.compute_interval ()
