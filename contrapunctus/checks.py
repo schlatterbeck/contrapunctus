@@ -634,9 +634,9 @@ class Check_Melody_Daniel_Jump (Check_Melody_Jump):
         """ A cambiata jump is the third (3 or 4 halftones) in the middle
             of a nota cambiata. The characteristic melodic shape around
             the jump is: a step in the *same* direction as the jump
-            before it, followed by two steps in the *opposite* direction
-            after it (descending cambiata: down step, down third, up
-            step, up step; ascending cambiata is the mirror image).
+            before it, followed by at least one step in the *opposite*
+            direction after it (descending cambiata: down step, down
+            third, up step; ascending cambiata is the mirror image).
         """
         d = self.signed_interval (prev, current)
         if d is None or abs (d) not in (3, 4):
@@ -647,17 +647,11 @@ class Check_Melody_Daniel_Jump (Check_Melody_Jump):
         after_d  = self.signed_interval (current, nxt)
         if before_d is None or after_d is None:
             return False
-        nxt2     = nxt.next_with_bind
-        after2_d = self.signed_interval (nxt, nxt2)
-        if after2_d is None:
-            return False
         # step before in same direction as the jump
         if not (0 < abs (before_d) <= 2 and sgn (before_d) == sgn (d)):
             return False
-        # two steps after in the opposite direction
+        # step after in the opposite direction
         if not (0 < abs (after_d) <= 2 and sgn (after_d) == -sgn (d)):
-            return False
-        if not (0 < abs (after2_d) <= 2 and sgn (after2_d) == -sgn (d)):
             return False
         return True
     # end def is_cambiata_jump
@@ -2022,8 +2016,8 @@ magi_melody_checks_cf = \
     , Check_Melody_Daniel_Jump
         ( "Jump according to Daniel rules"
         , bad_contrary    = BAD_4
-        , bad_beat        = BAD_4
-        , bad_double      = BAD_2
+        , bad_beat        = BAD_2
+        , bad_double      = BAD_4
         , bad_large       = BAD_MAX
         , bad_consecutive = BAD_MAX
         )
@@ -2096,8 +2090,8 @@ magi_melody_checks_cp = \
     , Check_Melody_Daniel_Jump
         ( "Jump according to Daniel rules"
         , bad_contrary    = BAD_4
-        , bad_beat        = BAD_4
-        , bad_double      = BAD_2
+        , bad_beat        = BAD_2
+        , bad_double      = BAD_4
         , bad_large       = BAD_MAX
         , bad_consecutive = BAD_MAX
         )

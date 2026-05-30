@@ -733,26 +733,25 @@ class Test_Contrapunctus:
 
         # Bad up-jump: starts on a downbeat (C) so the higher note (G)
         # lands on an upbeat.
-        b = badness (['C', 'G', 'F', 'E'])
-        assert b [1] == 3
+        assert badness (['C', 'G', 'F', 'E']) == [0, 3, 0, 0]
 
         # Descending cambiata: a g e f g -- the third (g -> e) begins on
         # an upbeat. For a normal down-jump this would be wrong, but the
         # cambiata exception inverts the beat rule, so it is allowed.
-        b = badness (['a', 'g', 'e', 'f', 'g'])
-        assert b [2] == 0
+        assert badness (['a', 'g', 'e', 'f', 'g']) == [0, 0, 0, 0, 0]
 
         # Downward jump bigger than a fifth (octave) is forbidden.
-        b = badness (['a', 'A', 'B', 'c'])
-        assert b [1] == 5
+        assert badness (['a', 'A', 'B', 'c']) == [0, 5, 0, 0]
 
         # Two consecutive jumps in the same direction are forbidden.
-        b = badness (['C', 'E', 'G', 'c'])
-        assert 4 in b
+        # And there are > 2 jumps (the 6 at the end)
+        # The downbeat/upbeat is wrong for the first jump
+        assert badness (['C', 'E', 'G', 'c']) == [0, 3, 4, 6]
 
-        # No more than two jumps in succession.
-        b = badness (['C', 'G', 'c', 'g'])
-        assert b [3] == 6
+        # No more than two jumps in succession (last 6)
+        # The downbeat/upbeat is wrong for the first jump (the 3)
+        # All jumps go in the same direction (the 4)
+        assert badness (['C', 'G', 'c', 'g']) == [0, 3, 4, 6]
     # end def test_check_melody_daniel_jump
 
     def test_logparse (self):
