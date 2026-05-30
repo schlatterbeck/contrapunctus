@@ -447,7 +447,8 @@ class Check_Melody_Consecutive_Jumps (Check_Melody_Interval):
         violation) as soon as a fourth jump in a row occurs.
     """
 
-    def __init__ (self, desc, badness = 0, ugliness = 0, limit = 2, max_jumps = 3):
+    def __init__ \
+        (self, desc, badness = 0, ugliness = 0, limit = 2, max_jumps = 3):
         super ().__init__ (desc, (), badness, ugliness, True, False)
         self.limit     = limit
         self.max_jumps = max_jumps
