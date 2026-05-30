@@ -690,6 +690,71 @@ class Test_Contrapunctus:
         assert check.prev_match is False
     # end def test_reset_upcall
 
+    def build_daniel_voice (self, notes):
+        """ Build a Contrapunctus voice with quarter notes (length 2)
+            given as a list of abc pitch names, 4 per bar.
+        """
+        tune = self.build_min_tune ()
+        cp   = tune.voices [1]
+        objs = []
+        i    = 0
+        while i < len (notes):
+            bar = Bar (8, 8)
+            cp.add (bar)
+            for ht in notes [i:i+4]:
+                t = Tone (halftone (ht), 2)
+                bar.add (t)
+                objs.append (t)
+            i += 4
+        return objs
+    # end def build_daniel_voice
+
+    def test_check_melody_daniel_jump (self):
+        check = checks.Check_Melody_Daniel_Jump \
+            ( 'Daniel'
+            , bad_contrary    = 2
+            , bad_beat        = 3
+            , bad_double      = 4
+            , bad_large       = 5
+            , bad_consecutive = 6
+            )
+
+        def badness (notes):
+            objs = self.build_daniel_voice (notes)
+            check.reset ()
+            return [check.check (o) [0] for o in objs]
+
+        # Good up-jump: D on upbeat jumps up to A, then step down.
+        # Higher note (A) ends up on a downbeat -> no violation.
+        assert badness (['C', 'D', 'A', 'G']) == [0, 0, 0, 0]
+
+        # Good down-jump: G on downbeat jumps down to C, then step up.
+        assert badness (['G', 'C', 'D', 'C']) == [0, 0, 0, 0]
+
+        # Bad up-jump: starts on a downbeat (C) so the higher note (G)
+        # lands on an upbeat.
+        b = badness (['C', 'G', 'F', 'E'])
+        assert b [1] == 3
+
+        # Descending cambiata: a g e f g -- the third (g -> e) begins on
+        # an upbeat. For a normal down-jump this would be wrong, but the
+        # cambiata exception inverts the beat rule, so it is allowed.
+        b = badness (['a', 'g', 'e', 'f', 'g'])
+        assert b [2] == 0
+
+        # Downward jump bigger than a fifth (octave) is forbidden.
+        b = badness (['a', 'A', 'B', 'c'])
+        assert b [1] == 5
+
+        # Two consecutive jumps in the same direction are forbidden.
+        b = badness (['C', 'E', 'G', 'c'])
+        assert 4 in b
+
+        # No more than two jumps in succession.
+        b = badness (['C', 'G', 'c', 'g'])
+        assert b [3] == 6
+    # end def test_check_melody_daniel_jump
+
     def test_logparse (self):
         cmd  = contrapunctus.gentune.contrapunctus_cmd ()
         args = cmd.parse_args (['-v', '-v', '-b', '-g' 'test/example.log'])

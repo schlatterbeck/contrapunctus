@@ -560,6 +560,225 @@ class Check_Melody_laMotte_Jump (Check_Melody_Jump):
 
 # end class Check_Melody_laMotte_Jump
 
+class Check_Melody_Daniel_Jump (Check_Melody_Jump):
+    """ Implements Daniel's rules for jumps between quarter notes (1/4,
+        i.e. note length 2 in 1/8 units):
+
+        - The interval directly after *or* before a jump must move in
+          the opposite direction (contrary motion next to the jump).
+        - The higher note of a jump must be on a downbeat (schwere
+          Zeit).  Equivalently:
+          - a jump upwards begins on an upbeat (leichte Zeit), and
+          - a jump downwards begins on a downbeat (schwere Zeit).
+        - Notable exception: a cambiata jump (the third within a nota
+          cambiata) behaves the exact opposite way regarding the beat.
+        - When jumping twice (two jumps in a row), the two jumps may not
+          be in the same direction and the downward jump must come
+          first, then the upward jump.
+        - A downward jump may at most be a fifth (7 halftones), not
+          bigger.
+        - No more than two jumps in succession.
+
+        A downbeat (schwere Zeit) for a quarter note is a bar offset that
+        is a multiple of 4 (in 1/8 units), an upbeat (leichte Zeit) is a
+        quarter offset with ``offset % 4 == 2`` (compare the strong beats
+        {0, 4, 8, 12} used for the cambiata).
+    """
+
+    # A quarter note has length 2 in 1/8 units
+    quarter = 2
+
+    def __init__ \
+        ( self, desc
+        , bad_contrary
+        , bad_beat
+        , bad_double
+        , bad_large
+        , bad_consecutive
+        ):
+        """ Messages are hardcoded, badness is assigned before returning
+        """
+        super ().__init__ (desc)
+        self.bad_contrary    = bad_contrary
+        self.bad_beat        = bad_beat
+        self.bad_double      = bad_double
+        self.bad_large       = bad_large
+        self.bad_consecutive = bad_consecutive
+        self.reset ()
+    # end def __init__
+
+    @staticmethod
+    def signed_interval (a, b):
+        """ Signed interval from tone a to tone b (b - a) or None if one
+            of them is missing or not a tone.
+        """
+        if a is None or b is None or not a.is_tone or not b.is_tone:
+            return None
+        return b.halftone.offset - a.halftone.offset
+    # end def signed_interval
+
+    @classmethod
+    def is_quarter (cls, obj):
+        return obj is not None and obj.is_tone and obj.length == cls.quarter
+    # end def is_quarter
+
+    @staticmethod
+    def is_downbeat (obj):
+        """ A quarter note is on a downbeat (schwere Zeit) if its bar
+            offset is a multiple of 4 (in 1/8 units).
+        """
+        return obj.offset % 4 == 0
+    # end def is_downbeat
+
+    def is_cambiata_jump (self, prev, current):
+        """ A cambiata jump is the third (3 or 4 halftones) in the middle
+            of a nota cambiata. The characteristic melodic shape around
+            the jump is: a step in the *same* direction as the jump
+            before it, followed by two steps in the *opposite* direction
+            after it (descending cambiata: down step, down third, up
+            step, up step; ascending cambiata is the mirror image).
+        """
+        d = self.signed_interval (prev, current)
+        if d is None or abs (d) not in (3, 4):
+            return False
+        prev2    = prev.prev_with_bind
+        nxt      = current.next_with_bind
+        before_d = self.signed_interval (prev2, prev)
+        after_d  = self.signed_interval (current, nxt)
+        if before_d is None or after_d is None:
+            return False
+        nxt2     = nxt.next_with_bind
+        after2_d = self.signed_interval (nxt, nxt2)
+        if after2_d is None:
+            return False
+        # step before in same direction as the jump
+        if not (0 < abs (before_d) <= 2 and sgn (before_d) == sgn (d)):
+            return False
+        # two steps after in the opposite direction
+        if not (0 < abs (after_d) <= 2 and sgn (after_d) == -sgn (d)):
+            return False
+        if not (0 < abs (after2_d) <= 2 and sgn (after2_d) == -sgn (d)):
+            return False
+        return True
+    # end def is_cambiata_jump
+
+    def _check (self, current):
+        self.match_exc = None
+        self.badness   = 1
+        prev = current.prev_with_bind
+        # The rule only applies to jumps between quarter notes
+        if not self.is_quarter (current) or not self.is_quarter (prev):
+            self.jump_count = 0
+            return False
+        d = self.signed_interval (prev, current)
+        if d is None or abs (d) <= self.limit:
+            self.jump_count = 0
+            return False
+
+        # We have a quarter-note jump leading into the current note
+        self.jump_count += 1
+
+        # Rule: no more than two jumps in succession
+        if self.jump_count > 2:
+            self.msg     = "No more than two jumps in succession (Daniel)"
+            self.badness = self.bad_consecutive
+            return True
+
+        up       = d > 0
+        cambiata = self.is_cambiata_jump (prev, current)
+
+        # Rule: a downward jump may at most be a fifth (7 halftones)
+        if not up and abs (d) > 7:
+            self.msg     = "A downward jump may at most be a fifth (Daniel)"
+            self.badness = self.bad_large
+            return True
+
+        # Rule: higher note of the jump on a downbeat, i.e. a jump up
+        # starts on an upbeat, a jump down starts on a downbeat. For a
+        # cambiata jump the beat behaviour is exactly the opposite.
+        start_downbeat    = self.is_downbeat (prev)
+        # Default expectation: down-jump starts on downbeat (True),
+        # up-jump starts on upbeat (False)
+        expected_downbeat = not up
+        if cambiata:
+            expected_downbeat = not expected_downbeat
+        if start_downbeat != expected_downbeat:
+            if cambiata:
+                self.msg = \
+                    ( "Cambiata jump must begin on the opposite beat of a "
+                      "normal jump (Daniel)"
+                    )
+            elif up:
+                self.msg = \
+                    ( "A jump upwards must begin on an upbeat so that the "
+                      "higher note is on a downbeat (Daniel)"
+                    )
+            else:
+                self.msg = \
+                    ( "A jump downwards must begin on a downbeat so that the "
+                      "higher note is on a downbeat (Daniel)"
+                    )
+            self.badness = self.bad_beat
+            return True
+
+        # Look at a possible second jump following the current one
+        nxt    = current.next_with_bind
+        next_d = None
+        double = False
+        if self.is_quarter (nxt):
+            next_d = self.signed_interval (current, nxt)
+            if next_d is not None and abs (next_d) > self.limit:
+                double = True
+
+        if double:
+            # Rule: two jumps may not be in the same direction
+            if sgn (d) == sgn (next_d):
+                self.msg = \
+                    "Two consecutive jumps must not be in the same direction" \
+                    " (Daniel)"
+                self.badness = self.bad_double
+                return True
+            # Rule: the downward jump must come first, then the upward one
+            if d > 0 and next_d < 0:
+                self.msg = \
+                    "For two consecutive jumps the downward jump must come" \
+                    " first, then the upward jump (Daniel)"
+                self.badness = self.bad_double
+                return True
+
+        # Rule: the interval after *or* before the jump must move in the
+        # opposite direction (contrary motion next to the jump). A
+        # following second jump in the opposite direction counts as
+        # contrary motion as well.
+        prev2    = prev.prev_with_bind
+        before_d = self.signed_interval (prev2, prev)
+        after_d  = next_d
+        if after_d is None:
+            after_d = self.signed_interval (current, nxt)
+        have_neighbour = before_d is not None or after_d is not None
+        contrary = \
+            (   (before_d is not None and sgn (before_d) == -sgn (d))
+            or  (after_d  is not None and sgn (after_d)  == -sgn (d))
+            )
+        if have_neighbour and not contrary:
+            self.msg = \
+                "The interval before or after a jump must move in the" \
+                " opposite direction (Daniel)"
+            self.badness = self.bad_contrary
+            return True
+
+        return False
+    # end def _check
+
+    def reset (self):
+        if hasattr (super (), 'reset'):
+            super ().reset ()
+        self.jump_count = 0
+        self.msg        = self.desc
+    # end def reset
+
+# end class Check_Melody_Daniel_Jump
+
 class Check_Melody_Jump_Magdalena (Check_Melody_Jump):
     """ If there are consecutive jumps:
         - Check how big the intervals are, generally: Not too large jumps
@@ -1800,6 +2019,14 @@ magi_melody_checks_cf = \
         , bad_large    = BAD_MAX
         , bad_first    = BAD_8
         )
+    , Check_Melody_Daniel_Jump
+        ( "Jump according to Daniel rules"
+        , bad_contrary    = BAD_4
+        , bad_beat        = BAD_4
+        , bad_double      = BAD_2
+        , bad_large       = BAD_MAX
+        , bad_consecutive = BAD_MAX
+        )
     , Check_Melody_Avoid_Notelen_Jump
         ( "Fourth should not be reached or left by large jumps"
         , limit        = 7
@@ -1865,6 +2092,14 @@ magi_melody_checks_cp = \
         , bad_contrary = BAD_4
         , bad_large    = BAD_MAX
         , bad_first    = BAD_8
+        )
+    , Check_Melody_Daniel_Jump
+        ( "Jump according to Daniel rules"
+        , bad_contrary    = BAD_4
+        , bad_beat        = BAD_4
+        , bad_double      = BAD_2
+        , bad_large       = BAD_MAX
+        , bad_consecutive = BAD_MAX
         )
     , Check_Melody_Avoid_Notelen_Jump
         ( "Eighth should not be reached by jumps and should be followed by step"
